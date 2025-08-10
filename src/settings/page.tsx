@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { X, Globe, Mail, Trash2 } from "lucide-react";
+import { X, Globe, Mail, Trash2, Settings as SettingsIcon } from "lucide-react";
 import LanguageSelectorModal from "./LanguageSelectorModal";
 
 interface Props {
@@ -14,7 +14,7 @@ function SettingsItem({
   icon: Icon,
   label,
   onClick,
-  color = "text-gray-800"
+  color = "text-gray-800",
 }: {
   icon: React.ComponentType<{ className?: string }>;
   label: string;
@@ -24,10 +24,12 @@ function SettingsItem({
   return (
     <button
       onClick={onClick}
-      className={`flex items-center gap-3 px-4 py-3 rounded-md hover:bg-gray-100 transition-colors ${color}`}
+      className={`flex items-center gap-3 px-4 py-4 rounded-xl hover:bg-gray-50 transition-all duration-200 ${color} group w-full text-right`}
     >
-      <Icon className="w-5 h-5" />
-      <span>{label}</span>
+      <div className="p-2 rounded-lg bg-gray-100 group-hover:bg-gray-200 transition-colors duration-200">
+        <Icon className="w-5 h-5" />
+      </div>
+      <span className="font-medium text-sm sm:text-base">{label}</span>
     </button>
   );
 }
@@ -38,37 +40,66 @@ export default function SettingsSidebar({ open, onClose }: Props) {
 
   return (
     <>
+      {/* Overlay */}
+      {open && (
+        <div
+          className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40 sm:hidden"
+          onClick={onClose}
+        />
+      )}
+
       {/* Sidebar */}
       <div
-        className={`fixed top-0 right-0 h-full w-72 bg-white shadow-lg flex flex-col transition-transform duration-300 z-50 ${
+        className={`fixed top-0 right-0 h-full w-full sm:w-80 bg-white shadow-2xl flex flex-col transition-transform duration-300 z-50 ${
           open ? "translate-x-0" : "translate-x-full"
         }`}
         dir="rtl"
       >
-        <div className="flex items-center justify-between p-4 border-b">
-          <h2 className="text-lg font-bold">{t("settings.title")}</h2>
-          <button onClick={onClose}>
-            <X className="w-5 h-5" />
+        {/* Header */}
+        <div className="flex items-center justify-between p-4 sm:p-6 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-white">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-blue-100">
+              <SettingsIcon className="w-5 h-5 text-blue-600" />
+            </div>
+            <h2 className="text-lg sm:text-xl font-bold text-gray-900">
+              {t("settings.title")}
+            </h2>
+          </div>
+          <button
+            onClick={onClose}
+            className="p-2 rounded-lg hover:bg-gray-100 transition-colors duration-200"
+          >
+            <X className="h-5 w-5 text-gray-600" />
           </button>
         </div>
 
-        <div className="flex flex-col gap-1 p-2">
-          <SettingsItem
-            icon={Globe}
-            label={t("settings.language")}
-            onClick={() => setShowLanguageModal(true)}
-          />
-          <SettingsItem
-            icon={Mail}
-            label={t("settings.contact")}
-            onClick={() => alert("Contact form will open here")}
-          />
-          <SettingsItem
-            icon={Trash2}
-            label={t("settings.deleteAccount")}
-            color="text-red-600"
-            onClick={() => alert("Account deletion flow")}
-          />
+        {/* Content */}
+        <div className="flex-1 overflow-y-auto">
+          <div className="p-4 sm:p-6 space-y-2">
+            <SettingsItem
+              icon={Globe}
+              label={t("settings.language")}
+              onClick={() => setShowLanguageModal(true)}
+            />
+            <SettingsItem
+              icon={Mail}
+              label={t("settings.contact")}
+              onClick={() => alert("Contact form will open here")}
+            />
+            <SettingsItem
+              icon={Trash2}
+              label={t("settings.deleteAccount")}
+              color="text-red-600"
+              onClick={() => alert("Account deletion flow")}
+            />
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="p-4 sm:p-6 border-t border-gray-200 bg-gray-50">
+          <div className="text-center">
+            <p className="text-xs text-gray-500">Sabbath UI v1.0.0</p>
+          </div>
         </div>
       </div>
 

@@ -1,10 +1,21 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-  content: [
-    "./src/**/*.{js,ts,jsx,tsx,mdx}",
-  ],
+  content: ["./src/**/*.{js,ts,jsx,tsx,mdx}"],
   theme: {
-    extend: {},
+    extend: {
+      backdropBlur: {
+        xs: "2px",
+      },
+      animation: {
+        "fade-in": "fade-in 0.2s ease-out",
+      },
+      keyframes: {
+        "fade-in": {
+          "0%": { opacity: "0" },
+          "100%": { opacity: "1" },
+        },
+      },
+    },
     screens: {
       sm: "640px",
       md: "768px",
@@ -14,7 +25,5 @@ module.exports = {
     },
   },
   /* eslint-disable @typescript-eslint/no-require-imports */
-  plugins: [
-    require('tailwindcss-rtl'),
-  ],
-}
+  plugins: [require("tailwindcss-rtl")],
+};

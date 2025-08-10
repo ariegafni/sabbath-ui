@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Settings, User } from "lucide-react";
+import { Settings, User, Home, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 import SettingsSidebar from "@/settings/page";
@@ -16,57 +16,87 @@ export default function Header() {
 
   return (
     <>
-      <header className="border-b bg-background" dir="rtl">
-        <nav className="mx-auto max-w-6xl h-16 px-4 flex items-center justify-between">
-          {/* כפתור הגדרות */}
-          <button
-            onClick={() => setIsSettingsOpen(true)}
-            className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
-          >
-            <Settings className="h-5 w-5" />
-            <span>{t("nav.settings")}</span>
-          </button>
+      <header
+        className="sticky top-0 z-40 w-full border-b border-gray-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60 shadow-sm"
+        dir="rtl"
+      >
+        <nav className="mx-auto max-w-7xl h-16 px-4 sm:px-6 lg:px-8 flex items-center justify-between">
+          {/* Left side - Settings */}
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => setIsSettingsOpen(true)}
+              className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-all duration-200 group"
+            >
+              <Settings className="h-5 w-5 group-hover:rotate-90 transition-transform duration-200" />
+              <span className="hidden sm:inline">{t("nav.settings")}</span>
+            </button>
+          </div>
 
-          {/* כותרת מרכזית */}
-          <h1 className="text-lg font-bold">{t("guests.title")}</h1>
+          {/* Center - Logo/Home */}
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => router.push("/")}
+              className="flex items-center gap-2 px-3 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-all duration-200 group"
+            >
+              <Home className="h-5 w-5 group-hover:scale-110 transition-transform duration-200" />
+              <span className="hidden sm:inline text-sm font-medium">
+                {t("nav.home")}
+              </span>
+            </button>
+            <div className="hidden sm:block w-px h-6 bg-gray-300"></div>
+            <h1 className="text-xl font-bold text-gray-900 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+              {t("guests.title")}
+            </h1>
+          </div>
 
-          {/* כפתורים בצד ימין */}
+          {/* Right side - Actions */}
           <div className="flex items-center gap-3">
             <button
               onClick={() => setIsHostProfileOpen(true)}
-              className="px-4 py-2 bg-blue-600 text-white rounded-md text-sm"
+              className="px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg text-sm font-medium shadow-md hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-200 hover:from-blue-700 hover:to-purple-700"
             >
               {t("nav.publish")}
             </button>
             <button
               onClick={() => router.push("/login")}
-              className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+              className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-all duration-200 group"
             >
-              <User className="h-5 w-5" />
-              <span>{t("auth.login")}</span>
+              <User className="h-5 w-5 group-hover:scale-110 transition-transform duration-200" />
+              <span className="hidden sm:inline">{t("auth.login")}</span>
             </button>
           </div>
         </nav>
       </header>
 
-      {/* Sidebar הגדרות */}
+      {/* Settings Sidebar */}
       <SettingsSidebar
         open={isSettingsOpen}
         onClose={() => setIsSettingsOpen(false)}
       />
 
-      {/* Host Profile Modal */}
+      {/* Host Profile Modal with proper scrolling */}
       {isHostProfileOpen && (
-        <div className="fixed inset-0 z-50 bg-black/40 flex justify-center items-center">
-          <div className="bg-white rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-            <HostProfileForm />
-            <div className="mt-4 flex justify-end">
+        <div
+          className="modal-overlay flex justify-center items-center p-4"
+          dir="rtl"
+        >
+          <div className="modal-content bg-white rounded-2xl shadow-2xl w-full max-w-4xl flex flex-col">
+            {/* Header */}
+            <div className="flex items-center justify-between p-6 border-b border-gray-200 bg-gradient-to-r from-blue-600 to-purple-600 flex-shrink-0">
+              <h2 className="text-xl sm:text-2xl font-bold text-white">
+                {t("hostProfile.title")}
+              </h2>
               <button
                 onClick={() => setIsHostProfileOpen(false)}
-                className="px-4 py-2 border rounded-md"
+                className="p-2 text-white/80 hover:text-white hover:bg-white/20 rounded-lg transition-colors duration-200"
               >
-                {t("common.cancel")}
+                <X className="h-5 w-5" />
               </button>
+            </div>
+
+            {/* Form Content - Scrollable */}
+            <div className="modal-scrollable">
+              <HostProfileForm />
             </div>
           </div>
         </div>

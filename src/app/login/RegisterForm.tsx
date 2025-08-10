@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Mail, Lock, User, ArrowRight, ArrowLeft } from "lucide-react";
 
 interface Props {
   onSwitchToLogin: () => void;
@@ -11,7 +12,7 @@ export default function RegisterForm({ onSwitchToLogin }: Props) {
     firstName: "",
     lastName: "",
     email: "",
-    password: ""
+    password: "",
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -24,63 +25,124 @@ export default function RegisterForm({ onSwitchToLogin }: Props) {
   };
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="max-w-sm mx-auto bg-white rounded-lg shadow p-6 space-y-4"
-      dir="rtl"
-    >
-      <h2 className="text-lg font-bold">רישום</h2>
+    <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+      {/* Header */}
+      <div className="bg-gradient-to-r from-green-600 to-blue-600 px-6 py-8 text-center">
+        <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2">
+          הרשמה
+        </h1>
+        <p className="text-green-100 text-sm sm:text-base">צרו חשבון חדש</p>
+      </div>
 
-      <input
-        type="text"
-        name="firstName"
-        placeholder="שם פרטי"
-        value={form.firstName}
-        onChange={handleChange}
-        className="w-full border rounded-md p-2"
-      />
-      <input
-        type="text"
-        name="lastName"
-        placeholder="שם משפחה"
-        value={form.lastName}
-        onChange={handleChange}
-        className="w-full border rounded-md p-2"
-      />
-      <input
-        type="email"
-        name="email"
-        placeholder="אימייל"
-        value={form.email}
-        onChange={handleChange}
-        className="w-full border rounded-md p-2"
-      />
-      <input
-        type="password"
-        name="password"
-        placeholder="סיסמה"
-        value={form.password}
-        onChange={handleChange}
-        className="w-full border rounded-md p-2"
-      />
+      {/* Form */}
+      <form onSubmit={handleSubmit} className="px-6 py-8 space-y-6">
+        {/* שם פרטי */}
+        <div className="space-y-2">
+          <label className="block text-sm font-medium text-gray-700">
+            שם פרטי
+          </label>
+          <div className="relative">
+            <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+              <User className="h-5 w-5 text-gray-400" />
+            </div>
+            <input
+              type="text"
+              name="firstName"
+              placeholder="הכנס את שמך הפרטי"
+              value={form.firstName}
+              onChange={handleChange}
+              className="w-full pr-10 pl-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 text-sm sm:text-base"
+              required
+            />
+          </div>
+        </div>
 
-      <button
-        type="submit"
-        className="w-full bg-green-600 text-white rounded-md py-2"
-      >
-        הרשמה
-      </button>
+        {/* שם משפחה */}
+        <div className="space-y-2">
+          <label className="block text-sm font-medium text-gray-700">
+            שם משפחה
+          </label>
+          <div className="relative">
+            <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+              <User className="h-5 w-5 text-gray-400" />
+            </div>
+            <input
+              type="text"
+              name="lastName"
+              placeholder="הכנס את שם המשפחה שלך"
+              value={form.lastName}
+              onChange={handleChange}
+              className="w-full pr-10 pl-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 text-sm sm:text-base"
+              required
+            />
+          </div>
+        </div>
 
-      <p className="text-sm text-center">
-        כבר יש לך חשבון?{" "}
+        {/* אימייל */}
+        <div className="space-y-2">
+          <label className="block text-sm font-medium text-gray-700">
+            אימייל
+          </label>
+          <div className="relative">
+            <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+              <Mail className="h-5 w-5 text-gray-400" />
+            </div>
+            <input
+              type="email"
+              name="email"
+              placeholder="הכנס את האימייל שלך"
+              value={form.email}
+              onChange={handleChange}
+              className="w-full pr-10 pl-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 text-sm sm:text-base"
+              required
+            />
+          </div>
+        </div>
+
+        {/* סיסמה */}
+        <div className="space-y-2">
+          <label className="block text-sm font-medium text-gray-700">
+            סיסמה
+          </label>
+          <div className="relative">
+            <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+              <Lock className="h-5 w-5 text-gray-400" />
+            </div>
+            <input
+              type="password"
+              name="password"
+              placeholder="הכנס סיסמה חזקה"
+              value={form.password}
+              onChange={handleChange}
+              className="w-full pr-10 pl-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 text-sm sm:text-base"
+              required
+            />
+          </div>
+        </div>
+
+        {/* כפתור הרשמה */}
         <button
-          type="button"
-          onClick={onSwitchToLogin}
-          className="text-blue-600 hover:underline"
+          type="submit"
+          className="w-full bg-gradient-to-r from-green-600 to-blue-600 text-white rounded-xl py-3 font-semibold hover:from-green-700 hover:to-blue-700 transform hover:-translate-y-0.5 transition-all duration-200 flex items-center justify-center gap-2 text-sm sm:text-base"
         >
-          התחבר
+          הרשמה
+          <ArrowRight className="h-4 w-4" />
         </button>
-      </p>
-    </form>
+
+        {/* קישור להתחברות */}
+        <div className="text-center pt-4 border-t border-gray-100">
+          <p className="text-sm text-gray-600">
+            כבר יש לך חשבון?{" "}
+            <button
+              type="button"
+              onClick={onSwitchToLogin}
+              className="text-green-600 hover:text-green-700 font-medium hover:underline transition-colors duration-200"
+            >
+              התחבר לחשבון שלך
+            </button>
+          </p>
+        </div>
+      </form>
+    </div>
   );
 }
