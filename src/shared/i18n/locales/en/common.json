@@ -1,0 +1,139 @@
+{
+  "app": {
+    "title": "Sabbath Hosting"
+  },
+  "nav": {
+    "home": "Home",
+    "hosts": "Hosts",
+    "search": "Search",
+    "publish": "Publish Meal",
+    "settings": "Settings"
+  },
+  "settings": {
+    "title": "Settings",
+    "language": "Language Settings",
+    "contact": "Contact Us",
+    "deleteAccount": "Delete Account"
+  },
+  "publish": {
+    "title": "Publish Meal",
+    "subtitle": "Select at least one option in each required category.",
+    "religion": {
+      "title": "Religious Level",
+      "haredi": "Haredi",
+      "dati": "Religious-Zionist",
+      "chiloni": "Secular",
+      "masorti": "Traditional",
+      "open": "Open to All"
+    },
+    "style": {
+      "title": "Hosting Style",
+      "family": "Family",
+      "young": "Young Friends",
+      "couple": "Couple",
+      "students": "Students",
+      "withKids": "Families with Kids"
+    },
+    "atmosphere": {
+      "title": "Atmosphere",
+      "warm": "Warm and Welcoming",
+      "quiet": "Quiet/Relaxed",
+      "deepTalk": "Deep Conversation",
+      "lively": "Lively/Chatty"
+    },
+    "diet": {
+      "title": "Diet",
+      "kosher": "Kosher",
+      "noGluten": "Gluten-Free",
+      "vegetarian": "Vegetarian/Vegan"
+    },
+    "noiseLevel": {
+      "title": "Noise Level",
+      "quiet": "Quiet",
+      "lively": "Lively/Chatty"
+    },
+    "language": {
+      "title": "Language",
+      "hebrew": "Hebrew",
+      "english": "English",
+      "french": "French",
+      "russian": "Russian"
+    },
+    "stay": {
+      "title": "Accommodation",
+      "withStay": "Includes Stay",
+      "noStay": "No Stay"
+    },
+    "date": "Date & Time",
+    "spots": "Number of Spots",
+    "notes": "Notes (Optional)",
+    "submit": "Publish"
+  },
+  "hostProfile": {
+    "title": "Host Profile",
+    "name": "Name",
+    "location": "Location",
+    "image": "Image",
+    "uploadPlaceholder": "Upload an image from your device",
+    "description": "Describe your meal in a few words"
+  },
+  "common": {
+    "cancel": "Cancel",
+    "submit": "Submit"
+  },
+  "profile": {
+    "title": "User Profile",
+    "age": "Age",
+    "city": "City",
+    "languages": "Spoken Languages",
+    "about": "About",
+    "hostingArea": "General Area",
+    "capacity": "Hosting Capacity",
+    "availability": "Availability",
+    "shabbatLevel": "Shabbat Observance Level",
+    "guestTypes": "Preferred Guest Types",
+    "includeStay": "Includes Stay",
+    "selfDescription": "Self Description",
+    "restrictions": "Restrictions & Preferences"
+  },
+  "search": {
+    "location": "Location",
+    "availability": "Availability",
+    "filters": "Filters",
+    "placeholder": "Search by location or name",
+    "noResults": "No matching meals yet."
+  },
+  "chat": {
+    "title": "Chat",
+    "sendMessage": "Send Message"
+  },
+  "requests": {
+    "title": "Hosting Requests",
+    "newRequest": "New Request",
+    "approve": "Approve",
+    "reject": "Reject"
+  },
+  "ratings": {
+    "title": "Ratings",
+    "overall": "Overall Rating",
+    "comment": "Comment",
+    "report": "Report"
+  },
+  "support": {
+    "title": "Support",
+    "faq": "FAQ",
+    "contactForm": "Contact Form"
+  },
+  "guests": {
+    "title": "Available Guests",
+    "interested": "I'm Interested",
+    "spots": "{{count}} spots",
+    "date": "Date",
+    "time": "Time"
+  },
+  "auth": {
+  "login": "Login",
+  "register": "Register"
+}
+
+}

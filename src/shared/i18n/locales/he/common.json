@@ -1,0 +1,90 @@
+{
+  "app": {
+    "title": "אירוח לשבת"
+  },
+  "nav": {
+    "home": "בית",
+    "search": "חיפוש",
+    "publish": "פרסם ארוחה",
+    "settings": "הגדרות"
+  },
+  "settings": {
+    "title": "הגדרות",
+    "language": "הגדרות שפה",
+    "contact": "צור קשר",
+    "deleteAccount": "מחיקת חשבון"
+  },
+  "publish": {
+    "title": "פרסם ארוחה",
+    "religion": {
+      "title": "רמת דתיות",
+      "haredi": "חרדי",
+      "dati": "דתי-לאומי",
+      "chiloni": "חילוני"
+    },
+    "style": {
+      "title": "סגנון אירוח",
+      "family": "משפחתי",
+      "young": "חברים צעירים",
+      "couple": "זוגי"
+    },
+    "submit": "פרסם"
+  },
+  "common": {
+    "cancel": "ביטול"
+  },
+  "profile": {
+    "title": "פרופיל משתמש",
+    "age": "גיל",
+    "city": "עיר מגורים",
+    "languages": "שפות מדוברות",
+    "about": "רקע כללי",
+    "hostingArea": "אזור כללי",
+    "capacity": "יכולת אירוח",
+    "availability": "זמינות",
+    "shabbatLevel": "רמת שמירת שבת",
+    "guestTypes": "סוגי אורחים רצויים",
+    "includeStay": "כולל לינה",
+    "selfDescription": "תיאור עצמי",
+    "restrictions": "רגישויות והעדפות"
+  },
+  "search": {
+    "location": "מיקום",
+    "availability": "זמינות",
+    "filters": "סינון"
+  },
+  "chat": {
+    "title": "צ'אט",
+    "sendMessage": "שלח הודעה"
+  },
+  "requests": {
+    "title": "בקשות אירוח",
+    "newRequest": "בקשה חדשה",
+    "approve": "אשר",
+    "reject": "דחה"
+  },
+  "ratings": {
+    "title": "דירוג",
+    "overall": "דירוג כללי",
+    "comment": "תגובה",
+    "report": "דיווח"
+  },
+  "support": {
+    "title": "תמיכה",
+    "faq": "שאלות נפוצות",
+    "contactForm": "טופס יצירת קשר"
+  },
+  "hostProfile": {
+    "title": "פרופיל מארח",
+    "name": "שם",
+    "location": "מיקום",
+    "image": "תמונה",
+    "uploadPlaceholder": "העלה תמונה מהמכשיר שלך",
+    "description": "תאר את הארוחה שלך בכמה מילים"
+  },
+  "auth": {
+    "login": "התחבר",
+    "register": "הרשמה"
+  }
+
+}
