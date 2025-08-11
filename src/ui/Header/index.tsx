@@ -53,7 +53,7 @@ export default function Header() {
           <div className="flex items-center gap-3">
             <button
               onClick={() => setIsHostProfileOpen(true)}
-              className="px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg text-sm font-medium shadow-md hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-200 hover:from-blue-700 hover:to-purple-700"
+              className="px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg text-sm font-medium shadow-md hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-200 hover:from-blue-700 hover:to-purple-700 whitespace-nowrap min-h-[40px] flex items-center justify-center"
             >
               {t("nav.publish")}
             </button>

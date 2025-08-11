@@ -27,11 +27,11 @@ export default function RegisterForm({ onSwitchToLogin }: Props) {
   return (
     <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
       {/* Header */}
-      <div className="bg-gradient-to-r from-green-600 to-blue-600 px-6 py-8 text-center">
+      <div className="bg-gradient-to-r from-blue-600 to-purple-600 px-6 py-8 text-center">
         <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2">
           הרשמה
         </h1>
-        <p className="text-green-100 text-sm sm:text-base">צרו חשבון חדש</p>
+        <p className="text-blue-100 text-sm sm:text-base">צרו חשבון חדש</p>
       </div>
 
       {/* Form */}
@@ -51,7 +51,7 @@ export default function RegisterForm({ onSwitchToLogin }: Props) {
               placeholder="הכנס את שמך הפרטי"
               value={form.firstName}
               onChange={handleChange}
-              className="w-full pr-10 pl-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 text-sm sm:text-base"
+              className="w-full pr-10 pl-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-sm sm:text-base"
               required
             />
           </div>
@@ -72,7 +72,7 @@ export default function RegisterForm({ onSwitchToLogin }: Props) {
               placeholder="הכנס את שם המשפחה שלך"
               value={form.lastName}
               onChange={handleChange}
-              className="w-full pr-10 pl-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 text-sm sm:text-base"
+              className="w-full pr-10 pl-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-sm sm:text-base"
               required
             />
           </div>
@@ -93,7 +93,7 @@ export default function RegisterForm({ onSwitchToLogin }: Props) {
               placeholder="הכנס את האימייל שלך"
               value={form.email}
               onChange={handleChange}
-              className="w-full pr-10 pl-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 text-sm sm:text-base"
+              className="w-full pr-10 pl-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-sm sm:text-base"
               required
             />
           </div>
@@ -114,7 +114,7 @@ export default function RegisterForm({ onSwitchToLogin }: Props) {
               placeholder="הכנס סיסמה חזקה"
               value={form.password}
               onChange={handleChange}
-              className="w-full pr-10 pl-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 text-sm sm:text-base"
+              className="w-full pr-10 pl-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-sm sm:text-base"
               required
             />
           </div>
@@ -123,7 +123,7 @@ export default function RegisterForm({ onSwitchToLogin }: Props) {
         {/* כפתור הרשמה */}
         <button
           type="submit"
-          className="w-full bg-gradient-to-r from-green-600 to-blue-600 text-white rounded-xl py-3 font-semibold hover:from-green-700 hover:to-blue-700 transform hover:-translate-y-0.5 transition-all duration-200 flex items-center justify-center gap-2 text-sm sm:text-base"
+          className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl py-3 font-semibold hover:from-blue-700 hover:to-purple-700 transform hover:-translate-y-0.5 transition-all duration-200 flex items-center justify-center gap-2 text-sm sm:text-base"
         >
           הרשמה
           <ArrowRight className="h-4 w-4" />
@@ -136,7 +136,7 @@ export default function RegisterForm({ onSwitchToLogin }: Props) {
             <button
               type="button"
               onClick={onSwitchToLogin}
-              className="text-green-600 hover:text-green-700 font-medium hover:underline transition-colors duration-200"
+              className="text-blue-600 hover:text-blue-700 font-medium hover:underline transition-colors duration-200"
             >
               התחבר לחשבון שלך
             </button>

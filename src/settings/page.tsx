@@ -43,14 +43,14 @@ export default function SettingsSidebar({ open, onClose }: Props) {
       {/* Overlay */}
       {open && (
         <div
-          className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40 sm:hidden"
+          className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40"
           onClick={onClose}
         />
       )}
 
       {/* Sidebar */}
       <div
-        className={`fixed top-0 right-0 h-full w-full sm:w-80 bg-white shadow-2xl flex flex-col transition-transform duration-300 z-50 ${
+        className={`fixed top-0 right-0 h-full w-80 max-w-[85vw] bg-white shadow-2xl flex flex-col transition-transform duration-300 z-50 ${
           open ? "translate-x-0" : "translate-x-full"
         }`}
         dir="rtl"
