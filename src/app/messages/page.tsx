@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { MessageCircle, User, Calendar, MapPin } from "lucide-react";
 import Button from "@/ui/Button";
+import { MessageService } from "../../shared/service";
 
 type ChatThread = {
   id: number;
@@ -32,43 +33,20 @@ export default function MessagesPage() {
   const fetchChatThreads = async () => {
     try {
       setLoading(true);
-      // TODO: Replace with actual API call
-      const response = await fetch("/api/messages/threads", {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-        },
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setChatThreads(data);
-      } else {
-        // Fallback data for development
-        setChatThreads([
-          {
-            id: 1,
-            host_id: 1,
-            guest_id: 2,
-            host_name: "אתי כהן",
-            guest_name: "יוסי לוי",
-            last_message: "שלום! האם יש לך מקום לשבת הבא?",
-            last_message_at: "2024-01-15T10:30:00Z",
-            unread_count: 2,
-            hosting_request_id: 1,
-          },
-          {
-            id: 2,
-            host_id: 3,
-            guest_id: 2,
-            host_name: "נועה אברהם",
-            guest_name: "יוסי לוי",
-            last_message: "תודה על האירוח הנפלא!",
-            last_message_at: "2024-01-14T18:45:00Z",
-            unread_count: 0,
-            hosting_request_id: 2,
-          },
-        ]);
-      }
+      const data = await MessageService.getThreads();
+      // Transform the data to match the local interface
+      const transformedThreads = data.map((thread) => ({
+        id: thread.id,
+        host_id: thread.participant_ids[0],
+        guest_id: thread.participant_ids[1],
+        host_name: "מארח", // TODO: Get actual names from participants
+        guest_name: "אורח", // TODO: Get actual names from participants
+        last_message: thread.last_message.content,
+        last_message_at: thread.last_message.created_at,
+        unread_count: thread.unread_count,
+        hosting_request_id: 1, // TODO: Link to actual hosting request
+      }));
+      setChatThreads(transformedThreads);
     } catch (error) {
       console.error("Failed to fetch chat threads:", error);
     } finally {

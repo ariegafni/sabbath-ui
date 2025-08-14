@@ -12,6 +12,7 @@ import {
   MessageCircle,
 } from "lucide-react";
 import Image from "next/image";
+import { HostService } from "../../shared/service";
 
 type Host = {
   id: number;
@@ -58,12 +59,8 @@ export default function HostsList({
   const fetchHosts = async () => {
     try {
       setLoading(true);
-      // TODO: Replace with actual API call
-      const response = await fetch(`/api/hosts/hosts/country/${country}`);
-      if (!response.ok) throw new Error("Failed to fetch hosts");
-
-      const data = await response.json();
-      setHosts(data.hosts || []);
+      const data = await HostService.getHostsByCountry(country);
+      setHosts(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to fetch hosts");
       // Fallback data for development

@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { X, Mail, Lock, User, Phone, Eye, EyeOff, Github } from "lucide-react";
 import Button from "@/ui/Button";
-import { getApiUrl } from "@/shared/lib/config";
+import { AuthService } from "../../shared/service";
 
 type AuthMode = "login" | "register" | "forgot-password";
 
@@ -38,42 +38,29 @@ export default function AuthModal({
 
     try {
       if (mode === "register") {
-        const response = await fetch(getApiUrl("AUTH", "REGISTER"), {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(formData),
+        const authResponse = await AuthService.register({
+          email: formData.email,
+          password: formData.password,
+          first_name: formData.name.split(" ")[0] || formData.name,
+          last_name: formData.name.split(" ").slice(1).join(" ") || "",
+          phone: formData.phone,
         });
 
-        if (response.ok) {
-          // Show success message and switch to login
-          setMode("login");
-          setFormData({ name: "", email: "", password: "", phone: "" });
-        } else {
-          const error = await response.json();
-          alert(error.error || "שגיאה ברישום");
-        }
+        // Show success message and switch to login
+        setMode("login");
+        setFormData({ name: "", email: "", password: "", phone: "" });
       } else if (mode === "login") {
-        const response = await fetch(getApiUrl("AUTH", "LOGIN"), {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            email: formData.email,
-            password: formData.password,
-          }),
+        const authResponse = await AuthService.login({
+          email: formData.email,
+          password: formData.password,
         });
 
-        if (response.ok) {
-          const data = await response.json();
-          // Store tokens and user data
-          localStorage.setItem("access_token", data.access_token);
-          localStorage.setItem("refresh_token", data.refresh_token);
-          localStorage.setItem("user", JSON.stringify(data.user));
-          onClose();
-          // TODO: Update auth context
-        } else {
-          const error = await response.json();
-          alert(error.error || "שגיאה בהתחברות");
-        }
+        // Store tokens and user data
+        localStorage.setItem("access_token", authResponse.access_token);
+        localStorage.setItem("refresh_token", authResponse.refresh_token);
+        localStorage.setItem("user", JSON.stringify(authResponse.user));
+        onClose();
+        // TODO: Update auth context
       }
     } catch (error) {
       console.error("Auth error:", error);

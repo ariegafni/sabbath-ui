@@ -4,15 +4,7 @@ import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { MapPin, Users, Star } from "lucide-react";
 import Image from "next/image";
-
-type Country = {
-  id: number;
-  name: string;
-  name_hebrew: string;
-  code: string;
-  flag_url?: string;
-  host_count: number;
-};
+import { LocationService, Country } from "../../shared/service";
 
 type Host = {
   id: number;
@@ -44,11 +36,7 @@ export default function CountriesList({ onCountrySelect }: CountriesListProps) {
   const fetchCountries = async () => {
     try {
       setLoading(true);
-      // TODO: Replace with actual API call
-      const response = await fetch("http://127.0.0.1:3002/api/locations/countries");
-      if (!response.ok) throw new Error("Failed to fetch countries");
-
-      const data = await response.json();
+      const data = await LocationService.getCountries();
       setCountries(data);
     } catch (err) {
       setError(

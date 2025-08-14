@@ -14,6 +14,7 @@ import {
   Edit3,
 } from "lucide-react";
 import Button from "@/ui/Button";
+import { UserService } from "../../shared/service";
 
 type UserProfile = {
   id: number;
@@ -40,27 +41,16 @@ export default function ProfilePage() {
   const fetchProfile = async () => {
     try {
       setLoading(true);
-      // TODO: Replace with actual API call
-      const response = await fetch("/api/users/me", {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-        },
+      const data = await UserService.getCurrentUser();
+      setProfile({
+        id: data.id,
+        name: `${data.first_name} ${data.last_name}`,
+        email: data.email,
+        photo_url: data.profile_image,
+        bio: data.description,
+        phone: data.phone,
+        is_host: false, // TODO: Add host status to user model
       });
-
-      if (response.ok) {
-        const data = await response.json();
-        setProfile(data);
-      } else {
-        // Fallback data for development
-        setProfile({
-          id: 1,
-          name: "יוסי לוי",
-          email: "yossi@example.com",
-          bio: "אוהב לטייל ולפגוש אנשים חדשים",
-          phone: "+972-50-123-4567",
-          is_host: false,
-        });
-      }
     } catch (error) {
       console.error("Failed to fetch profile:", error);
     } finally {

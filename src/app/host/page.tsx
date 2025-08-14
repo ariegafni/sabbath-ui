@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import BecomeHostForm, { HostFormData } from "@/features/host/BecomeHostForm";
 import Button from "@/ui/Button";
 import { ArrowRight, CheckCircle } from "lucide-react";
+import { HostService } from "../../shared/service";
 
 export default function HostPage() {
   const { t } = useTranslation();
@@ -15,22 +16,17 @@ export default function HostPage() {
     setLoading(true);
 
     try {
-      // TODO: Replace with actual API call
-      const response = await fetch("/api/hosts/hosts", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-        },
-        body: JSON.stringify(data),
+      await HostService.createHost({
+        name: data.host_name,
+        email: data.host_email,
+        phone: data.host_phone,
+        country: data.country,
+        city: data.city,
+        address: data.address,
+        description: data.description,
+        max_guests: data.max_guests,
       });
-
-      if (response.ok) {
-        setIsSubmitted(true);
-      } else {
-        const error = await response.json();
-        alert(error.error || "שגיאה ביצירת פרופיל מארח");
-      }
+      setIsSubmitted(true);
     } catch (error) {
       console.error("Failed to create host profile:", error);
       alert("שגיאה בתקשורת עם השרת");

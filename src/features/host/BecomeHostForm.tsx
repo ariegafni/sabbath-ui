@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Upload, MapPin, Users, Star, Camera } from "lucide-react";
+import { LocationService } from "../../shared/service";
 import Button from "@/ui/Button";
 
 type Country = {
@@ -68,12 +69,8 @@ export default function BecomeHostForm({
 
   const fetchCountries = async () => {
     try {
-      // TODO: Replace with actual API call
-      const response = await fetch("/api/locations/countries");
-      if (response.ok) {
-        const data = await response.json();
-        setCountries(data);
-      }
+      const data = await LocationService.getCountries();
+      setCountries(data);
     } catch (error) {
       console.error("Failed to fetch countries:", error);
       // Fallback data
@@ -92,12 +89,9 @@ export default function BecomeHostForm({
 
   const fetchCities = async (countryCode: string) => {
     try {
-      // TODO: Replace with actual API call
-      const response = await fetch(
-        `/api/locations/countries/${countryCode}/cities`
-      );
-      if (response.ok) {
-        const data = await response.json();
+      const country = countries.find((c) => c.code === countryCode);
+      if (country) {
+        const data = await LocationService.getCitiesByCountry(country.id);
         setCities(data);
       }
     } catch (error) {
