@@ -4,7 +4,11 @@ import { useEffect } from "react";
 import i18n from "@/shared/i18n/config";
 import Header from "@/ui/Header";
 
-export default function AppLayoutClient({ children }: { children: React.ReactNode }) {
+export default function AppLayoutClient({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   useEffect(() => {
     const update = (lng: string) => {
       document.documentElement.lang = lng;
