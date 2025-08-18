@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useTranslation } from "react-i18next";
 import { MapPin, Users } from "lucide-react";
 import { LocationService, Country } from "../../shared/service";
 
@@ -10,7 +9,6 @@ type CountryView = Country & { display_name: string };
 export default function CountriesList({
   onCountrySelect,
 }: { onCountrySelect?: (country: Country) => void }) {
-  const { t } = useTranslation();
   const [countries, setCountries] = useState<CountryView[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -46,8 +44,8 @@ export default function CountriesList({
     (async () => {
       try {
         setLoading(true);
-        const data = await LocationService.getCountries();           // מחזיר [{place_id, name, host_count}]
-        const enriched = await resolveNames(data);                   // ממיר place_id → שם אמיתי
+        const data = await LocationService.getCountries();          
+        const enriched = await resolveNames(data);                  
         setCountries(enriched);
       } catch (err) {
         setError(err instanceof Error ? err.message : "שגיאה בטעינת מדינות");
@@ -94,7 +92,7 @@ export default function CountriesList({
             <div className="p-6 border-b border-gray-100">
               <div className="flex items-center justify-between mb-3">
                 <h3 className="text-xl font-bold text-gray-900">{country.display_name || country.name}</h3>
-                <span className="text-sm text-gray-500">{country.name}</span>
+                {/* <span className="text-sm text-gray-500">{country.name}</span> */}
               </div>
               <div className="flex items-center gap-2 text-gray-600">
                 <Users className="h-4 w-4" />

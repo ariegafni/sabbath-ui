@@ -14,10 +14,10 @@ export default function HomePage() {
   const [viewMode, setViewMode] = useState<ViewMode>("countries");
   const [selectedCountry, setSelectedCountry] = useState<string>("");
   const [showAuthModal, setShowAuthModal] = useState(false);
-  const [isAuthenticated, setIsAuthenticated] = useState(false); // TODO: Get from auth context
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-  const handleCountrySelect = (country: any) => {
-    setSelectedCountry(country.name_hebrew);
+  const handleCountrySelect = (country: { place_id: string }) => {
+    setSelectedCountry(country.place_id);
     setViewMode("hosts");
   };
 
@@ -27,13 +27,11 @@ export default function HomePage() {
   };
 
   const handleHostSelect = (host: any) => {
-    // TODO: Navigate to host details page
     console.log("Selected host:", host);
   };
 
   return (
     <main className="min-h-screen bg-gray-50 pb-20">
-      {/* Header */}
       <div className="bg-white border-b border-gray-200 sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
@@ -66,9 +64,7 @@ export default function HomePage() {
                 </>
               ) : (
                 <Button
-                  onClick={() => {
-                    /* TODO: Navigate to host form */
-                  }}
+                  onClick={() => {}}
                   className="flex items-center gap-2"
                 >
                   <Plus className="h-4 w-4" />
@@ -80,7 +76,6 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
         {viewMode === "countries" ? (
           <CountriesList onCountrySelect={handleCountrySelect} />
@@ -93,7 +88,6 @@ export default function HomePage() {
         )}
       </div>
 
-      {/* Auth Modal */}
       <AuthModal
         isOpen={showAuthModal}
         onClose={() => setShowAuthModal(false)}
