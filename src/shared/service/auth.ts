@@ -54,6 +54,8 @@ export class AuthService {
 
   // התחברות
   static async login(credentials: LoginRequest): Promise<AuthResponse> {
+    console.log("NEXT_PUBLIC_API_BASE_URL:", process.env.NEXT_PUBLIC_API_BASE_URL);
+
     const response = await fetch(`${this.baseUrl}/login`, {
       method: "POST",
       headers: {
@@ -69,6 +71,7 @@ export class AuthService {
 
   // הרשמה
   static async register(userData: RegisterRequest): Promise<AuthResponse> {
+
     const response = await fetch(`${this.baseUrl}/register`, {
       method: "POST",
       headers: {

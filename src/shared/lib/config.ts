@@ -42,11 +42,11 @@ export const config = {
       SEARCH: "/parsha/search",
     },
     HOST: {
-      CREATE: "/host/create",
-      UPDATE: "/host/update",
-      DELETE: "/host/delete",
-      GET: "/host/get",
-      LIST: "/host/list",
+      CREATE: "/create",
+      UPDATE: "/update",
+      DELETE: "/delete",
+      GET: "/get",
+      LIST: "/list",
     },
     GUEST: {
       CREATE: "/guest/create",

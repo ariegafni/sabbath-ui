@@ -6,16 +6,29 @@ import {
   MapPin,
   Users,
   Star,
-  Calendar,
-  Clock,
-  Heart,
   MessageCircle,
 } from "lucide-react";
 import Image from "next/image";
 import { HostService } from "../../shared/service";
 
+type ApiHost = {
+  id: string | number;
+  name: string;
+  photo_url?: string;
+  city_place_id: string;
+  area?: string;
+  max_guests: number;
+  rating?: number;
+  hosting_type: string[];
+  kashrut_level?: string;
+  languages: string[];
+  bio?: string;
+  total_hostings: number;
+  is_always_available: boolean;
+};
+
 type Host = {
-  id: number;
+  id: string | number;
   name: string;
   photo_url?: string;
   city: string;
@@ -52,82 +65,72 @@ export default function HostsList({
     max_guests: 0,
   });
 
+  const loadGoogle = () =>
+    new Promise<void>((resolve) => {
+      if (typeof window !== "undefined" && (window as any).google) return resolve();
+      const s = document.createElement("script");
+      s.src = `https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&libraries=places&language=he`;
+      s.async = true;
+      s.onload = () => resolve();
+      document.body.appendChild(s);
+    });
+
+  const resolveCityNames = async (items: ApiHost[]) => {
+    await loadGoogle();
+    const service = new (window as any).google.maps.places.PlacesService(document.createElement("div"));
+    const uniqueIds = Array.from(new Set(items.map(i => i.city_place_id).filter(Boolean)));
+    const getName = (place_id: string) =>
+      new Promise<string>((res) => {
+        service.getDetails({ placeId: place_id, fields: ["address_components", "formatted_address"] }, (p: any, status: any) => {
+          if (status !== (window as any).google.maps.places.PlacesServiceStatus.OK || !p) return res(place_id);
+          const comps = p.address_components || [];
+          const city = comps.find((c: any) => c.types.includes("locality")) || comps.find((c: any) => c.types.includes("postal_town"));
+          res(city?.long_name || p.formatted_address || place_id);
+        });
+      });
+    const namesArr = await Promise.all(uniqueIds.map(getName));
+    const map = new Map<string, string>(uniqueIds.map((id, i) => [id, namesArr[i]]));
+    return items.map<Host>((h) => ({
+      id: h.id,
+      name: h.name,
+      photo_url: h.photo_url,
+      city: map.get(h.city_place_id) || h.city_place_id,
+      area: h.area,
+      max_guests: h.max_guests,
+      rating: h.rating,
+      hosting_type: h.hosting_type,
+      kashrut_level: h.kashrut_level,
+      languages: h.languages,
+      bio: h.bio,
+      total_hostings: h.total_hostings,
+      is_always_available: h.is_always_available,
+    }));
+  };
+
   useEffect(() => {
     fetchHosts();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [country, filters]);
 
   const fetchHosts = async () => {
     try {
       setLoading(true);
-      const data = await HostService.getHostsByCountry(country);
-      setHosts(data);
+      const data = (await HostService.getHostsByCountry(country)) as unknown as ApiHost[];
+      const enriched = await resolveCityNames(data);
+      setHosts(enriched);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to fetch hosts");
-      // Fallback data for development
-      setHosts([
-        {
-          id: 1,
-          name: "אתי כהן",
-          city: "תל אביב",
-          area: "צפון העיר",
-          max_guests: 4,
-          rating: 4.8,
-          hosting_type: ["סעודות"],
-          kashrut_level: "כשר",
-          languages: ["עברית", "אנגלית"],
-          bio: "אוהבת לארח אנשים, בישול ביתי טעים",
-          total_hostings: 12,
-          is_always_available: true,
-        },
-        {
-          id: 2,
-          name: "יוסי לוי",
-          city: "חיפה",
-          area: "כרמל",
-          max_guests: 6,
-          rating: 4.9,
-          hosting_type: ["לינה", "סעודות"],
-          kashrut_level: "כשר למהדרין",
-          languages: ["עברית", "אנגלית", "ערבית"],
-          bio: "משפחה חמה ואוהבת, נוף מדהים",
-          total_hostings: 8,
-          is_always_available: true,
-        },
-        {
-          id: 3,
-          name: "נועה אברהם",
-          city: "ירושלים",
-          area: "העיר העתיקה",
-          max_guests: 3,
-          rating: 4.7,
-          hosting_type: ["סעודות"],
-          kashrut_level: "כשר",
-          languages: ["עברית", "אנגלית", "צרפתית"],
-          bio: "צעירה אוהבת חברה, אוכל טבעוני",
-          total_hostings: 15,
-          is_always_available: false,
-        },
-      ]);
+      setHosts([]);
     } finally {
       setLoading(false);
     }
   };
 
   const filteredHosts = hosts.filter((host) => {
-    if (
-      filters.city &&
-      !host.city.toLowerCase().includes(filters.city.toLowerCase())
-    )
-      return false;
-    if (
-      filters.hosting_type.length > 0 &&
-      !filters.hosting_type.some((type) => host.hosting_type.includes(type))
-    )
-      return false;
-    if (filters.kashrut_level && host.kashrut_level !== filters.kashrut_level)
-      return false;
-    if (filters.max_guests > 0 && host.max_guests < filters.max_guests)
-      return false;
+    if (filters.city && !host.city.toLowerCase().includes(filters.city.toLowerCase())) return false;
+    if (filters.hosting_type.length > 0 && !filters.hosting_type.some((type) => host.hosting_type.includes(type))) return false;
+    if (filters.kashrut_level && host.kashrut_level !== filters.kashrut_level) return false;
+    if (filters.max_guests > 0 && host.max_guests < filters.max_guests) return false;
     return true;
   });
 
@@ -159,7 +162,6 @@ export default function HostsList({
 
   return (
     <div className="space-y-6" dir="rtl">
-      {/* כותרת ופילטרים */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <button
@@ -175,7 +177,6 @@ export default function HostsList({
         </div>
       </div>
 
-      {/* פילטרים */}
       <div className="bg-white p-4 rounded-xl border border-gray-200">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <input
@@ -219,7 +220,6 @@ export default function HostsList({
         </div>
       </div>
 
-      {/* רשימת מארחים */}
       {filteredHosts.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredHosts.map((host) => (
@@ -228,7 +228,6 @@ export default function HostsList({
               className="bg-white rounded-xl shadow-sm hover:shadow-lg transition-all duration-200 overflow-hidden border border-gray-100 cursor-pointer group"
               onClick={() => onHostSelect?.(host)}
             >
-              {/* תמונת מארח */}
               <div className="w-full h-48 relative overflow-hidden">
                 <Image
                   src={
@@ -250,7 +249,6 @@ export default function HostsList({
                 )}
               </div>
 
-              {/* פרטי מארח */}
               <div className="p-5 space-y-3">
                 <div>
                   <h3 className="font-bold text-lg text-gray-900 line-clamp-1">
@@ -271,7 +269,6 @@ export default function HostsList({
                   </p>
                 )}
 
-                {/* תגיות */}
                 <div className="flex flex-wrap gap-2">
                   {host.hosting_type.map((type, i) => (
                     <span
@@ -288,7 +285,6 @@ export default function HostsList({
                   )}
                 </div>
 
-                {/* שפות */}
                 <div className="flex flex-wrap gap-1">
                   {host.languages.slice(0, 3).map((lang, i) => (
                     <span
@@ -305,7 +301,6 @@ export default function HostsList({
                   )}
                 </div>
 
-                {/* כפתורים */}
                 <div className="flex gap-2">
                   <button className="flex-1 px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg font-medium hover:from-blue-700 hover:to-purple-700 transform group-hover:-translate-y-0.5 transition-all duration-200 text-sm">
                     בקש אירוח

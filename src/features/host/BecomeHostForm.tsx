@@ -2,23 +2,10 @@
 
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Upload, Camera } from "lucide-react";
+import { Upload } from "lucide-react";
 import Button from "@/ui/Button";
 import LocationPicker from "./LocationPicker";
 import BubbleGroup from "./BubbleGroup";
-
-type Country = {
-  id: number;
-  name: string;
-  name_hebrew: string;
-  code: string;
-};
-
-type City = {
-  id: number;
-  name: string;
-  name_hebrew: string;
-};
 
 type BecomeHostFormProps = {
   onSubmit: (data: HostFormData) => void;
@@ -30,8 +17,8 @@ export type HostFormData = {
   kashrut_level: string;
   hosting_type: string[];
   languages: string[];
-  country: string;
-  city: string;
+  country_place_id: string;
+  city_place_id: string;
   area: string;
   max_guests: number;
   bio: string;
@@ -47,8 +34,8 @@ export default function BecomeHostForm({
     kashrut_level: "",
     hosting_type: [],
     languages: [],
-    country: "",
-    city: "",
+    country_place_id: "",
+    city_place_id: "",
     area: "",
     max_guests: 2,
     bio: "",
@@ -72,6 +59,7 @@ export default function BecomeHostForm({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    console.log("Submitting formData:", formData);
     onSubmit(formData);
   };
 
@@ -147,8 +135,8 @@ export default function BecomeHostForm({
       {/* מיקום (Google Places Component) */}
       <div className="space-y-4">
         <LocationPicker
-          country={formData.country}
-          city={formData.city}
+          country_place_id={formData.country_place_id}
+          city_place_id={formData.city_place_id}
           area={formData.area}
           onChange={(field, value) => updateFormData(field, value)}
         />

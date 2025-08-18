@@ -1,4 +1,4 @@
-import { config, createApiUrl } from "../lib/config";
+import { createApiUrl } from "../lib/config";
 import { AuthService } from "./auth";
 
 export interface Message {

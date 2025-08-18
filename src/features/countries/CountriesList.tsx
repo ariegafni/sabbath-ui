@@ -2,81 +2,60 @@
 
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { MapPin, Users, Star } from "lucide-react";
-import Image from "next/image";
+import { MapPin, Users } from "lucide-react";
 import { LocationService, Country } from "../../shared/service";
 
-type Host = {
-  id: number;
-  name: string;
-  photo_url?: string;
-  city: string;
-  area?: string;
-  max_guests: number;
-  rating?: number;
-  hosting_type: string[];
-  kashrut_level?: string;
-  languages: string[];
-};
+type CountryView = Country & { display_name: string };
 
-type CountriesListProps = {
-  onCountrySelect?: (country: Country) => void;
-};
-
-export default function CountriesList({ onCountrySelect }: CountriesListProps) {
+export default function CountriesList({
+  onCountrySelect,
+}: { onCountrySelect?: (country: Country) => void }) {
   const { t } = useTranslation();
-  const [countries, setCountries] = useState<Country[]>([]);
+  const [countries, setCountries] = useState<CountryView[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    fetchCountries();
-  }, []);
+  // טוען את גוגל אם לא נטען
+  const loadGoogle = () =>
+    new Promise<void>((resolve) => {
+      if (typeof window !== "undefined" && (window as any).google) return resolve();
+      const s = document.createElement("script");
+      s.src = `https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&libraries=places&language=he`;
+      s.async = true;
+      s.onload = () => resolve();
+      document.body.appendChild(s);
+    });
 
-  const fetchCountries = async () => {
-    try {
-      setLoading(true);
-      const data = await LocationService.getCountries();
-      setCountries(data);
-    } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Failed to fetch countries"
-      );
-      // Fallback data for development
-      setCountries([
-        {
-          id: 1,
-          name: "Israel",
-          name_hebrew: "ישראל",
-          code: "IL",
-          host_count: 45,
-        },
-        {
-          id: 2,
-          name: "United States",
-          name_hebrew: "ארצות הברית",
-          code: "US",
-          host_count: 32,
-        },
-        {
-          id: 3,
-          name: "United Kingdom",
-          name_hebrew: "בריטניה",
-          code: "GB",
-          host_count: 28,
-        },
-        {
-          id: 5,
-          name: "Australia",
-          name_hebrew: "אוסטרליה",
-          code: "AU",
-          host_count: 15,
-        },
-      ]);
-    } finally {
-      setLoading(false);
-    }
+  const resolveNames = async (items: Country[]): Promise<CountryView[]> => {
+    await loadGoogle();
+    const service = new (window as any).google.maps.places.PlacesService(document.createElement("div"));
+    const getName = (place_id: string) =>
+      new Promise<string>((res) => {
+        service.getDetails({ placeId: place_id, fields: ["address_components", "formatted_address"] }, (p: any, status: any) => {
+          if (status !== (window as any).google.maps.places.PlacesServiceStatus.OK || !p) return res(place_id);
+          const comps = p.address_components || [];
+          const country = comps.find((c: any) => c.types.includes("country"));
+          res(country?.long_name || p.formatted_address || place_id);
+        });
+      });
+    const names = await Promise.all(items.map((c) => getName(c.place_id)));
+    return items.map((c, i) => ({ ...c, display_name: names[i] }));
   };
+
+  useEffect(() => {
+    (async () => {
+      try {
+        setLoading(true);
+        const data = await LocationService.getCountries();           // מחזיר [{place_id, name, host_count}]
+        const enriched = await resolveNames(data);                   // ממיר place_id → שם אמיתי
+        setCountries(enriched);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "שגיאה בטעינת מדינות");
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, []);
 
   if (loading) {
     return (
@@ -94,12 +73,6 @@ export default function CountriesList({ onCountrySelect }: CountriesListProps) {
         </div>
         <p className="text-red-600 text-lg">שגיאה בטעינת מדינות</p>
         <p className="text-red-500 text-sm mt-2">{error}</p>
-        <button
-          onClick={fetchCountries}
-          className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-        >
-          נסה שוב
-        </button>
       </div>
     );
   }
@@ -107,51 +80,36 @@ export default function CountriesList({ onCountrySelect }: CountriesListProps) {
   return (
     <div className="space-y-8" dir="rtl">
       <div className="text-center">
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">
-          מצאו אירוח ברחבי העולם
-        </h2>
+        <h2 className="text-2xl font-bold text-gray-900 mb-2">מצאו אירוח ברחבי העולם</h2>
         <p className="text-gray-600">בחרו מדינה וחפשו מארחים זמינים</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {countries.map((country) => (
           <div
-            key={country.id}
+            key={country.place_id}
             className="bg-white rounded-xl shadow-sm hover:shadow-lg transition-all duration-200 overflow-hidden border border-gray-100 cursor-pointer group"
             onClick={() => onCountrySelect?.(country)}
           >
-            {/* כותרת המדינה */}
             <div className="p-6 border-b border-gray-100">
               <div className="flex items-center justify-between mb-3">
-                <h3 className="text-xl font-bold text-gray-900">
-                  {country.name_hebrew}
-                </h3>
+                <h3 className="text-xl font-bold text-gray-900">{country.display_name || country.name}</h3>
                 <span className="text-sm text-gray-500">{country.name}</span>
               </div>
-
               <div className="flex items-center gap-2 text-gray-600">
                 <Users className="h-4 w-4" />
-                <span className="text-sm">
-                  {country.host_count} מארחים זמינים
-                </span>
+                <span className="text-sm">{country.host_count} מארחים זמינים</span>
               </div>
             </div>
 
-            {/* תצוגה מקדימה של מארחים */}
             <div className="p-6">
               <div className="grid grid-cols-4 gap-2 mb-4">
-                {Array.from({ length: Math.min(8, country.host_count) }).map(
-                  (_, i) => (
-                    <div
-                      key={i}
-                      className="w-12 h-12 bg-gray-200 rounded-lg flex items-center justify-center"
-                    >
-                      <Users className="h-5 w-5 text-gray-500" />
-                    </div>
-                  )
-                )}
+                {Array.from({ length: Math.min(8, country.host_count || 0) }).map((_, i) => (
+                  <div key={i} className="w-12 h-12 bg-gray-200 rounded-lg flex items-center justify-center">
+                    <Users className="h-5 w-5 text-gray-500" />
+                  </div>
+                ))}
               </div>
-
               <button className="w-full px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg font-medium hover:from-blue-700 hover:to-purple-700 transform group-hover:-translate-y-0.5 transition-all duration-200">
                 צפה במארחים
               </button>

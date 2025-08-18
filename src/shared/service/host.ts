@@ -1,9 +1,9 @@
-import { config, createApiUrl } from "../lib/config";
+import { createApiUrl } from "../lib/config";
 
 export interface Host {
-  id: number;
-  country?: string;
-  city: string;
+  id: string;
+  country_place_id: string;
+  city_place_id: string;
   area?: string;
   address?: string;
   description?: string;
@@ -21,8 +21,8 @@ export interface Host {
 }
 
 export interface CreateHostRequest {
-  country?: string;
-  city: string;
+  country_place_id: string;  // חובה
+  city_place_id: string;     // חובה
   area?: string;
   address?: string;
   description?: string;
@@ -31,50 +31,50 @@ export interface CreateHostRequest {
   hosting_type: string[];
   kashrut_level?: string;
   languages: string[];
-  total_hostings: number;
-  is_always_available: boolean;
+  total_hostings?: number;          // לא חובה
+  is_always_available?: boolean;    // לא חובה
   available?: boolean;
   photo_url?: string;
-
 }
 
 export interface UpdateHostRequest extends Partial<CreateHostRequest> {
-  id: number;
+  id: string; // ObjectId מ-Mongo
+}
+
+
+export interface UpdateHostRequest extends Partial<CreateHostRequest> {
+  id: string;
 }
 
 export class HostService {
   private static baseUrl = createApiUrl("/api/hosts");
 
-  // קבלת כל המארחים
   static async getAllHosts(): Promise<Host[]> {
-    const response = await fetch(`${this.baseUrl}/hosts`);
+    const response = await fetch(this.baseUrl);
     if (!response.ok) {
       throw new Error("Failed to fetch hosts");
     }
     return response.json();
   }
 
-  // קבלת מארחים לפי מדינה
   static async getHostsByCountry(country: string): Promise<Host[]> {
-    const response = await fetch(`${this.baseUrl}/hosts/country/${country}`);
+    const response = await fetch(`${this.baseUrl}/country/${country}`);
     if (!response.ok) {
       throw new Error("Failed to fetch hosts by country");
     }
     return response.json();
   }
 
-  // קבלת מארח ספציפי
   static async getHostById(id: number): Promise<Host> {
-    const response = await fetch(`${this.baseUrl}/hosts/${id}`);
+    const response = await fetch(`${this.baseUrl}/${id}`);
     if (!response.ok) {
       throw new Error("Failed to fetch host");
     }
     return response.json();
   }
 
-  // יצירת מארח חדש
   static async createHost(hostData: CreateHostRequest): Promise<Host> {
-    const response = await fetch(`${this.baseUrl}/hosts`, {
+    const response = await fetch(this.baseUrl, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -87,9 +87,8 @@ export class HostService {
     return response.json();
   }
 
-  // עדכון מארח קיים
   static async updateHost(hostData: UpdateHostRequest): Promise<Host> {
-    const response = await fetch(`${this.baseUrl}/hosts/${hostData.id}`, {
+    const response = await fetch(`${this.baseUrl}/${hostData.id}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -102,9 +101,8 @@ export class HostService {
     return response.json();
   }
 
-  // מחיקת מארח
   static async deleteHost(id: number): Promise<void> {
-    const response = await fetch(`${this.baseUrl}/hosts/${id}`, {
+    const response = await fetch(`${this.baseUrl}/${id}`, {
       method: "DELETE",
     });
     if (!response.ok) {

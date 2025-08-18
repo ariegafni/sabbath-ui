@@ -1,129 +1,81 @@
-import { config, createApiUrl } from "../lib/config";
+import { createApiUrl } from "../lib/config";
 
 export interface Country {
-  id: number;
-  name: string;
-  name_hebrew: string;
-  code: string;
+  place_id: string;
+  name: string;       
   host_count: number;
 }
 
 export interface City {
-  id: number;
-  name: string;
-  name_hebrew: string;
-  country_id: number;
-  country_name: string;
+  place_id: string;
+  name: string;       
+  country_place_id: string;
   host_count: number;
 }
 
 export interface LocationSearchParams {
   query?: string;
-  country?: string;
-  city?: string;
+  country_place_id?: string;
+  city_place_id?: string;
   limit?: number;
+}
+
+export interface AutocompleteItem {
+  place_id: string;
+  description: string; 
 }
 
 export class LocationService {
   private static baseUrl = createApiUrl("/api/locations");
 
-  // קבלת כל המדינות
   static async getCountries(): Promise<Country[]> {
-    const response = await fetch(`${this.baseUrl}/countries`);
-    if (!response.ok) {
-      throw new Error("Failed to fetch countries");
-    }
-    return response.json();
+    const r = await fetch(`${this.baseUrl}/countries`);
+    if (!r.ok) throw new Error("Failed to fetch countries");
+    return r.json();
   }
 
-  // קבלת ערים לפי מדינה
-  static async getCitiesByCountry(countryId: number): Promise<City[]> {
-    const response = await fetch(`${this.baseUrl}/cities/country/${countryId}`);
-    if (!response.ok) {
-      throw new Error("Failed to fetch cities by country");
-    }
-    return response.json();
+  static async getCitiesByCountry(country_place_id: string): Promise<City[]> {
+    const r = await fetch(`${this.baseUrl}/cities/country/${country_place_id}`);
+    if (!r.ok) throw new Error("Failed to fetch cities by country");
+    return r.json();
   }
 
-  // חיפוש מיקומים
-  static async searchLocations(params: LocationSearchParams): Promise<{
-    countries: Country[];
-    cities: City[];
-  }> {
-    const searchParams = new URLSearchParams();
-    if (params.query) searchParams.append("query", params.query);
-    if (params.country) searchParams.append("country", params.country);
-    if (params.city) searchParams.append("city", params.city);
-    if (params.limit) searchParams.append("limit", params.limit.toString());
-
-    const response = await fetch(
-      `${this.baseUrl}/search?${searchParams.toString()}`
-    );
-    if (!response.ok) {
-      throw new Error("Failed to search locations");
-    }
-    return response.json();
+  static async searchLocations(params: LocationSearchParams): Promise<{ countries: Country[]; cities: City[]; }> {
+    const sp = new URLSearchParams();
+    if (params.query) sp.append("query", params.query);
+    if (params.country_place_id) sp.append("country_place_id", params.country_place_id);
+    if (params.city_place_id) sp.append("city_place_id", params.city_place_id);
+    if (params.limit) sp.append("limit", String(params.limit));
+    const r = await fetch(`${this.baseUrl}/search?${sp.toString()}`);
+    if (!r.ok) throw new Error("Failed to search locations");
+    return r.json();
   }
 
-  // קבלת מיקום לפי קואורדינטות
-  static async getLocationByCoordinates(
-    lat: number,
-    lng: number
-  ): Promise<{
-    country: string;
-    city: string;
+  static async getLocationByCoordinates(lat: number, lng: number): Promise<{
+    country_place_id: string | null;
+    city_place_id: string | null;
     address: string;
   }> {
-    const response = await fetch(
-      `${this.baseUrl}/reverse-geocode?lat=${lat}&lng=${lng}`
-    );
-    if (!response.ok) {
-      throw new Error("Failed to get location by coordinates");
-    }
-    return response.json();
+    const r = await fetch(`${this.baseUrl}/reverse-geocode?lat=${lat}&lng=${lng}`);
+    if (!r.ok) throw new Error("Failed to get location by coordinates");
+    return r.json();
   }
 
-  // קבלת מיקומים קרובים
-  static async getNearbyLocations(
-    lat: number,
-    lng: number,
-    radius: number = 10
-  ): Promise<{
-    countries: Country[];
-    cities: City[];
-  }> {
-    const response = await fetch(
-      `${this.baseUrl}/nearby?lat=${lat}&lng=${lng}&radius=${radius}`
-    );
-    if (!response.ok) {
-      throw new Error("Failed to get nearby locations");
-    }
-    return response.json();
+  static async getNearbyLocations(lat: number, lng: number, radius = 10): Promise<{ countries: Country[]; cities: City[]; }> {
+    const r = await fetch(`${this.baseUrl}/nearby?lat=${lat}&lng=${lng}&radius=${radius}`);
+    if (!r.ok) throw new Error("Failed to get nearby locations");
+    return r.json();
   }
 
-  // קבלת מיקומים פופולריים
-  static async getPopularLocations(): Promise<{
-    countries: Country[];
-    cities: City[];
-  }> {
-    const response = await fetch(`${this.baseUrl}/popular`);
-    if (!response.ok) {
-      throw new Error("Failed to get popular locations");
-    }
-    return response.json();
+  static async getPopularLocations(): Promise<{ countries: Country[]; cities: City[]; }> {
+    const r = await fetch(`${this.baseUrl}/popular`);
+    if (!r.ok) throw new Error("Failed to get popular locations");
+    return r.json();
   }
 
-  // אוטוקומפליט למיקומים
-  static async getLocationAutocomplete(query: string): Promise<{
-    countries: Country[];
-    cities: City[];
-  }> {
-    const response = await fetch(
-      `${this.baseUrl}/autocomplete?query=${encodeURIComponent(query)}`
-    );
-    if (!response.ok) {
-      throw new Error("Failed to get location autocomplete");
-    }
-    return response.json();
+  static async getLocationAutocomplete(query: string): Promise<AutocompleteItem[]> {
+    const r = await fetch(`${this.baseUrl}/autocomplete?query=${encodeURIComponent(query)}`);
+    if (!r.ok) throw new Error("Failed to get location autocomplete");
+    return r.json(); 
   }
 }
