@@ -66,13 +66,6 @@ export default function CountriesList({ onCountrySelect }: CountriesListProps) {
           host_count: 28,
         },
         {
-          id: 4,
-          name: "Canada",
-          name_hebrew: "קנדה",
-          code: "CA",
-          host_count: 19,
-        },
-        {
           id: 5,
           name: "Australia",
           name_hebrew: "אוסטרליה",

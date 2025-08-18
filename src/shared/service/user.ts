@@ -1,27 +1,29 @@
-import { config, createApiUrl } from "../lib/config";
+import {  createApiUrl } from "../lib/config";
 import { AuthService } from "./auth";
 
 export interface User {
   id: number;
-  email: string;
   first_name: string;
   last_name: string;
+  email: string;
+  password: string;
   phone?: string;
-  country?: string;
-  city?: string;
   profile_image?: string;
-  is_verified: boolean;
+  bio?: string;
+  social_links?: Array<{ platform: string; url: string }>;
   created_at: string;
   updated_at: string;
 }
 
 export interface UpdateUserRequest {
-  first_name?: string;
-  last_name?: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+  password: string;
   phone?: string;
-  country?: string;
-  city?: string;
   profile_image?: string;
+  bio?: string;
+  social_links?: Array<{ platform: string; url: string }>;
 }
 
 export interface ChangePasswordRequest {

@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Mail, Lock, User, ArrowRight, ArrowLeft } from "lucide-react";
+import { Mail, Lock, User, ArrowRight } from "lucide-react";
+import { AuthService } from "@/shared/service";
 
 interface Props {
   onSwitchToLogin: () => void;
@@ -19,10 +20,34 @@ export default function RegisterForm({ onSwitchToLogin }: Props) {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log("Register Data:", form);
-  };
+ const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  const first_name = form.firstName.trim();
+  const last_name = form.lastName.trim();
+  const email = form.email.trim();
+  const password = form.password;
+
+  try {
+    const res = await AuthService.register({
+      first_name,
+      last_name,
+      email,
+      password,
+      // phone: "" // אם תוסיף שדה בעתיד
+    });
+
+    // אופציה: להתחבר אוטומטית
+    localStorage.setItem("access_token", res.access_token);
+    localStorage.setItem("refresh_token", res.refresh_token);
+    localStorage.setItem("user", JSON.stringify(res.user));
+    // או: onSwitchToLogin();
+
+    console.log("Registered:", res.user);
+  } catch (err) {
+    console.error("Register failed:", err);
+    alert("הרשמה נכשלה");
+  }
+};
 
   return (
     <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">

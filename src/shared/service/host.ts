@@ -2,9 +2,6 @@ import { config, createApiUrl } from "../lib/config";
 
 export interface Host {
   id: number;
-  name: string;
-  email?: string;
-  phone?: string;
   country?: string;
   city: string;
   area?: string;
@@ -12,26 +9,33 @@ export interface Host {
   description?: string;
   bio?: string;
   max_guests: number;
-  rating?: number;
   hosting_type: string[];
   kashrut_level?: string;
   languages: string[];
   total_hostings: number;
   is_always_available: boolean;
   available?: boolean;
+  photo_url?: string;
   created_at?: string;
   updated_at?: string;
 }
 
 export interface CreateHostRequest {
-  name: string;
-  email: string;
-  phone?: string;
-  country: string;
+  country?: string;
   city: string;
-  address: string;
+  area?: string;
+  address?: string;
   description?: string;
+  bio?: string;
   max_guests: number;
+  hosting_type: string[];
+  kashrut_level?: string;
+  languages: string[];
+  total_hostings: number;
+  is_always_available: boolean;
+  available?: boolean;
+  photo_url?: string;
+
 }
 
 export interface UpdateHostRequest extends Partial<CreateHostRequest> {
