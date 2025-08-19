@@ -114,82 +114,82 @@ export class UserService {
   }
 
   // קבלת היסטוריית פעילות
-  static async getActivityHistory(): Promise<{
-    logins: Array<{ timestamp: string; ip: string; location: string }>;
-    profile_updates: Array<{ timestamp: string; field: string }>;
-    hosting_activities: Array<{
-      timestamp: string;
-      action: string;
-      details: string;
-    }>;
-  }> {
-    const response = await fetch(`${this.baseUrl}/activity-history`, {
-      headers: {
-        ...AuthService.getAuthHeaders(),
-      },
-    });
-    if (!response.ok) {
-      throw new Error("Failed to fetch activity history");
-    }
-    return response.json();
-  }
+  // static async getActivityHistory(): Promise<{
+  //   logins: Array<{ timestamp: string; ip: string; location: string }>;
+  //   profile_updates: Array<{ timestamp: string; field: string }>;
+  //   hosting_activities: Array<{
+  //     timestamp: string;
+  //     action: string;
+  //     details: string;
+  //   }>;
+  // }> {
+  //   const response = await fetch(`${this.baseUrl}/activity-history`, {
+  //     headers: {
+  //       ...AuthService.getAuthHeaders(),
+  //     },
+  //   });
+  //   if (!response.ok) {
+  //     throw new Error("Failed to fetch activity history");
+  //   }
+  //   return response.json();
+  // }
 
   // קבלת הגדרות משתמש
-  static async getUserSettings(): Promise<{
-    email_notifications: boolean;
-    push_notifications: boolean;
-    language: string;
-    timezone: string;
-    privacy_level: "public" | "friends" | "private";
-  }> {
-    const response = await fetch(`${this.baseUrl}/settings`, {
-      headers: {
-        ...AuthService.getAuthHeaders(),
-      },
-    });
-    if (!response.ok) {
-      throw new Error("Failed to fetch user settings");
-    }
-    return response.json();
-  }
+  // static async getUserSettings(): Promise<{
+  //   email_notifications: boolean;
+  //   push_notifications: boolean;
+  //   language: string;
+  //   timezone: string;
+  //   privacy_level: "public" | "friends" | "private";
+  // }> {
+  //   const response = await fetch(`${this.baseUrl}/settings`, {
+  //     headers: {
+  //       ...AuthService.getAuthHeaders(),
+  //     },
+  //   });
+  //   if (!response.ok) {
+  //     throw new Error("Failed to fetch user settings");
+  //   }
+  //   return response.json();
+  // }
 
   // עדכון הגדרות משתמש
-  static async updateUserSettings(settings: {
-    email_notifications?: boolean;
-    push_notifications?: boolean;
-    language?: string;
-    timezone?: string;
-    privacy_level?: "public" | "friends" | "private";
-  }): Promise<void> {
-    const response = await fetch(`${this.baseUrl}/settings`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        ...AuthService.getAuthHeaders(),
-      },
-      body: JSON.stringify(settings),
-    });
-    if (!response.ok) {
-      throw new Error("Failed to update user settings");
-    }
-  }
+  // static async updateUserSettings(settings: {
+  //   email_notifications?: boolean;
+  //   push_notifications?: boolean;
+  //   language?: string;
+  //   timezone?: string;
+  //   privacy_level?: "public" | "friends" | "private";
+  // }): Promise<void> {
+  //   const response = await fetch(`${this.baseUrl}/settings`, {
+  //     method: "PUT",
+  //     headers: {
+  //       "Content-Type": "application/json",
+  //       ...AuthService.getAuthHeaders(),
+  //     },
+  //     body: JSON.stringify(settings),
+  //   });
+  //   if (!response.ok) {
+  //     throw new Error("Failed to update user settings");
+  //   }
+  // }
 
   // קבלת סטטיסטיקות משתמש
-  static async getUserStats(): Promise<{
-    total_hostings: number;
-    total_guests: number;
-    average_rating: number;
-    response_rate: number;
-    response_time_hours: number;
-  }> {
-    const response = await fetch(`${this.baseUrl}/stats`, {
-      headers: {
-        ...AuthService.getAuthHeaders(),
-      },
-    });
-    if (!response.ok) {
-      throw new Error("Failed to fetch user stats");
-    }
-    return response.json();
-  }
+  // static async getUserStats(): Promise<{
+  //   total_hostings: number;
+  //   total_guests: number;
+  //   average_rating: number;
+  //   response_rate: number;
+  //   response_time_hours: number;
+  // }> {
+  //   const response = await fetch(`${this.baseUrl}/stats`, {
+  //     headers: {
+  //       ...AuthService.getAuthHeaders(),
+  //     },
+  //   });
+  //   if (!response.ok) {
+  //     throw new Error("Failed to fetch user stats");
+  //   }
+  //   return response.json();
+  // }
 }

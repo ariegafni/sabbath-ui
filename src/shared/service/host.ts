@@ -1,4 +1,5 @@
 import { createApiUrl } from "../lib/config";
+import { AuthService } from "./auth";
 
 export interface Host {
   id: string;
@@ -21,8 +22,8 @@ export interface Host {
 }
 
 export interface CreateHostRequest {
-  country_place_id: string;  // חובה
-  city_place_id: string;     // חובה
+  country_place_id: string; // חובה
+  city_place_id: string; // חובה
   area?: string;
   address?: string;
   description?: string;
@@ -31,19 +32,14 @@ export interface CreateHostRequest {
   hosting_type: string[];
   kashrut_level?: string;
   languages: string[];
-  total_hostings?: number;          // לא חובה
-  is_always_available?: boolean;    // לא חובה
+  total_hostings?: number; // לא חובה
+  is_always_available?: boolean; // לא חובה
   available?: boolean;
   photo_url?: string;
 }
 
 export interface UpdateHostRequest extends Partial<CreateHostRequest> {
   id: string; // ObjectId מ-Mongo
-}
-
-
-export interface UpdateHostRequest extends Partial<CreateHostRequest> {
-  id: string;
 }
 
 export class HostService {
@@ -108,5 +104,23 @@ export class HostService {
     if (!response.ok) {
       throw new Error("Failed to delete host");
     }
+  }
+
+  // העלאת תמונת מארח והחזרת כתובת התמונה
+  static async uploadPhoto(file: File): Promise<{ photo_url: string }> {
+    const formData = new FormData();
+    formData.append("photo", file);
+
+    const response = await fetch(`${this.baseUrl}/upload-photo`, {
+      method: "POST",
+      headers: {
+        ...AuthService.getAuthHeaders(),
+      },
+      body: formData,
+    });
+    if (!response.ok) {
+      throw new Error("Failed to upload host photo");
+    }
+    return response.json();
   }
 }

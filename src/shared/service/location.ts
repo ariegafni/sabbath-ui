@@ -3,14 +3,12 @@ import { createApiUrl } from "../lib/config";
 export interface Country {
   place_id: string;
   name: string;       
-  host_count: number;
 }
 
 export interface City {
   place_id: string;
   name: string;       
   country_place_id: string;
-  host_count: number;
 }
 
 export interface LocationSearchParams {
