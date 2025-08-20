@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
-import { useTranslation } from "react-i18next";
-import { Home, MessageCircle, Plus, User, Bell } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Home, MessageCircle, Plus, User, Calendar } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useAuth } from "@/Providers/AuthProvider";
+import { HostService } from "@/shared/service";
 
 type NavigationItem = {
   id: string;
@@ -15,9 +16,40 @@ type NavigationItem = {
 };
 
 export default function BottomNavigation() {
-  const { t } = useTranslation();
   const pathname = usePathname();
-  const [pendingRequests, setPendingRequests] = useState(3); // TODO: Get from API
+  const { user } = useAuth();
+  const [isHost, setIsHost] = useState(false);
+
+  useEffect(() => {
+    const check = async () => {
+      if (!user) {
+        setIsHost(false);
+        return;
+      }
+      try {
+        const hostProfile = await HostService.getCurrentUserHostProfile();
+        setIsHost(!!hostProfile);
+      } catch (error) {
+        console.error("Failed to check host status:", error);
+        setIsHost(false);
+      }
+    };
+    check();
+  }, [user]);
+
+  const hostNavItem: NavigationItem = isHost
+    ? {
+        id: "manage-hosting",
+        label: "נהל אירוח",
+        icon: Calendar,
+        href: "/manage-hosting",
+      }
+    : {
+        id: "host",
+        label: "פרסם אירוח",
+        icon: Plus,
+        href: "/host",
+      };
 
   const navigationItems: NavigationItem[] = [
     {
@@ -33,12 +65,7 @@ export default function BottomNavigation() {
       href: "/messages",
       badge: 5, // TODO: Get unread messages count
     },
-    {
-      id: "host",
-      label: "פרסם אירוח",
-      icon: Plus,
-      href: "/host",
-    },
+    hostNavItem,
     {
       id: "profile",
       label: "פרופיל",

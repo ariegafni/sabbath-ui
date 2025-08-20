@@ -53,13 +53,7 @@ export default function ManageHostingPage() {
               </h1>
               <p className="text-gray-600 text-sm">נהל את האירוחים שלך</p>
             </div>
-            <Button
-              onClick={() => router.push("/host")}
-              className="flex items-center gap-2"
-            >
-              <Plus className="h-4 w-4" />
-              הוסף אירוח חדש
-            </Button>
+            {/* Removed add hosting button per request */}
           </div>
         </div>
       </div>
