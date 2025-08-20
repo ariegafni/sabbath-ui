@@ -1,7 +1,7 @@
-import { config, createApiUrl } from "../lib/config";
+import {createApiUrl } from "../lib/config";
 
 export interface User {
-  id: number;
+  id: string; // היה number, עכשיו string
   email: string;
   first_name: string;
   last_name: string;
@@ -27,6 +27,7 @@ export interface RegisterRequest {
   phone?: string;
   country?: string;
   city?: string;
+  profile_image?: string; // חדש
 }
 
 export interface AuthResponse {
@@ -48,6 +49,7 @@ export interface ResetPasswordRequest {
 export interface VerifyEmailRequest {
   token: string;
 }
+
 
 export class AuthService {
   private static baseUrl = createApiUrl("/api/auth");
