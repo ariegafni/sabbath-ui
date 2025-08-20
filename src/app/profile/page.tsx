@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
+import { useAuth } from "@/Providers/AuthProvider";
 import {
   User,
   Settings,
@@ -14,10 +15,9 @@ import {
   Edit3,
 } from "lucide-react";
 import Button from "@/ui/Button";
-import { UserServiceMock as UserService } from "../../mock";
 
 type UserProfile = {
-  id: number;
+  id: string;
   name: string;
   email: string;
   photo_url?: string;
@@ -26,35 +26,61 @@ type UserProfile = {
   is_host: boolean;
   total_hostings?: number;
   rating?: number;
+  settings?: {
+    email_notifications: boolean;
+    push_notifications: boolean;
+    language: string;
+    timezone: string;
+    privacy_level: string;
+  };
+  stats?: {
+    total_hostings: number;
+    total_guests: number;
+    average_rating: number;
+    response_rate: number;
+    response_time_hours: number;
+  };
 };
 
 export default function ProfilePage() {
   const { t } = useTranslation();
+  const { user } = useAuth();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [showEditForm, setShowEditForm] = useState(false);
 
   useEffect(() => {
-    fetchProfile();
-  }, []);
+    if (user) {
+      fetchProfile();
+    }
+  }, [user]);
 
   const fetchProfile = async () => {
     try {
       setLoading(true);
-      const data = await UserService.getCurrentUser();
+      // Get user data from localStorage or use the user from auth context
+      const userData = localStorage.getItem("user");
+      if (!userData) {
+        throw new Error("No user data found");
+      }
+
+      const data = JSON.parse(userData);
       setProfile({
-        id: data.id,
+        id: data._id || data.id,
         name: `${data.first_name} ${data.last_name}`,
         email: data.email,
         photo_url: data.profile_image,
         bio: data.bio,
         phone: data.phone,
-        is_host: data.hostProfile?.isHost || false,
-        total_hostings: data.hostProfile?.totalGuests || 0,
-        rating: data.hostProfile?.rating || 0,
+        is_host: false, // TODO: Check if user has host profile
+        total_hostings: data.stats?.total_hostings || 0,
+        rating: data.stats?.average_rating || 0,
+        settings: data.settings,
+        stats: data.stats,
       });
     } catch (error) {
       console.error("Failed to fetch profile:", error);
+      setProfile(null);
     } finally {
       setLoading(false);
     }
@@ -68,7 +94,7 @@ export default function ProfilePage() {
     window.location.href = "/";
   };
 
-  if (loading) {
+  if (loading || !user) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center pb-20">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
@@ -76,7 +102,7 @@ export default function ProfilePage() {
     );
   }
 
-  if (!profile) {
+  if (!profile && !loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center pb-20">
         <div className="text-center">
@@ -87,6 +113,10 @@ export default function ProfilePage() {
         </div>
       </div>
     );
+  }
+
+  if (!profile) {
+    return null;
   }
 
   return (
@@ -152,8 +182,8 @@ export default function ProfilePage() {
                 )}
               </div>
 
-              {/* Host Stats */}
-              {profile.is_host && (
+              {/* User Stats */}
+              {profile.stats && (
                 <div className="flex items-center gap-6 mt-4 pt-4 border-t border-gray-200">
                   <div className="text-center">
                     <div className="text-2xl font-bold text-blue-600">
@@ -162,15 +192,75 @@ export default function ProfilePage() {
                     <div className="text-sm text-gray-600">אירוחים</div>
                   </div>
 
-                  {profile.rating && (
-                    <div className="text-center">
-                      <div className="flex items-center gap-1 text-2xl font-bold text-yellow-600">
-                        <Star className="h-6 w-6 fill-current" />
-                        {profile.rating}
-                      </div>
-                      <div className="text-sm text-gray-600">דירוג</div>
+                  <div className="text-center">
+                    <div className="flex items-center gap-1 text-2xl font-bold text-yellow-600">
+                      <Star className="h-6 w-6 fill-current" />
+                      {profile.rating || 0}
                     </div>
-                  )}
+                    <div className="text-sm text-gray-600">דירוג</div>
+                  </div>
+                </div>
+              )}
+
+              {/* Settings Display */}
+              {profile.settings && (
+                <div className="mt-4 pt-4 border-t border-gray-200">
+                  <h4 className="text-sm font-medium text-gray-700 mb-2">
+                    הגדרות
+                  </h4>
+                  <div className="grid grid-cols-2 gap-4 text-sm text-gray-600">
+                    <div>
+                      <span className="font-medium">שפה:</span>{" "}
+                      {profile.settings.language === "he"
+                        ? "עברית"
+                        : profile.settings.language}
+                    </div>
+                    <div>
+                      <span className="font-medium">אזור זמן:</span>{" "}
+                      {profile.settings.timezone}
+                    </div>
+                    <div>
+                      <span className="font-medium">התראות אימייל:</span>{" "}
+                      {profile.settings.email_notifications
+                        ? "פעיל"
+                        : "לא פעיל"}
+                    </div>
+                    <div>
+                      <span className="font-medium">התראות דחיפה:</span>{" "}
+                      {profile.settings.push_notifications ? "פעיל" : "לא פעיל"}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Host Stats - Only if user is a host */}
+              {profile.is_host && profile.stats && (
+                <div className="mt-4 pt-4 border-t border-gray-200">
+                  <h4 className="text-sm font-medium text-gray-700 mb-2">
+                    סטטיסטיקות מארח
+                  </h4>
+                  <div className="flex items-center gap-6">
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-blue-600">
+                        {profile.stats.total_hostings || 0}
+                      </div>
+                      <div className="text-sm text-gray-600">אירוחים</div>
+                    </div>
+
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-yellow-600">
+                        {profile.stats.average_rating || 0}
+                      </div>
+                      <div className="text-sm text-gray-600">דירוג ממוצע</div>
+                    </div>
+
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-green-600">
+                        {profile.stats.response_rate || 0}%
+                      </div>
+                      <div className="text-sm text-gray-600">אחוז תגובה</div>
+                    </div>
+                  </div>
                 </div>
               )}
             </div>
