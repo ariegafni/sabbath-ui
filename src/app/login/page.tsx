@@ -3,9 +3,20 @@
 import { useState } from "react";
 import LoginForm from "@/app/login/LoginForm";
 import RegisterForm from "@/app/login/RegisterForm";
+import { useAuth } from "@/Providers/AuthProvider";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 export default function LoginPage() {
   const [isLogin, setIsLogin] = useState(true);
+  const { user, loading } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!loading && user) {
+      router.replace("/");
+    }
+  }, [loading, user, router]);
 
   return (
     <main

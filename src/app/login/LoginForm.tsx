@@ -2,6 +2,9 @@
 
 import { useState } from "react";
 import { Mail, Lock, User, ArrowRight } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { AuthService } from "@/shared/service";
+import { useAuth } from "@/Providers/AuthProvider";
 
 interface Props {
   onSwitchToRegister: () => void;
@@ -9,14 +12,38 @@ interface Props {
 
 export default function LoginForm({ onSwitchToRegister }: Props) {
   const [form, setForm] = useState({ name: "", email: "", password: "" });
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
+  const { refresh } = useAuth();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Login Data:", form);
+    if (!form.email || !form.password) return;
+    setLoading(true);
+    try {
+      const res = await AuthService.login({
+        email: form.email.trim(),
+        password: form.password,
+      });
+      // Persist tokens and user for the app
+      localStorage.setItem("access_token", res.access_token);
+      localStorage.setItem("refresh_token", res.refresh_token);
+      localStorage.setItem("user", JSON.stringify(res.user));
+      // Mirror to cookie for middleware protection
+      document.cookie = `auth=${res.access_token}; path=/; max-age=604800; samesite=lax`;
+      // Refresh auth context and redirect
+      await refresh();
+      router.replace("/");
+    } catch (err) {
+      alert("פרטי ההתחברות שגויים או שיש שגיאה בשרת");
+      console.error("Login failed", err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -98,8 +125,9 @@ export default function LoginForm({ onSwitchToRegister }: Props) {
         <button
           type="submit"
           className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl py-3 font-semibold hover:from-blue-700 hover:to-purple-700 transform hover:-translate-y-0.5 transition-all duration-200 flex items-center justify-center gap-2 text-sm sm:text-base"
+          disabled={loading}
         >
-          כניסה
+          {loading ? "מתחבר..." : "כניסה"}
           <ArrowRight className="h-4 w-4" />
         </button>
 

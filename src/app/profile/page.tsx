@@ -64,6 +64,7 @@ export default function ProfilePage() {
     localStorage.removeItem("access_token");
     localStorage.removeItem("refresh_token");
     localStorage.removeItem("user");
+    document.cookie = "auth=; Max-Age=0; path=/";
     window.location.href = "/";
   };
 

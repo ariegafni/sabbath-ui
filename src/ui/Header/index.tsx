@@ -7,12 +7,23 @@ import { useRouter } from "next/navigation";
 
 import SettingsSidebar from "@/settings/page";
 import HostProfileForm from "../host-profile/page";
+import { useAuth } from "@/Providers/AuthProvider";
 
 export default function Header() {
   const { t } = useTranslation();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isHostProfileOpen, setIsHostProfileOpen] = useState(false);
   const router = useRouter();
+  const { user } = useAuth();
+
+  const initials = user?.name
+    ? user.name
+        .split(" ")
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((p) => p[0]?.toUpperCase())
+        .join("")
+    : null;
 
   return (
     <>
@@ -57,13 +68,21 @@ export default function Header() {
             >
               {t("nav.publish")}
             </button>
-            <button
-              onClick={() => router.push("/login")}
-              className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-all duration-200 group"
-            >
-              <User className="h-5 w-5 group-hover:scale-110 transition-transform duration-200" />
-              <span className="hidden sm:inline">{t("auth.login")}</span>
-            </button>
+            {!user ? (
+              <button
+                onClick={() => router.push("/login")}
+                className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-all duration-200 group"
+              >
+                <User className="h-5 w-5 group-hover:scale-110 transition-transform duration-200" />
+                <span className="hidden sm:inline">{t("auth.login")}</span>
+              </button>
+            ) : (
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-full bg-gray-200 text-gray-700 flex items-center justify-center text-xs font-bold">
+                  {initials}
+                </div>
+              </div>
+            )}
           </div>
         </nav>
       </header>

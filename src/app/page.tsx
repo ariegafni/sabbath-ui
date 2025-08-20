@@ -1,11 +1,13 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import CountriesList from "@/features/countries/CountriesList";
 import HostsList from "@/features/hosts/HostsList";
 import AuthModal from "@/features/auth/AuthModal";
 import Button from "@/ui/Button";
 import { User, Plus } from "lucide-react";
+import { useAuth } from "@/Providers/AuthProvider";
+import { useRouter } from "next/navigation";
 
 type ViewMode = "countries" | "hosts";
 
@@ -14,7 +16,24 @@ export default function HomePage() {
   const [viewMode, setViewMode] = useState<ViewMode>("countries");
   const [selectedCountry, setSelectedCountry] = useState<string>("");
   const [showAuthModal, setShowAuthModal] = useState(false);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const { user, loading } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!loading && !user) {
+      router.replace("/login");
+    }
+  }, [loading, user, router]);
+
+  const initials = useMemo(() => {
+    if (!user?.name) return "";
+    return user.name
+      .split(" ")
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((p) => p[0]?.toUpperCase())
+      .join("");
+  }, [user]);
 
   const handleCountrySelect = (country: { place_id: string }) => {
     setSelectedCountry(country.place_id);
@@ -45,10 +64,10 @@ export default function HomePage() {
             </div>
 
             <div className="flex items-center gap-3">
-              {!isAuthenticated ? (
+              {!user ? (
                 <>
                   <Button
-                    onClick={() => setShowAuthModal(true)}
+                    onClick={() => router.push("/login")}
                     variant="outline"
                     className="hidden sm:flex items-center gap-2"
                   >
@@ -56,20 +75,19 @@ export default function HomePage() {
                     התחברות
                   </Button>
                   <Button
-                    onClick={() => setShowAuthModal(true)}
+                    onClick={() => router.push("/login")}
                     className="hidden sm:flex items-center gap-2"
                   >
                     הרשמה
                   </Button>
                 </>
               ) : (
-                <Button
-                  onClick={() => {}}
-                  className="flex items-center gap-2"
-                >
-                  <Plus className="h-4 w-4" />
-                  פרסם אירוח
-                </Button>
+                <>
+
+                  <div className="w-9 h-9 rounded-full bg-gray-200 text-gray-700 flex items-center justify-center text-sm font-bold">
+                    {initials}
+                  </div>
+                </>
               )}
             </div>
           </div>
