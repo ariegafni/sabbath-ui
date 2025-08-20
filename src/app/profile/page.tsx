@@ -15,6 +15,7 @@ import {
   Edit3,
 } from "lucide-react";
 import Button from "@/ui/Button";
+import { HostService } from "@/shared/service";
 
 type UserProfile = {
   id: string;
@@ -65,6 +66,10 @@ export default function ProfilePage() {
       }
 
       const data = JSON.parse(userData);
+
+      // Check if user has a host profile
+      const hostProfile = await HostService.getCurrentUserHostProfile();
+
       setProfile({
         id: data._id || data.id,
         name: `${data.first_name} ${data.last_name}`,
@@ -72,9 +77,9 @@ export default function ProfilePage() {
         photo_url: data.profile_image,
         bio: data.bio,
         phone: data.phone,
-        is_host: false, // TODO: Check if user has host profile
-        total_hostings: data.stats?.total_hostings || 0,
-        rating: data.stats?.average_rating || 0,
+        is_host: !!hostProfile,
+        total_hostings: hostProfile?.total_hostings || 0,
+        rating: hostProfile?.rating || 0,
         settings: data.settings,
         stats: data.stats,
       });
@@ -234,7 +239,7 @@ export default function ProfilePage() {
               )}
 
               {/* Host Stats - Only if user is a host */}
-              {profile.is_host && profile.stats && (
+              {profile.is_host && (
                 <div className="mt-4 pt-4 border-t border-gray-200">
                   <h4 className="text-sm font-medium text-gray-700 mb-2">
                     סטטיסטיקות מארח
@@ -242,21 +247,21 @@ export default function ProfilePage() {
                   <div className="flex items-center gap-6">
                     <div className="text-center">
                       <div className="text-2xl font-bold text-blue-600">
-                        {profile.stats.total_hostings || 0}
+                        {profile.total_hostings || 0}
                       </div>
                       <div className="text-sm text-gray-600">אירוחים</div>
                     </div>
 
                     <div className="text-center">
                       <div className="text-2xl font-bold text-yellow-600">
-                        {profile.stats.average_rating || 0}
+                        {profile.rating || 0}
                       </div>
                       <div className="text-sm text-gray-600">דירוג ממוצע</div>
                     </div>
 
                     <div className="text-center">
                       <div className="text-2xl font-bold text-green-600">
-                        {profile.stats.response_rate || 0}%
+                        {profile.stats?.response_rate || 0}%
                       </div>
                       <div className="text-sm text-gray-600">אחוז תגובה</div>
                     </div>

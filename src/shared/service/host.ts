@@ -74,6 +74,7 @@ export class HostService {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        ...AuthService.getAuthHeaders(),
       },
       body: JSON.stringify(hostData),
     });
@@ -84,10 +85,11 @@ export class HostService {
   }
 
   static async updateHost(hostData: UpdateHostRequest): Promise<Host> {
-    const response = await fetch(`${this.baseUrl}/${hostData.id}`, {
+    const response = await fetch(`${this.baseUrl}/${hostId}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
+        ...AuthService.getAuthHeaders(),
       },
       body: JSON.stringify(hostData),
     });
@@ -100,9 +102,33 @@ export class HostService {
   static async deleteHost(id: number): Promise<void> {
     const response = await fetch(`${this.baseUrl}/${id}`, {
       method: "DELETE",
+      headers: {
+        ...AuthService.getAuthHeaders(),
+      },
     });
     if (!response.ok) {
       throw new Error("Failed to delete host");
+    }
+  }
+
+  // קבלת הפרופיל המארח של היוזר הנוכחי
+  static async getCurrentUserHostProfile(): Promise<Host | null> {
+    try {
+      const response = await fetch(`${this.baseUrl}/me`, {
+        headers: {
+          ...AuthService.getAuthHeaders(),
+        },
+      });
+      if (!response.ok) {
+        if (response.status === 404) {
+          return null; // המשתמש לא מארח
+        }
+        throw new Error("Failed to fetch current user host profile");
+      }
+      return response.json();
+    } catch (error) {
+      console.error("Error fetching host profile:", error);
+      return null;
     }
   }
 

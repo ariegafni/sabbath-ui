@@ -5,9 +5,10 @@ import CountriesList from "@/features/countries/CountriesList";
 import HostsList from "@/features/hosts/HostsList";
 import AuthModal from "@/features/auth/AuthModal";
 import Button from "@/ui/Button";
-import { User, Plus } from "lucide-react";
+import { User, Plus, Calendar } from "lucide-react";
 import { useAuth } from "@/Providers/AuthProvider";
 import { useRouter } from "next/navigation";
+import { HostService } from "@/shared/service";
 
 type ViewMode = "countries" | "hosts";
 
@@ -18,12 +19,29 @@ export default function HomePage() {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const { user, loading } = useAuth();
   const router = useRouter();
+  const [isHost, setIsHost] = useState(false);
 
   useEffect(() => {
     if (!loading && !user) {
       router.replace("/login");
     }
   }, [loading, user, router]);
+
+  useEffect(() => {
+    if (user) {
+      checkIfUserIsHost();
+    }
+  }, [user]);
+
+  const checkIfUserIsHost = async () => {
+    try {
+      const hostProfile = await HostService.getCurrentUserHostProfile();
+      setIsHost(!!hostProfile);
+    } catch (error) {
+      console.error("Failed to check if user is host:", error);
+      setIsHost(false);
+    }
+  };
 
   const initials = useMemo(() => {
     if (!user?.name) return "";
@@ -83,7 +101,23 @@ export default function HomePage() {
                 </>
               ) : (
                 <>
-
+                  {isHost ? (
+                    <Button
+                      onClick={() => router.push("/manage-hosting")}
+                      className="flex items-center gap-2"
+                    >
+                      <Calendar className="h-4 w-4" />
+                      נהל אירוח
+                    </Button>
+                  ) : (
+                    <Button
+                      onClick={() => router.push("/host")}
+                      className="flex items-center gap-2"
+                    >
+                      <Plus className="h-4 w-4" />
+                      פרסם אירוח
+                    </Button>
+                  )}
                   <div className="w-9 h-9 rounded-full bg-gray-200 text-gray-700 flex items-center justify-center text-sm font-bold">
                     {initials}
                   </div>
