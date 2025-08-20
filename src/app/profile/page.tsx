@@ -14,7 +14,7 @@ import {
   Edit3,
 } from "lucide-react";
 import Button from "@/ui/Button";
-import { UserService } from "../../shared/service";
+import { UserServiceMock as UserService } from "../../mock";
 
 type UserProfile = {
   id: number;
@@ -47,9 +47,11 @@ export default function ProfilePage() {
         name: `${data.first_name} ${data.last_name}`,
         email: data.email,
         photo_url: data.profile_image,
-        bio: data.description,
+        bio: data.bio,
         phone: data.phone,
-        is_host: false, // TODO: Add host status to user model
+        is_host: data.hostProfile?.isHost || false,
+        total_hostings: data.hostProfile?.totalGuests || 0,
+        rating: data.hostProfile?.rating || 0,
       });
     } catch (error) {
       console.error("Failed to fetch profile:", error);
