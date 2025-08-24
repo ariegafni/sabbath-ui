@@ -8,9 +8,6 @@ import {
   Settings,
   LogOut,
   Bell,
-  MessageCircle,
-  Calendar,
-  MapPin,
   Star,
   Edit3,
 } from "lucide-react";
@@ -237,74 +234,11 @@ export default function ProfilePage() {
                   </div>
                 </div>
               )}
-
-              {/* Host Stats - Only if user is a host */}
-              {profile.is_host && (
-                <div className="mt-4 pt-4 border-t border-gray-200">
-                  <h4 className="text-sm font-medium text-gray-700 mb-2">
-                    סטטיסטיקות מארח
-                  </h4>
-                  <div className="flex items-center gap-6">
-                    <div className="text-center">
-                      <div className="text-2xl font-bold text-blue-600">
-                        {profile.total_hostings || 0}
-                      </div>
-                      <div className="text-sm text-gray-600">אירוחים</div>
-                    </div>
-
-                    <div className="text-center">
-                      <div className="text-2xl font-bold text-yellow-600">
-                        {profile.rating || 0}
-                      </div>
-                      <div className="text-sm text-gray-600">דירוג ממוצע</div>
-                    </div>
-
-                    <div className="text-center">
-                      <div className="text-2xl font-bold text-green-600">
-                        {profile.stats?.response_rate || 0}%
-                      </div>
-                      <div className="text-sm text-gray-600">אחוז תגובה</div>
-                    </div>
-                  </div>
-                </div>
-              )}
             </div>
           </div>
         </div>
 
-        {/* Quick Actions */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-          <Button
-            onClick={() => (window.location.href = "/messages")}
-            variant="outline"
-            className="h-20 flex flex-col items-center justify-center gap-2"
-          >
-            <MessageCircle className="h-6 w-6" />
-            <span>הודעות</span>
-          </Button>
 
-          {profile.is_host ? (
-            <Button
-              onClick={() => {
-                /* TODO: Navigate to host management */
-              }}
-              variant="outline"
-              className="h-20 flex flex-col items-center justify-center gap-2"
-            >
-              <Calendar className="h-6 w-6" />
-              <span>ניהול אירוחים</span>
-            </Button>
-          ) : (
-            <Button
-              onClick={() => (window.location.href = "/host")}
-              variant="outline"
-              className="h-20 flex flex-col items-center justify-center gap-2"
-            >
-              <MapPin className="h-6 w-6" />
-              <span>פרסם אירוח</span>
-            </Button>
-          )}
-        </div>
 
         {/* Settings */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 mb-6">
