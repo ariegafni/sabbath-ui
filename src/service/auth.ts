@@ -51,7 +51,7 @@ export interface VerifyEmailRequest {
 }
 
 export class AuthService {
-  private static baseUrl = createApiUrl("/auth");
+  private static baseUrl = createApiUrl("/api/auth");
 
   // התחברות
   static async login(credentials: LoginRequest): Promise<AuthResponse> {

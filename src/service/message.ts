@@ -31,7 +31,7 @@ export interface CreateThreadRequest {
 }
 
 export class MessageService {
-  private static baseUrl = createApiUrl("/message");
+  private static baseUrl = createApiUrl("/api/messages");
 
   // קבלת כל השיחות של המשתמש
   static async getThreads(): Promise<Thread[]> {

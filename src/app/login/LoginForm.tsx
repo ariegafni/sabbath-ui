@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Mail, Lock, User, ArrowRight } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { AuthService } from "@/shared/service";
+import { AuthService } from "@/service";
 import { useAuth } from "@/Providers/AuthProvider";
 
 interface Props {

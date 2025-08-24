@@ -3,16 +3,9 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/Providers/AuthProvider";
-import {
-  User,
-  Settings,
-  LogOut,
-  Bell,
-  Star,
-  Edit3,
-} from "lucide-react";
+import { User, Settings, LogOut, Bell, Star, Edit3 } from "lucide-react";
 import Button from "@/ui/Button";
-import { HostService } from "@/shared/service";
+import { HostService } from "@/service";
 
 type UserProfile = {
   id: string;
@@ -237,8 +230,6 @@ export default function ProfilePage() {
             </div>
           </div>
         </div>
-
-
 
         {/* Settings */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 mb-6">

@@ -43,7 +43,7 @@ export interface UpdateHostRequest extends Partial<CreateHostRequest> {
 }
 
 export class HostService {
-  private static baseUrl = createApiUrl("/hosts");
+  private static baseUrl = createApiUrl("/api/hosts");
 
   static async getAllHosts(): Promise<Host[]> {
     const response = await fetch(this.baseUrl);

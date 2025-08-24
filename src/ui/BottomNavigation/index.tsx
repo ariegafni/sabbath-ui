@@ -5,7 +5,7 @@ import { Home, MessageCircle, Plus, User, Calendar } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/Providers/AuthProvider";
-import { HostService } from "@/shared/service";
+import { HostService } from "@/service";
 
 type NavigationItem = {
   id: string;

@@ -32,7 +32,7 @@ export interface ChangePasswordRequest {
 }
 
 export class UserService {
-  private static baseUrl = createApiUrl("/users");
+  private static baseUrl = createApiUrl("/api/users");
 
   // קבלת פרופיל המשתמש הנוכחי
   static async getCurrentUser(): Promise<User> {

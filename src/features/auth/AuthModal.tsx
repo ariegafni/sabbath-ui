@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { X, Mail, Lock, User, Phone, Eye, EyeOff, Github } from "lucide-react";
 import Button from "@/ui/Button";
-import { AuthService } from "../../shared/service";
+import { AuthService } from "../../service";
 
 type AuthMode = "login" | "register" | "forgot-password";
 

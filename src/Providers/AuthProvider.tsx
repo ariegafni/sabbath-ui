@@ -1,6 +1,6 @@
 "use client";
 import { createContext, useContext, useEffect, useState } from "react";
-import { UserService } from "../shared/service";
+import { UserService } from "../service";
 
 type User = { id: string; name?: string; email?: string } | null;
 

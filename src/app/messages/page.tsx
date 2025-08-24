@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { MessageCircle, User, Calendar, MapPin } from "lucide-react";
 import Button from "@/ui/Button";
-import { MessageService } from "../../shared/service";
+import { MessageService } from "../../service";
 
 type ChatThread = {
   id: number;

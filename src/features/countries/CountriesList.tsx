@@ -2,13 +2,15 @@
 
 import { useState, useEffect } from "react";
 import { MapPin, Users } from "lucide-react";
-import { LocationService, Country } from "../../shared/service";
+import { LocationService, Country } from "../../service";
 
 type CountryView = Country & { display_name: string };
 
 export default function CountriesList({
   onCountrySelect,
-}: { onCountrySelect?: (country: Country) => void }) {
+}: {
+  onCountrySelect?: (country: Country) => void;
+}) {
   const [countries, setCountries] = useState<CountryView[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -16,7 +18,8 @@ export default function CountriesList({
   // טוען את גוגל אם לא נטען
   const loadGoogle = () =>
     new Promise<void>((resolve) => {
-      if (typeof window !== "undefined" && (window as any).google) return resolve();
+      if (typeof window !== "undefined" && (window as any).google)
+        return resolve();
       const s = document.createElement("script");
       s.src = `https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&libraries=places&language=he`;
       s.async = true;
@@ -26,15 +29,28 @@ export default function CountriesList({
 
   const resolveNames = async (items: Country[]): Promise<CountryView[]> => {
     await loadGoogle();
-    const service = new (window as any).google.maps.places.PlacesService(document.createElement("div"));
+    const service = new (window as any).google.maps.places.PlacesService(
+      document.createElement("div")
+    );
     const getName = (place_id: string) =>
       new Promise<string>((res) => {
-        service.getDetails({ placeId: place_id, fields: ["address_components", "formatted_address"] }, (p: any, status: any) => {
-          if (status !== (window as any).google.maps.places.PlacesServiceStatus.OK || !p) return res(place_id);
-          const comps = p.address_components || [];
-          const country = comps.find((c: any) => c.types.includes("country"));
-          res(country?.long_name || p.formatted_address || place_id);
-        });
+        service.getDetails(
+          {
+            placeId: place_id,
+            fields: ["address_components", "formatted_address"],
+          },
+          (p: any, status: any) => {
+            if (
+              status !==
+                (window as any).google.maps.places.PlacesServiceStatus.OK ||
+              !p
+            )
+              return res(place_id);
+            const comps = p.address_components || [];
+            const country = comps.find((c: any) => c.types.includes("country"));
+            res(country?.long_name || p.formatted_address || place_id);
+          }
+        );
       });
     const names = await Promise.all(items.map((c) => getName(c.place_id)));
     return items.map((c, i) => ({ ...c, display_name: names[i] }));
@@ -44,8 +60,8 @@ export default function CountriesList({
     (async () => {
       try {
         setLoading(true);
-        const data = await LocationService.getCountries();          
-        const enriched = await resolveNames(data);                  
+        const data = await LocationService.getCountries();
+        const enriched = await resolveNames(data);
         setCountries(enriched);
       } catch (err) {
         setError(err instanceof Error ? err.message : "שגיאה בטעינת מדינות");
@@ -78,7 +94,9 @@ export default function CountriesList({
   return (
     <div className="space-y-8" dir="rtl">
       <div className="text-center">
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">מצאו אירוח ברחבי העולם</h2>
+        <h2 className="text-2xl font-bold text-gray-900 mb-2">
+          מצאו אירוח ברחבי העולם
+        </h2>
         <p className="text-gray-600">בחרו מדינה וחפשו מארחים זמינים</p>
       </div>
 
@@ -91,19 +109,28 @@ export default function CountriesList({
           >
             <div className="p-6 border-b border-gray-100">
               <div className="flex items-center justify-between mb-3">
-                <h3 className="text-xl font-bold text-gray-900">{country.display_name || country.name}</h3>
+                <h3 className="text-xl font-bold text-gray-900">
+                  {country.display_name || country.name}
+                </h3>
                 {/* <span className="text-sm text-gray-500">{country.name}</span> */}
               </div>
               <div className="flex items-center gap-2 text-gray-600">
                 <Users className="h-4 w-4" />
-                <span className="text-sm">{country.host_count} מארחים זמינים</span>
+                <span className="text-sm">
+                  {country.host_count} מארחים זמינים
+                </span>
               </div>
             </div>
 
             <div className="p-6">
               <div className="grid grid-cols-4 gap-2 mb-4">
-                {Array.from({ length: Math.min(8, country.host_count || 0) }).map((_, i) => (
-                  <div key={i} className="w-12 h-12 bg-gray-200 rounded-lg flex items-center justify-center">
+                {Array.from({
+                  length: Math.min(8, country.host_count || 0),
+                }).map((_, i) => (
+                  <div
+                    key={i}
+                    className="w-12 h-12 bg-gray-200 rounded-lg flex items-center justify-center"
+                  >
                     <Users className="h-5 w-5 text-gray-500" />
                   </div>
                 ))}

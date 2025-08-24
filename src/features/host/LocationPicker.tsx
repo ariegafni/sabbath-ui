@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { loadGoogleMaps } from "@/shared/service/loadGoogleMaps";
+import { loadGoogleMaps } from "@/service/loadGoogleMaps";
 
 type LocationPickerProps = {
   country_place_id: string;

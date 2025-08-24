@@ -24,7 +24,7 @@ export interface AutocompleteItem {
 }
 
 export class LocationService {
-  private static baseUrl = createApiUrl("/locations");
+  private static baseUrl = createApiUrl("/api/locations");
 
   static async getCountries(): Promise<Country[]> {
     const r = await fetch(`${this.baseUrl}/countries`);

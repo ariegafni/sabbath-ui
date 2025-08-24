@@ -2,14 +2,9 @@
 
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import {
-  MapPin,
-  Users,
-  Star,
-  MessageCircle,
-} from "lucide-react";
+import { MapPin, Users, Star, MessageCircle } from "lucide-react";
 import Image from "next/image";
-import { HostService } from "../../shared/service";
+import { HostService } from "../../service";
 
 type ApiHost = {
   id: string | number;
@@ -67,7 +62,8 @@ export default function HostsList({
 
   const loadGoogle = () =>
     new Promise<void>((resolve) => {
-      if (typeof window !== "undefined" && (window as any).google) return resolve();
+      if (typeof window !== "undefined" && (window as any).google)
+        return resolve();
       const s = document.createElement("script");
       s.src = `https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&libraries=places&language=he`;
       s.async = true;
@@ -77,19 +73,38 @@ export default function HostsList({
 
   const resolveCityNames = async (items: ApiHost[]) => {
     await loadGoogle();
-    const service = new (window as any).google.maps.places.PlacesService(document.createElement("div"));
-    const uniqueIds = Array.from(new Set(items.map(i => i.city_place_id).filter(Boolean)));
+    const service = new (window as any).google.maps.places.PlacesService(
+      document.createElement("div")
+    );
+    const uniqueIds = Array.from(
+      new Set(items.map((i) => i.city_place_id).filter(Boolean))
+    );
     const getName = (place_id: string) =>
       new Promise<string>((res) => {
-        service.getDetails({ placeId: place_id, fields: ["address_components", "formatted_address"] }, (p: any, status: any) => {
-          if (status !== (window as any).google.maps.places.PlacesServiceStatus.OK || !p) return res(place_id);
-          const comps = p.address_components || [];
-          const city = comps.find((c: any) => c.types.includes("locality")) || comps.find((c: any) => c.types.includes("postal_town"));
-          res(city?.long_name || p.formatted_address || place_id);
-        });
+        service.getDetails(
+          {
+            placeId: place_id,
+            fields: ["address_components", "formatted_address"],
+          },
+          (p: any, status: any) => {
+            if (
+              status !==
+                (window as any).google.maps.places.PlacesServiceStatus.OK ||
+              !p
+            )
+              return res(place_id);
+            const comps = p.address_components || [];
+            const city =
+              comps.find((c: any) => c.types.includes("locality")) ||
+              comps.find((c: any) => c.types.includes("postal_town"));
+            res(city?.long_name || p.formatted_address || place_id);
+          }
+        );
       });
     const namesArr = await Promise.all(uniqueIds.map(getName));
-    const map = new Map<string, string>(uniqueIds.map((id, i) => [id, namesArr[i]]));
+    const map = new Map<string, string>(
+      uniqueIds.map((id, i) => [id, namesArr[i]])
+    );
     return items.map<Host>((h) => ({
       id: h.id,
       name: h.name,
@@ -115,7 +130,9 @@ export default function HostsList({
   const fetchHosts = async () => {
     try {
       setLoading(true);
-      const data = (await HostService.getHostsByCountry(country)) as unknown as ApiHost[];
+      const data = (await HostService.getHostsByCountry(
+        country
+      )) as unknown as ApiHost[];
       const enriched = await resolveCityNames(data);
       setHosts(enriched);
     } catch (err) {
@@ -127,10 +144,20 @@ export default function HostsList({
   };
 
   const filteredHosts = hosts.filter((host) => {
-    if (filters.city && !host.city.toLowerCase().includes(filters.city.toLowerCase())) return false;
-    if (filters.hosting_type.length > 0 && !filters.hosting_type.some((type) => host.hosting_type.includes(type))) return false;
-    if (filters.kashrut_level && host.kashrut_level !== filters.kashrut_level) return false;
-    if (filters.max_guests > 0 && host.max_guests < filters.max_guests) return false;
+    if (
+      filters.city &&
+      !host.city.toLowerCase().includes(filters.city.toLowerCase())
+    )
+      return false;
+    if (
+      filters.hosting_type.length > 0 &&
+      !filters.hosting_type.some((type) => host.hosting_type.includes(type))
+    )
+      return false;
+    if (filters.kashrut_level && host.kashrut_level !== filters.kashrut_level)
+      return false;
+    if (filters.max_guests > 0 && host.max_guests < filters.max_guests)
+      return false;
     return true;
   });
 
