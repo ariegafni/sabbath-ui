@@ -17,7 +17,7 @@ export interface HostingRequest {
 }
 
 export interface CreateHostingRequestRequest {
-  host_id: string;
+  host: string;
   requested_date: string;
   message: string;
 }

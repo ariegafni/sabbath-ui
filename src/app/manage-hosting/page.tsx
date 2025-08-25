@@ -9,18 +9,14 @@ import {
   Users,
   MessageSquare,
   Settings,
-  Plus,
   Clock,
   Star,
   MapPin,
-  ArrowRight,
-  CheckCircle,
-  XCircle,
 } from "lucide-react";
 import Button from "@/ui/Button";
 
 export default function ManageHostingPage() {
-  const { t } = useTranslation();
+  useTranslation();
   const { user } = useAuth();
   const router = useRouter();
   const [loading, setLoading] = useState(true);
@@ -136,7 +132,7 @@ export default function ManageHostingPage() {
             </div>
             <p className="text-gray-600 mb-4">צפה וענה לבקשות אירוח חדשות</p>
             <Button
-              onClick={() => alert("בקשות אירוח - בקרוב")}
+              onClick={() => router.push("/manage-hosting/hosting-requests")}
               variant="outline"
               className="w-full"
             >

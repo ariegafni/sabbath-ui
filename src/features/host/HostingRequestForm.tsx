@@ -44,7 +44,7 @@ export default function HostingRequestForm({
 
     try {
       const requestData: CreateHostingRequestRequest = {
-        host_id: hostId,
+        host: hostId,
         requested_date: formData.requested_date,
         message: formData.message.trim(),
       };

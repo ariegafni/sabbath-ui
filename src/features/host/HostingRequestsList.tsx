@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Calendar, MessageSquare, User, Check, X, Clock, AlertCircle } from "lucide-react";
 import Button from "@/ui/Button";
-import { HostingRequestService, HostingRequest, RespondToHostingRequestRequest } from "@/service/HostingRequest";
+import { HostingRequestService, HostingRequest } from "@/service/HostingRequest";
 
 interface HostingRequestsListProps {
   className?: string;
@@ -25,7 +25,6 @@ export default function HostingRequestsList({ className = "" }: HostingRequestsL
     try {
       setLoading(true);
       setError(null);
-      
       const filters = selectedStatus !== "all" ? { status: selectedStatus as any } : undefined;
       const data = await HostingRequestService.getMyHostRequests(filters);
       setRequests(data);
@@ -34,27 +33,6 @@ export default function HostingRequestsList({ className = "" }: HostingRequestsL
       setError("שגיאה בטעינת בקשות האירוח");
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleRespondToRequest = async (requestId: string, status: "accepted" | "rejected", responseMessage?: string) => {
-    try {
-      const responseData: RespondToHostingRequestRequest = {
-        id: requestId,
-        status,
-        response_message: responseMessage,
-      };
-
-      await HostingRequestService.respondToHostingRequest(responseData);
-      
-      // עדכון הרשימה
-      await fetchHostingRequests();
-      
-      alert(status === "accepted" ? "בקשת האירוח אושרה בהצלחה!" : "בקשת האירוח נדחתה");
-      
-    } catch (error) {
-      console.error("Error responding to request:", error);
-      alert("שגיאה בתגובה לבקשת האירוח");
     }
   };
 
@@ -105,10 +83,10 @@ export default function HostingRequestsList({ className = "" }: HostingRequestsL
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('he-IL', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
+    return date.toLocaleDateString("he-IL", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
     });
   };
 
@@ -145,7 +123,6 @@ export default function HostingRequestsList({ className = "" }: HostingRequestsL
 
   return (
     <div className={`space-y-6 ${className}`}>
-      {/* Header */}
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold text-gray-900">בקשות אירוח</h2>
         <div className="flex items-center space-x-2 space-x-reverse">
@@ -164,14 +141,12 @@ export default function HostingRequestsList({ className = "" }: HostingRequestsL
         </div>
       </div>
 
-      {/* Requests List */}
       <div className="space-y-4">
         {requests.map((request) => (
           <div
             key={request.id}
             className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow"
           >
-            {/* Request Header */}
             <div className="flex items-start justify-between mb-4">
               <div className="flex items-center space-x-3 space-x-reverse">
                 {request.guest_profile_image ? (
@@ -192,44 +167,42 @@ export default function HostingRequestsList({ className = "" }: HostingRequestsL
                   <p className="text-sm text-gray-600">מבקש אירוח</p>
                 </div>
               </div>
-              
+
               <div className="flex items-center space-x-2 space-x-reverse">
                 {getStatusIcon(request.status)}
-                <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(request.status)}`}>
+                <span
+                  className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(
+                    request.status
+                  )}`}
+                >
                   {getStatusText(request.status)}
                 </span>
               </div>
             </div>
 
-            {/* Request Details */}
             <div className="space-y-3 mb-4">
               <div className="flex items-center space-x-2 space-x-reverse text-sm text-gray-600">
                 <Calendar className="w-4 h-4" />
                 <span>תאריך מבוקש: {formatDate(request.requested_date)}</span>
               </div>
-              
+
               <div className="flex items-start space-x-2 space-x-reverse text-sm text-gray-600">
                 <MessageSquare className="w-4 h-4 mt-0.5" />
                 <span className="flex-1">{request.message}</span>
               </div>
-              
+
               <div className="text-xs text-gray-500">
                 נשלח ב: {formatDate(request.created_at)}
               </div>
             </div>
 
-            {/* Action Buttons */}
             {request.status === "pending" && (
               <div className="flex items-center space-x-3 space-x-reverse pt-4 border-t">
-                <Button
-                  onClick={() => handleRespondToRequest(request.id, "accepted")}
-                  className="flex-1 bg-green-600 hover:bg-green-700"
-                >
+                <Button className="flex-1 bg-green-600 hover:bg-green-700">
                   <Check className="w-4 h-4 ml-2" />
                   אשר
                 </Button>
                 <Button
-                  onClick={() => handleRespondToRequest(request.id, "rejected")}
                   variant="outline"
                   className="flex-1 border-red-300 text-red-600 hover:bg-red-50"
                 >
@@ -244,4 +217,3 @@ export default function HostingRequestsList({ className = "" }: HostingRequestsL
     </div>
   );
 }
-
