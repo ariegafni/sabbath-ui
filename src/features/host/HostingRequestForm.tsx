@@ -31,11 +31,6 @@ export default function HostingRequestForm({
     message: "",
   });
 
-  // Debug logging
-  console.log("🚀 HostingRequestForm props:");
-  console.log("  - hostId:", hostId);
-  console.log("  - hostName:", hostName);
-  console.log("  - hostProfileImage:", hostProfileImage);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -54,18 +49,12 @@ export default function HostingRequestForm({
         message: formData.message.trim(),
       };
 
-      console.log("🚀 Sending hosting request:");
-      console.log("  - Host ID:", hostId);
-      console.log("  - Request data:", requestData);
-      console.log("  - Host ID type:", typeof hostId);
-      console.log("  - Host ID length:", hostId?.length);
 
       await HostingRequestService.createHostingRequest(requestData);
 
-      // הצגת הודעת הצלחה
       alert("בקשת האירוח נשלחה בהצלחה!");
 
-      // קריאה לפונקציה שתסגור את המודל ותעדכן את המסך
+
       onSuccess?.();
       onClose();
     } catch (error) {
@@ -80,7 +69,7 @@ export default function HostingRequestForm({
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  // קבלת התאריך המינימלי (היום)
+
   const getMinDate = () => {
     const today = new Date();
     return today.toISOString().split("T")[0];

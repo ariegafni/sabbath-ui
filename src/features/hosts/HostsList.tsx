@@ -4,40 +4,9 @@ import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { MapPin, Users, Star, MessageCircle } from "lucide-react";
 import Image from "next/image";
-import { HostService } from "../../service";
+import { Host, HostService } from "../../service";
 import HostingRequestForm from "../host/HostingRequestForm";
 
-type ApiHost = {
-  id: string | number;
-  name: string;
-  photo_url?: string;
-  city_place_id: string;
-  area?: string;
-  max_guests: number;
-  rating?: number;
-  hosting_type: string[];
-  kashrut_level?: string;
-  languages: string[];
-  bio?: string;
-  total_hostings: number;
-  is_always_available: boolean;
-};
-
-type Host = {
-  id: string | number;
-  name: string;
-  photo_url?: string;
-  city: string;
-  area?: string;
-  max_guests: number;
-  rating?: number;
-  hosting_type: string[];
-  kashrut_level?: string;
-  languages: string[];
-  bio?: string;
-  total_hostings: number;
-  is_always_available: boolean;
-};
 
 type HostsListProps = {
   country: string;
@@ -73,60 +42,51 @@ export default function HostsList({
       document.body.appendChild(s);
     });
 
-  const resolveCityNames = async (items: ApiHost[]) => {
-    await loadGoogle();
-    const service = new (window as any).google.maps.places.PlacesService(
-      document.createElement("div")
-    );
-    const uniqueIds = Array.from(
-      new Set(items.map((i) => i.city_place_id).filter(Boolean))
-    );
-    const getName = (place_id: string) =>
-      new Promise<string>((res) => {
-        service.getDetails(
-          {
-            placeId: place_id,
-            fields: ["address_components", "formatted_address"],
-          },
-          (p: any, status: any) => {
-            if (
-              status !==
-                (window as any).google.maps.places.PlacesServiceStatus.OK ||
-              !p
-            )
-              return res(place_id);
-            const comps = p.address_components || [];
-            const city =
-              comps.find((c: any) => c.types.includes("locality")) ||
-              comps.find((c: any) => c.types.includes("postal_town"));
-            res(city?.long_name || p.formatted_address || place_id);
-          }
-        );
-      });
-    const namesArr = await Promise.all(uniqueIds.map(getName));
-    const map = new Map<string, string>(
-      uniqueIds.map((id, i) => [id, namesArr[i]])
-    );
-    return items.map<Host>((h) => {
-      const enrichedHost = {
-        id: h.id,
-        name: h.name,
-        photo_url: h.photo_url,
-        city: map.get(h.city_place_id) || h.city_place_id,
-        area: h.area,
-        max_guests: h.max_guests,
-        rating: h.rating,
-        hosting_type: h.hosting_type,
-        kashrut_level: h.kashrut_level,
-        languages: h.languages,
-        bio: h.bio,
-        total_hostings: h.total_hostings,
-        is_always_available: h.is_always_available,
-      };
-      console.log("🔍 Mapping host:", h.id, "->", enrichedHost.id);
-      return enrichedHost;
+const resolveCityNames = async (items: Host[]) => {
+  await loadGoogle();
+  const service = new (window as any).google.maps.places.PlacesService(
+    document.createElement("div")
+  );
+
+  const uniqueIds = Array.from(
+    new Set(items.map((i) => i.city_place_id).filter(Boolean))
+  );
+
+  const getName = (place_id: string) =>
+    new Promise<string>((res) => {
+      service.getDetails(
+        {
+          placeId: place_id,
+          fields: ["address_components", "formatted_address"],
+        },
+        (p: any, status: any) => {
+          if (
+            status !==
+              (window as any).google.maps.places.PlacesServiceStatus.OK ||
+            !p
+          )
+            return res(place_id);
+          const comps = p.address_components || [];
+          const city =
+            comps.find((c: any) => c.types.includes("locality")) ||
+            comps.find((c: any) => c.types.includes("postal_town"));
+          res(city?.long_name || p.formatted_address || place_id);
+        }
+      );
     });
-  };
+
+  const namesArr = await Promise.all(uniqueIds.map(getName));
+  const map = new Map<string, string>(
+    uniqueIds.map((id, i) => [id, namesArr[i]])
+  );
+
+  return items.map<Host>((h) => ({
+    ...h,
+    id: h.id || (h as any)._id,   // 🔑 מבטיח שתמיד יהיה id
+    city: map.get(h.city_place_id) || h.city_place_id,
+  }));
+};
+
 
   useEffect(() => {
     fetchHosts();
@@ -136,14 +96,8 @@ export default function HostsList({
   const fetchHosts = async () => {
     try {
       setLoading(true);
-      const data = (await HostService.getHostsByCountry(
-        country
-      )) as unknown as ApiHost[];
-      console.log("🔍 Raw API data:", data);
-      console.log("🔍 First host data:", data[0]);
+      const data = await HostService.getHostsByCountry(country); 
       const enriched = await resolveCityNames(data);
-      console.log("🔍 Enriched hosts:", enriched);
-      console.log("🔍 First enriched host:", enriched[0]);
       setHosts(enriched);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to fetch hosts");
@@ -156,7 +110,7 @@ export default function HostsList({
   const filteredHosts = hosts.filter((host) => {
     if (
       filters.city &&
-      !host.city.toLowerCase().includes(filters.city.toLowerCase())
+!(host.city?.toLowerCase() || "").includes(filters.city.toLowerCase())
     )
       return false;
     if (
@@ -271,7 +225,8 @@ export default function HostsList({
                     host.photo_url ||
                     "https://picsum.photos/400/200?random=" + host.id
                   }
-                  alt={host.name}
+                  alt={host.name ?? "Host image"}
+
                   fill
                   className="object-cover hover:scale-105 transition-transform duration-300"
                 />
@@ -342,9 +297,6 @@ export default function HostsList({
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
-                      console.log("🔍 Selected host data:", host);
-                      console.log("🔍 Host ID:", host.id);
-                      console.log("🔍 Host ID type:", typeof host.id);
                       setSelectedHost(host);
                     }}
                     className="flex-1 px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg font-medium hover:from-blue-700 hover:to-purple-700 transform group-hover:-translate-y-0.5 transition-all duration-200 text-sm"
