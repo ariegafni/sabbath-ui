@@ -31,6 +31,12 @@ export default function HostingRequestForm({
     message: "",
   });
 
+  // Debug logging
+  console.log("🚀 HostingRequestForm props:");
+  console.log("  - hostId:", hostId);
+  console.log("  - hostName:", hostName);
+  console.log("  - hostProfileImage:", hostProfileImage);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -81,37 +87,39 @@ export default function HostingRequestForm({
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto border border-gray-100">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b">
-          <h2 className="text-xl font-semibold text-gray-900">בקשת אירוח</h2>
+        <div className="flex items-center justify-between p-6 border-b border-gray-100">
+          <h2 className="text-2xl font-bold text-gray-900">בקשת אירוח</h2>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 transition-colors"
+            className="text-gray-400 hover:text-gray-600 transition-colors p-2 hover:bg-gray-100 rounded-full"
           >
             <X size={24} />
           </button>
         </div>
 
         {/* Host Info */}
-        <div className="p-4 border-b bg-gray-50">
-          <div className="flex items-center space-x-3 space-x-reverse">
+        <div className="p-6 border-b border-gray-100 bg-gradient-to-r from-blue-50 to-purple-50">
+          <div className="flex items-center space-x-4 space-x-reverse">
             {hostProfileImage ? (
               <img
                 src={hostProfileImage}
                 alt={hostName}
-                className="w-12 h-12 rounded-full object-cover"
+                className="w-16 h-16 rounded-full object-cover border-4 border-white shadow-lg"
               />
             ) : (
-              <div className="w-12 h-12 bg-gray-300 rounded-full flex items-center justify-center">
-                <span className="text-gray-600 font-medium">
+              <div className="w-16 h-16 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full flex items-center justify-center border-4 border-white shadow-lg">
+                <span className="text-white font-bold text-xl">
                   {hostName.charAt(0)}
                 </span>
               </div>
             )}
             <div>
-              <h3 className="font-medium text-gray-900">{hostName}</h3>
+              <h3 className="text-lg font-semibold text-gray-900">
+                {hostName}
+              </h3>
               <p className="text-sm text-gray-600">מארח</p>
             </div>
           </div>
@@ -136,10 +144,14 @@ export default function HostingRequestForm({
                   handleInputChange("requested_date", e.target.value)
                 }
                 min={getMinDate()}
-                className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-50 hover:bg-white transition-colors cursor-pointer"
                 required
+                onClick={(e) => e.currentTarget.showPicker?.()}
               />
             </div>
+            <p className="text-xs text-gray-500">
+              לחץ על השדה כדי לפתוח לוח שנה
+            </p>
           </div>
 
           {/* Message */}
@@ -157,7 +169,7 @@ export default function HostingRequestForm({
                 onChange={(e) => handleInputChange("message", e.target.value)}
                 placeholder="כתוב הודעה קצרה למארח... (למשל: היי! אני מעוניין להתארח אצלך בתאריך זה...)"
                 rows={4}
-                className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                className="w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none bg-gray-50 hover:bg-white transition-colors"
                 required
               />
             </div>

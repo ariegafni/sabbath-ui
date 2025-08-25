@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import { MapPin, Users, Star, MessageCircle } from "lucide-react";
 import Image from "next/image";
 import { HostService } from "../../service";
+import HostingRequestForm from "../host/HostingRequestForm";
 
 type ApiHost = {
   id: string | number;
@@ -53,6 +54,7 @@ export default function HostsList({
   const [hosts, setHosts] = useState<Host[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [selectedHost, setSelectedHost] = useState<Host | null>(null);
   const [filters, setFilters] = useState({
     city: "",
     hosting_type: [] as string[],
@@ -105,21 +107,25 @@ export default function HostsList({
     const map = new Map<string, string>(
       uniqueIds.map((id, i) => [id, namesArr[i]])
     );
-    return items.map<Host>((h) => ({
-      id: h.id,
-      name: h.name,
-      photo_url: h.photo_url,
-      city: map.get(h.city_place_id) || h.city_place_id,
-      area: h.area,
-      max_guests: h.max_guests,
-      rating: h.rating,
-      hosting_type: h.hosting_type,
-      kashrut_level: h.kashrut_level,
-      languages: h.languages,
-      bio: h.bio,
-      total_hostings: h.total_hostings,
-      is_always_available: h.is_always_available,
-    }));
+    return items.map<Host>((h) => {
+      const enrichedHost = {
+        id: h.id,
+        name: h.name,
+        photo_url: h.photo_url,
+        city: map.get(h.city_place_id) || h.city_place_id,
+        area: h.area,
+        max_guests: h.max_guests,
+        rating: h.rating,
+        hosting_type: h.hosting_type,
+        kashrut_level: h.kashrut_level,
+        languages: h.languages,
+        bio: h.bio,
+        total_hostings: h.total_hostings,
+        is_always_available: h.is_always_available,
+      };
+      console.log("🔍 Mapping host:", h.id, "->", enrichedHost.id);
+      return enrichedHost;
+    });
   };
 
   useEffect(() => {
@@ -133,7 +139,11 @@ export default function HostsList({
       const data = (await HostService.getHostsByCountry(
         country
       )) as unknown as ApiHost[];
+      console.log("🔍 Raw API data:", data);
+      console.log("🔍 First host data:", data[0]);
       const enriched = await resolveCityNames(data);
+      console.log("🔍 Enriched hosts:", enriched);
+      console.log("🔍 First enriched host:", enriched[0]);
       setHosts(enriched);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to fetch hosts");
@@ -329,7 +339,16 @@ export default function HostsList({
                 </div>
 
                 <div className="flex gap-2">
-                  <button className="flex-1 px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg font-medium hover:from-blue-700 hover:to-purple-700 transform group-hover:-translate-y-0.5 transition-all duration-200 text-sm">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      console.log("🔍 Selected host data:", host);
+                      console.log("🔍 Host ID:", host.id);
+                      console.log("🔍 Host ID type:", typeof host.id);
+                      setSelectedHost(host);
+                    }}
+                    className="flex-1 px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg font-medium hover:from-blue-700 hover:to-purple-700 transform group-hover:-translate-y-0.5 transition-all duration-200 text-sm"
+                  >
                     בקש אירוח
                   </button>
                   <button className="px-3 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
@@ -350,6 +369,20 @@ export default function HostsList({
             נסו לשנות את הפילטרים שלכם
           </p>
         </div>
+      )}
+
+      {/* Hosting Request Modal */}
+      {selectedHost && (
+        <HostingRequestForm
+          hostId={selectedHost.id?.toString() || ""}
+          hostName={selectedHost.name || ""}
+          hostProfileImage={selectedHost.photo_url}
+          onClose={() => setSelectedHost(null)}
+          onSuccess={() => {
+            setSelectedHost(null);
+            // כאן אפשר להוסיף הודעת הצלחה או עדכון המסך
+          }}
+        />
       )}
     </div>
   );
