@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Home, MessageCircle, Plus, User, Calendar } from "lucide-react";
+import { Home, User, Plus, Calendar, Briefcase } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/Providers/AuthProvider";
@@ -59,11 +59,10 @@ export default function BottomNavigation() {
       href: "/",
     },
     {
-      id: "messages",
-      label: "הודעות",
-      icon: MessageCircle,
-      href: "/messages",
-      badge: 5, // TODO: Get unread messages count
+      id: "personal-area",
+      label: "אזור אישי",
+      icon: Briefcase,
+      href: "/personal-area",
     },
     hostNavItem,
     {

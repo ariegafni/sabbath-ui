@@ -93,4 +93,52 @@ export class HostingRequestService {
     }
     return response.json();
   }
+   static async respondToHostingRequest(
+    requestId: string,
+    status: "accepted" | "rejected",
+    responseMessage?: string
+  ): Promise<HostingRequest> {
+    const response = await fetch(`${this.baseUrl}/${requestId}/respond`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        ...AuthService.getAuthHeaders(),
+      },
+      body: JSON.stringify({ status, response_message: responseMessage }),
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to respond to hosting request");
+    }
+
+    return response.json();
+  }
+
+  static async cancelHostingRequest(requestId: string): Promise<HostingRequest> {
+    const response = await fetch(`${this.baseUrl}/${requestId}/cancel`, {
+      method: "PUT",
+      headers: {
+        ...AuthService.getAuthHeaders(),
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to cancel hosting request");
+    }
+
+    return response.json();
+  }
+
+  static async deleteHostingRequest(requestId: string): Promise<void> {
+    const response = await fetch(`${this.baseUrl}/${requestId}`, {
+      method: "DELETE",
+      headers: {
+        ...AuthService.getAuthHeaders(),
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to delete hosting request");
+    }
+  }
 }

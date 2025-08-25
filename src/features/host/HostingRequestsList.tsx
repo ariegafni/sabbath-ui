@@ -2,20 +2,36 @@
 
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { Calendar, MessageSquare, User, Check, X, Clock, AlertCircle } from "lucide-react";
+import {
+  Calendar,
+  MessageSquare,
+  User,
+  Check,
+  X,
+  Clock,
+  AlertCircle,
+} from "lucide-react";
 import Button from "@/ui/Button";
-import { HostingRequestService, HostingRequest } from "@/service/HostingRequest";
+import {
+  HostingRequestService,
+  HostingRequest,
+} from "@/service/HostingRequest";
 
 interface HostingRequestsListProps {
   className?: string;
 }
 
-export default function HostingRequestsList({ className = "" }: HostingRequestsListProps) {
+export default function HostingRequestsList({
+  className = "",
+}: HostingRequestsListProps) {
   const { t } = useTranslation();
   const [requests, setRequests] = useState<HostingRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedStatus, setSelectedStatus] = useState<string>("all");
+  const [responseMessage, setResponseMessage] = useState<{
+    [key: string]: string;
+  }>({});
 
   useEffect(() => {
     fetchHostingRequests();
@@ -25,7 +41,10 @@ export default function HostingRequestsList({ className = "" }: HostingRequestsL
     try {
       setLoading(true);
       setError(null);
-      const filters = selectedStatus !== "all" ? { status: selectedStatus as any } : undefined;
+      const filters =
+        selectedStatus !== "all"
+          ? { status: selectedStatus as any }
+          : undefined;
       const data = await HostingRequestService.getMyHostRequests(filters);
       setRequests(data);
     } catch (err) {
@@ -33,6 +52,60 @@ export default function HostingRequestsList({ className = "" }: HostingRequestsL
       setError("שגיאה בטעינת בקשות האירוח");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleRespondToRequest = async (
+    requestId: string,
+    status: "accepted" | "rejected"
+  ) => {
+    const message = responseMessage[requestId] || "";
+
+    if (status === "rejected" && !message.trim()) {
+      alert("אנא הוסף הודעה כשאתה דוחה בקשה");
+      return;
+    }
+
+    try {
+      await HostingRequestService.respondToHostingRequest(
+        requestId,
+        status,
+        message.trim() || undefined
+      );
+
+      // עדכון הרשימה
+      await fetchHostingRequests();
+
+      // ניקוי ההודעה
+      setResponseMessage((prev) => ({ ...prev, [requestId]: "" }));
+
+      const statusText = status === "accepted" ? "אושרה" : "נדחתה";
+      alert(`בקשת האירוח ${statusText} בהצלחה`);
+    } catch (error) {
+      console.error("Error responding to request:", error);
+      alert("שגיאה בתגובה לבקשת האירוח");
+    }
+  };
+
+  const handleDeleteRequest = async (requestId: string) => {
+    if (
+      !confirm(
+        "האם אתה בטוח שברצונך למחוק את בקשת האירוח? פעולה זו אינה הפיכה."
+      )
+    ) {
+      return;
+    }
+
+    try {
+      await HostingRequestService.deleteHostingRequest(requestId);
+
+      // עדכון הרשימה
+      await fetchHostingRequests();
+
+      alert("בקשת האירוח נמחקה בהצלחה");
+    } catch (error) {
+      console.error("Error deleting request:", error);
+      alert("שגיאה במחיקת בקשת האירוח");
     }
   };
 
@@ -115,7 +188,9 @@ export default function HostingRequestsList({ className = "" }: HostingRequestsL
     return (
       <div className={`text-center p-8 ${className}`}>
         <MessageSquare className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-        <h3 className="text-lg font-medium text-gray-900 mb-2">אין בקשות אירוח</h3>
+        <h3 className="text-lg font-medium text-gray-900 mb-2">
+          אין בקשות אירוח
+        </h3>
         <p className="text-gray-600">עדיין לא התקבלו בקשות אירוח</p>
       </div>
     );
@@ -197,17 +272,89 @@ export default function HostingRequestsList({ className = "" }: HostingRequestsL
             </div>
 
             {request.status === "pending" && (
+              <div className="space-y-3 pt-4 border-t">
+                {/* Response Message Input */}
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-gray-700">
+                    הודעת תגובה (אופציונלי):
+                  </label>
+                  <textarea
+                    value={responseMessage[request.id] || ""}
+                    onChange={(e) =>
+                      setResponseMessage((prev) => ({
+                        ...prev,
+                        [request.id]: e.target.value,
+                      }))
+                    }
+                    placeholder="הוסף הודעה לאורח (מומלץ בעת דחייה)"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                    rows={3}
+                  />
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex items-center space-x-3 space-x-reverse">
+                  <Button
+                    onClick={() =>
+                      handleRespondToRequest(request.id, "accepted")
+                    }
+                    variant="primary"
+                    className="flex-1 bg-green-600 hover:bg-green-700"
+                  >
+                    <Check className="w-4 h-4 ml-2" />
+                    אשר בקשה
+                  </Button>
+
+                  <Button
+                    onClick={() =>
+                      handleRespondToRequest(request.id, "rejected")
+                    }
+                    variant="outline"
+                    className="flex-1 border-red-300 text-red-600 hover:bg-red-50"
+                  >
+                    <X className="w-4 h-4 ml-2" />
+                    דחה בקשה
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {/* Response Message Display (if exists) */}
+            {request.status === "accepted" && (
+              <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-md">
+                <div className="flex items-center space-x-2 space-x-reverse text-green-800">
+                  <Check className="w-4 h-4" />
+                  <span className="font-medium">אישרת את בקשת האירוח</span>
+                </div>
+                <p className="text-sm text-green-700 mt-1">
+                  האורח יקבל הודעה על האישור שלך.
+                </p>
+              </div>
+            )}
+
+            {request.status === "rejected" && (
+              <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-md">
+                <div className="flex items-center space-x-2 space-x-reverse text-red-800">
+                  <X className="w-4 h-4" />
+                  <span className="font-medium">דחית את בקשת האירוח</span>
+                </div>
+                <p className="text-sm text-red-700 mt-1">
+                  האורח יקבל הודעה על הדחייה שלך.
+                </p>
+              </div>
+            )}
+
+            {/* Delete Button for Completed Requests */}
+            {(request.status === "accepted" ||
+              request.status === "rejected") && (
               <div className="flex items-center space-x-3 space-x-reverse pt-4 border-t">
-                <Button className="flex-1 bg-green-600 hover:bg-green-700">
-                  <Check className="w-4 h-4 ml-2" />
-                  אשר
-                </Button>
                 <Button
+                  onClick={() => handleDeleteRequest(request.id)}
                   variant="outline"
-                  className="flex-1 border-red-300 text-red-600 hover:bg-red-50"
+                  className="flex-1 border-gray-300 text-gray-600 hover:bg-gray-50"
                 >
                   <X className="w-4 h-4 ml-2" />
-                  דחה
+                  מחק בקשה
                 </Button>
               </div>
             )}

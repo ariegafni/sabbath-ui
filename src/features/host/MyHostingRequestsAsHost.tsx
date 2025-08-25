@@ -70,11 +70,11 @@ export default function MyHostingRequestsAsHost({
     }
 
     try {
-      await HostingRequestService.respondToHostingRequest({
-        id: requestId,
+      await HostingRequestService.respondToHostingRequest(
+        requestId,
         status,
-        response_message: message.trim() || undefined,
-      });
+        message.trim() || undefined
+      );
 
       // עדכון הרשימה
       await fetchMyHostingRequests();
@@ -87,6 +87,28 @@ export default function MyHostingRequestsAsHost({
     } catch (error) {
       console.error("Error responding to request:", error);
       alert("שגיאה בתגובה לבקשת האירוח");
+    }
+  };
+
+  const handleDeleteRequest = async (requestId: string) => {
+    if (
+      !confirm(
+        "האם אתה בטוח שברצונך למחוק את בקשת האירוח? פעולה זו אינה הפיכה."
+      )
+    ) {
+      return;
+    }
+
+    try {
+      await HostingRequestService.deleteHostingRequest(requestId);
+
+      // עדכון הרשימה
+      await fetchMyHostingRequests();
+
+      alert("בקשת האירוח נמחקה בהצלחה");
+    } catch (error) {
+      console.error("Error deleting request:", error);
+      alert("שגיאה במחיקת בקשת האירוח");
     }
   };
 
@@ -349,6 +371,21 @@ export default function MyHostingRequestsAsHost({
                 <p className="text-sm text-red-700 mt-1">
                   האורח יקבל הודעה על הדחייה שלך.
                 </p>
+              </div>
+            )}
+
+            {/* Delete Button for Completed Requests */}
+            {(request.status === "accepted" ||
+              request.status === "rejected") && (
+              <div className="flex items-center space-x-3 space-x-reverse pt-4 border-t">
+                <Button
+                  onClick={() => handleDeleteRequest(request.id)}
+                  variant="outline"
+                  className="flex-1 border-gray-300 text-gray-600 hover:bg-gray-50"
+                >
+                  <X className="w-4 h-4 ml-2" />
+                  מחק בקשה
+                </Button>
               </div>
             )}
           </div>

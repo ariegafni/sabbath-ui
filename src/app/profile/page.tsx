@@ -3,7 +3,14 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/Providers/AuthProvider";
-import { User, Settings, LogOut, Bell, Star, Edit3 } from "lucide-react";
+import {
+  User,
+  Settings,
+  LogOut,
+  Bell,
+  Star,
+  Edit3,
+} from "lucide-react";
 import Button from "@/ui/Button";
 import { HostService } from "@/service";
 
@@ -135,6 +142,8 @@ export default function ProfilePage() {
 
       {/* Profile Content */}
       <div className="max-w-4xl mx-auto px-4 py-6">
+        
+
         {/* Profile Card */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 mb-6">
           <div className="flex items-start gap-6">
@@ -196,6 +205,8 @@ export default function ProfilePage() {
                   </div>
                 </div>
               )}
+
+              
 
               {/* Settings Display */}
               {profile.settings && (
@@ -259,6 +270,8 @@ export default function ProfilePage() {
               </div>
               <span className="text-gray-400">→</span>
             </button>
+
+            
           </div>
         </div>
 

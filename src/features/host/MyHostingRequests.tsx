@@ -72,6 +72,28 @@ export default function MyHostingRequests({
     }
   };
 
+  const handleDeleteRequest = async (requestId: string) => {
+    if (
+      !confirm(
+        "האם אתה בטוח שברצונך למחוק את בקשת האירוח? פעולה זו אינה הפיכה."
+      )
+    ) {
+      return;
+    }
+
+    try {
+      await HostingRequestService.deleteHostingRequest(requestId);
+
+      // עדכון הרשימה
+      await fetchMyHostingRequests();
+
+      alert("בקשת האירוח נמחקה בהצלחה");
+    } catch (error) {
+      console.error("Error deleting request:", error);
+      alert("שגיאה במחיקת בקשת האירוח");
+    }
+  };
+
   const getStatusIcon = (status: string) => {
     switch (status) {
       case "pending":
@@ -270,6 +292,22 @@ export default function MyHostingRequests({
               </div>
             )}
 
+            {/* Delete Button for Completed/Cancelled Requests */}
+            {(request.status === "accepted" ||
+              request.status === "rejected" ||
+              request.status === "cancelled") && (
+              <div className="flex items-center space-x-3 space-x-reverse pt-4 border-t">
+                <Button
+                  onClick={() => handleDeleteRequest(request.id)}
+                  variant="outline"
+                  className="flex-1 border-gray-300 text-gray-600 hover:bg-gray-50"
+                >
+                  <X className="w-4 h-4 ml-2" />
+                  מחק בקשה
+                </Button>
+              </div>
+            )}
+
             {/* Response Message (if exists) */}
             {request.status === "accepted" && (
               <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-md">
@@ -300,4 +338,3 @@ export default function MyHostingRequests({
     </div>
   );
 }
-
