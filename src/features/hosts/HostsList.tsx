@@ -7,7 +7,6 @@ import Image from "next/image";
 import { Host, HostService } from "../../service";
 import HostingRequestForm from "../host/HostingRequestForm";
 
-
 type HostsListProps = {
   country: string;
   onHostSelect?: (host: Host) => void;
@@ -42,61 +41,60 @@ export default function HostsList({
       document.body.appendChild(s);
     });
 
-const resolveCityNames = async (items: Host[]) => {
-  await loadGoogle();
-  const service = new (window as any).google.maps.places.PlacesService(
-    document.createElement("div")
-  );
+  const resolveCityNames = async (items: Host[]) => {
+    await loadGoogle();
+    const service = new (window as any).google.maps.places.PlacesService(
+      document.createElement("div")
+    );
 
-  const uniqueIds = Array.from(
-    new Set(items.map((i) => i.city_place_id).filter(Boolean))
-  );
+    const uniqueIds = Array.from(
+      new Set(items.map((i) => i.city_place_id).filter(Boolean))
+    );
 
-  const getName = (place_id: string) =>
-    new Promise<string>((res) => {
-      service.getDetails(
-        {
-          placeId: place_id,
-          fields: ["address_components", "formatted_address"],
-        },
-        (p: any, status: any) => {
-          if (
-            status !==
-              (window as any).google.maps.places.PlacesServiceStatus.OK ||
-            !p
-          )
-            return res(place_id);
-          const comps = p.address_components || [];
-          const city =
-            comps.find((c: any) => c.types.includes("locality")) ||
-            comps.find((c: any) => c.types.includes("postal_town"));
-          res(city?.long_name || p.formatted_address || place_id);
-        }
-      );
-    });
+    const getName = (place_id: string) =>
+      new Promise<string>((res) => {
+        service.getDetails(
+          {
+            placeId: place_id,
+            fields: ["address_components", "formatted_address"],
+          },
+          (p: any, status: any) => {
+            if (
+              status !==
+                (window as any).google.maps.places.PlacesServiceStatus.OK ||
+              !p
+            )
+              return res(place_id);
+            const comps = p.address_components || [];
+            const city =
+              comps.find((c: any) => c.types.includes("locality")) ||
+              comps.find((c: any) => c.types.includes("postal_town"));
+            res(city?.long_name || p.formatted_address || place_id);
+          }
+        );
+      });
 
-  const namesArr = await Promise.all(uniqueIds.map(getName));
-  const map = new Map<string, string>(
-    uniqueIds.map((id, i) => [id, namesArr[i]])
-  );
+    const namesArr = await Promise.all(uniqueIds.map(getName));
+    const map = new Map<string, string>(
+      uniqueIds.map((id, i) => [id, namesArr[i]])
+    );
 
-  return items.map<Host>((h) => ({
-    ...h,
-    id: h.id || (h as any)._id,   // 🔑 מבטיח שתמיד יהיה id
-    city: map.get(h.city_place_id) || h.city_place_id,
-  }));
-};
-
+    return items.map<Host>((h) => ({
+      ...h,
+      id: h.id || (h as any)._id, // 🔑 מבטיח שתמיד יהיה id
+      city: map.get(h.city_place_id) || h.city_place_id,
+    }));
+  };
 
   useEffect(() => {
     fetchHosts();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [country, filters]);
+  }, [country]);
 
   const fetchHosts = async () => {
     try {
       setLoading(true);
-      const data = await HostService.getHostsByCountry(country); 
+      const data = await HostService.getHostsByCountry(country);
       const enriched = await resolveCityNames(data);
       setHosts(enriched);
     } catch (err) {
@@ -108,26 +106,43 @@ const resolveCityNames = async (items: Host[]) => {
   };
 
   const filteredHosts = hosts.filter((host) => {
-    if (
-      filters.city &&
-!(host.city?.toLowerCase() || "").includes(filters.city.toLowerCase())
-    )
-      return false;
+    // פילטר עיר - חיפוש חלקי עם תמיכה בעברית
+    if (filters.city && filters.city.trim()) {
+      const cityFilter = filters.city.trim().toLowerCase();
+      const hostCity = (host.city || "").toLowerCase();
+      if (!hostCity.includes(cityFilter)) {
+        return false;
+      }
+    }
+
+    // פילטר סוג אירוח
     if (
       filters.hosting_type.length > 0 &&
       !filters.hosting_type.some((type) => host.hosting_type.includes(type))
-    )
+    ) {
       return false;
-    if (filters.kashrut_level && host.kashrut_level !== filters.kashrut_level)
+    }
+
+    // פילטר רמת כשרות
+    if (filters.kashrut_level && host.kashrut_level !== filters.kashrut_level) {
       return false;
-    if (filters.max_guests > 0 && host.max_guests < filters.max_guests)
+    }
+
+    // פילטר מספר אורחים מקסימלי
+    if (filters.max_guests > 0 && host.max_guests < filters.max_guests) {
       return false;
+    }
+
     return true;
   });
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center py-12">
+      <div
+        className="flex justify-center items-center py-12"
+        dir="rtl"
+        lang="he"
+      >
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
       </div>
     );
@@ -135,15 +150,16 @@ const resolveCityNames = async (items: Host[]) => {
 
   if (error) {
     return (
-      <div className="text-center py-12">
+      <div className="text-center py-12" dir="rtl" lang="he">
         <div className="text-red-500 mb-4">
           <Users className="h-16 w-16 mx-auto" />
         </div>
-        <p className="text-red-600 text-lg">שגיאה בטעינת מארחים</p>
-        <p className="text-red-500 text-sm mt-2">{error}</p>
+        <p className="text-red-600 text-lg font-sans">שגיאה בטעינת מארחים</p>
+        <p className="text-red-500 text-sm mt-2 font-sans">{error}</p>
         <button
           onClick={fetchHosts}
-          className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-sans"
+          style={{ fontFamily: "system-ui, -apple-system, sans-serif" }}
         >
           נסה שוב
         </button>
@@ -152,19 +168,22 @@ const resolveCityNames = async (items: Host[]) => {
   }
 
   return (
-    <div className="space-y-6" dir="rtl">
+    <div className="space-y-6" dir="rtl" lang="he">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <button
             onClick={onBack}
-            className="text-blue-600 hover:text-blue-700 mb-2 flex items-center gap-2"
+            className="text-blue-600 hover:text-blue-700 mb-2 flex items-center gap-2 font-sans"
+            style={{ fontFamily: "system-ui, -apple-system, sans-serif" }}
           >
             ← חזרה למדינות
           </button>
-          <h2 className="text-2xl font-bold text-gray-900">
+          <h2 className="text-2xl font-bold text-gray-900 font-sans">
             מארחים ב{country}
           </h2>
-          <p className="text-gray-600">{filteredHosts.length} מארחים זמינים</p>
+          <p className="text-gray-600 font-sans">
+            {filteredHosts.length} מארחים זמינים
+          </p>
         </div>
       </div>
 
@@ -174,18 +193,26 @@ const resolveCityNames = async (items: Host[]) => {
             type="text"
             placeholder="חיפוש עיר..."
             value={filters.city}
-            onChange={(e) =>
-              setFilters((prev) => ({ ...prev, city: e.target.value }))
-            }
-            className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            onChange={(e) => {
+              const value = e.target.value;
+              setFilters((prev) => ({ ...prev, city: value }));
+            }}
+            className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-right font-sans"
+            dir="rtl"
+            lang="he"
+            style={{ fontFamily: "system-ui, -apple-system, sans-serif" }}
           />
 
           <select
             value={filters.kashrut_level}
-            onChange={(e) =>
-              setFilters((prev) => ({ ...prev, kashrut_level: e.target.value }))
-            }
-            className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            onChange={(e) => {
+              const value = e.target.value;
+              setFilters((prev) => ({ ...prev, kashrut_level: value }));
+            }}
+            className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-right font-sans"
+            dir="rtl"
+            lang="he"
+            style={{ fontFamily: "system-ui, -apple-system, sans-serif" }}
           >
             <option value="">כל הכשרויות</option>
             <option value="כשר">כשר</option>
@@ -194,13 +221,17 @@ const resolveCityNames = async (items: Host[]) => {
 
           <select
             value={filters.max_guests}
-            onChange={(e) =>
+            onChange={(e) => {
+              const value = parseInt(e.target.value) || 0;
               setFilters((prev) => ({
                 ...prev,
-                max_guests: parseInt(e.target.value) || 0,
-              }))
-            }
-            className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                max_guests: value,
+              }));
+            }}
+            className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-right font-sans"
+            dir="rtl"
+            lang="he"
+            style={{ fontFamily: "system-ui, -apple-system, sans-serif" }}
           >
             <option value="0">כל מספר אורחים</option>
             <option value="1">1+ אורחים</option>
@@ -226,7 +257,6 @@ const resolveCityNames = async (items: Host[]) => {
                     "https://picsum.photos/400/200?random=" + host.id
                   }
                   alt={host.name ?? "Host image"}
-
                   fill
                   className="object-cover hover:scale-105 transition-transform duration-300"
                 />
@@ -299,11 +329,14 @@ const resolveCityNames = async (items: Host[]) => {
                       e.stopPropagation();
                       setSelectedHost(host);
                     }}
-                    className="flex-1 px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg font-medium hover:from-blue-700 hover:to-purple-700 transform group-hover:-translate-y-0.5 transition-all duration-200 text-sm"
+                    className="flex-1 px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg font-medium hover:from-blue-700 hover:to-purple-700 transform group-hover:-translate-y-0.5 transition-all duration-200 text-sm font-sans"
+                    style={{
+                      fontFamily: "system-ui, -apple-system, sans-serif",
+                    }}
                   >
                     בקש אירוח
                   </button>
-                  <button className="px-3 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
+                  <button className="px-3 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-sans">
                     <MessageCircle className="h-4 w-4" />
                   </button>
                 </div>
@@ -316,8 +349,8 @@ const resolveCityNames = async (items: Host[]) => {
           <div className="text-gray-400 mb-4">
             <Users className="h-16 w-16 mx-auto" />
           </div>
-          <p className="text-gray-500 text-lg">לא נמצאו מארחים</p>
-          <p className="text-gray-400 text-sm mt-2">
+          <p className="text-gray-500 text-lg font-sans">לא נמצאו מארחים</p>
+          <p className="text-gray-400 text-sm mt-2 font-sans">
             נסו לשנות את הפילטרים שלכם
           </p>
         </div>

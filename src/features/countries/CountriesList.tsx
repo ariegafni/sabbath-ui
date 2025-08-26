@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { MapPin, Users } from "lucide-react";
+import { MapPin, Users, Search } from "lucide-react";
 import { LocationService, Country } from "../../service";
 
 type CountryView = Country & { display_name: string };
@@ -12,6 +12,8 @@ export default function CountriesList({
   onCountrySelect?: (country: Country) => void;
 }) {
   const [countries, setCountries] = useState<CountryView[]>([]);
+  const [filteredCountries, setFilteredCountries] = useState<CountryView[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -63,6 +65,7 @@ export default function CountriesList({
         const data = await LocationService.getCountries();
         const enriched = await resolveNames(data);
         setCountries(enriched);
+        setFilteredCountries(enriched);
       } catch (err) {
         setError(err instanceof Error ? err.message : "שגיאה בטעינת מדינות");
       } finally {
@@ -70,6 +73,18 @@ export default function CountriesList({
       }
     })();
   }, []);
+
+  useEffect(() => {
+    if (searchTerm.trim() === "") {
+      setFilteredCountries(countries);
+    } else {
+      const filtered = countries.filter((country) =>
+        country.display_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        country.name?.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+      setFilteredCountries(filtered);
+    }
+  }, [searchTerm, countries]);
 
   if (loading) {
     return (
@@ -100,8 +115,22 @@ export default function CountriesList({
         <p className="text-gray-600">בחרו מדינה וחפשו מארחים זמינים</p>
       </div>
 
+      {/* שדה חיפוש מדינה */}
+      <div className="max-w-md mx-auto">
+        <div className="relative">
+          <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+          <input
+            type="text"
+            placeholder="חיפוש מדינה..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full pl-4 pr-10 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-right"
+          />
+        </div>
+      </div>
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {countries.map((country) => (
+        {filteredCountries.map((country) => (
           <div
             key={country.place_id}
             className="bg-white rounded-xl shadow-sm hover:shadow-lg transition-all duration-200 overflow-hidden border border-gray-100 cursor-pointer group"
@@ -142,6 +171,14 @@ export default function CountriesList({
           </div>
         ))}
       </div>
+
+      {/* הודעה אם לא נמצאו תוצאות חיפוש */}
+      {searchTerm && filteredCountries.length === 0 && (
+        <div className="text-center py-8">
+          <p className="text-gray-500 text-lg">לא נמצאו מדינות התואמות לחיפוש שלכם</p>
+          <p className="text-gray-400 text-sm mt-2">נסו לחפש עם מילים אחרות</p>
+        </div>
+      )}
     </div>
   );
 }
