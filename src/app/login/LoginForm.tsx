@@ -48,7 +48,6 @@ export default function LoginForm({ onSwitchToRegister }: Props) {
 
   return (
     <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
-      {/* Header */}
       <div className="bg-gradient-to-r from-blue-600 to-purple-600 px-6 py-8 text-center">
         <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2">
           ברוכים הבאים
@@ -56,9 +55,7 @@ export default function LoginForm({ onSwitchToRegister }: Props) {
         <p className="text-blue-100 text-sm sm:text-base">התחברו לחשבון שלכם</p>
       </div>
 
-      {/* Form */}
       <form onSubmit={handleSubmit} className="px-6 py-8 space-y-6">
-        {/* שם */}
         <div className="space-y-2">
           <label className="block text-sm font-medium text-gray-700">
             שם מלא
@@ -78,8 +75,6 @@ export default function LoginForm({ onSwitchToRegister }: Props) {
             />
           </div>
         </div>
-
-        {/* אימייל */}
         <div className="space-y-2">
           <label className="block text-sm font-medium text-gray-700">
             אימייל
@@ -99,8 +94,6 @@ export default function LoginForm({ onSwitchToRegister }: Props) {
             />
           </div>
         </div>
-
-        {/* סיסמה */}
         <div className="space-y-2">
           <label className="block text-sm font-medium text-gray-700">
             סיסמה
@@ -120,8 +113,6 @@ export default function LoginForm({ onSwitchToRegister }: Props) {
             />
           </div>
         </div>
-
-        {/* כפתור כניסה */}
         <button
           type="submit"
           className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl py-3 font-semibold hover:from-blue-700 hover:to-purple-700 transform hover:-translate-y-0.5 transition-all duration-200 flex items-center justify-center gap-2 text-sm sm:text-base"
@@ -130,8 +121,6 @@ export default function LoginForm({ onSwitchToRegister }: Props) {
           {loading ? "מתחבר..." : "כניסה"}
           <ArrowRight className="h-4 w-4" />
         </button>
-
-        {/* קישור להרשמה */}
         <div className="text-center pt-4 border-t border-gray-100">
           <p className="text-sm text-gray-600">
             אין לך חשבון?{" "}

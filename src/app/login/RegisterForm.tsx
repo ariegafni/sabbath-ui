@@ -28,21 +28,13 @@ export default function RegisterForm({ onSwitchToLogin }: Props) {
     const password = form.password;
 
     try {
-      const res = await AuthService.register({
+       await AuthService.register({
         first_name,
         last_name,
         email,
         password,
-        // phone: "" // אם תוסיף שדה בעתיד
       });
-
-      // אופציה: להתחבר אוטומטית
-      localStorage.setItem("access_token", res.access_token);
-      localStorage.setItem("refresh_token", res.refresh_token);
-      localStorage.setItem("user", JSON.stringify(res.user));
-      // או: onSwitchToLogin();
-
-      console.log("Registered:", res.user);
+      onSwitchToLogin();
     } catch (err) {
       console.error("Register failed:", err);
       alert("הרשמה נכשלה");
@@ -51,17 +43,13 @@ export default function RegisterForm({ onSwitchToLogin }: Props) {
 
   return (
     <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
-      {/* Header */}
       <div className="bg-gradient-to-r from-blue-600 to-purple-600 px-6 py-8 text-center">
         <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2">
           הרשמה
         </h1>
         <p className="text-blue-100 text-sm sm:text-base">צרו חשבון חדש</p>
       </div>
-
-      {/* Form */}
       <form onSubmit={handleSubmit} className="px-6 py-8 space-y-6">
-        {/* שם פרטי */}
         <div className="space-y-2">
           <label className="block text-sm font-medium text-gray-700">
             שם פרטי
@@ -82,7 +70,6 @@ export default function RegisterForm({ onSwitchToLogin }: Props) {
           </div>
         </div>
 
-        {/* שם משפחה */}
         <div className="space-y-2">
           <label className="block text-sm font-medium text-gray-700">
             שם משפחה
@@ -103,7 +90,6 @@ export default function RegisterForm({ onSwitchToLogin }: Props) {
           </div>
         </div>
 
-        {/* אימייל */}
         <div className="space-y-2">
           <label className="block text-sm font-medium text-gray-700">
             אימייל
@@ -124,7 +110,6 @@ export default function RegisterForm({ onSwitchToLogin }: Props) {
           </div>
         </div>
 
-        {/* סיסמה */}
         <div className="space-y-2">
           <label className="block text-sm font-medium text-gray-700">
             סיסמה
@@ -144,8 +129,6 @@ export default function RegisterForm({ onSwitchToLogin }: Props) {
             />
           </div>
         </div>
-
-        {/* כפתור הרשמה */}
         <button
           type="submit"
           className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl py-3 font-semibold hover:from-blue-700 hover:to-purple-700 transform hover:-translate-y-0.5 transition-all duration-200 flex items-center justify-center gap-2 text-sm sm:text-base"
@@ -153,8 +136,6 @@ export default function RegisterForm({ onSwitchToLogin }: Props) {
           הרשמה
           <ArrowRight className="h-4 w-4" />
         </button>
-
-        {/* קישור להתחברות */}
         <div className="text-center pt-4 border-t border-gray-100">
           <p className="text-sm text-gray-600">
             כבר יש לך חשבון?{" "}
