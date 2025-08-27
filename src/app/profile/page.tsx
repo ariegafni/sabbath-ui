@@ -3,15 +3,9 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/Providers/AuthProvider";
-import {
-  User,
-  Settings,
-  LogOut,
-  Bell,
-  Edit3,
-} from "lucide-react";
+import { User, Settings, LogOut, Bell, Edit3 } from "lucide-react";
 import Button from "@/ui/Button";
-import { HostService } from "@/service";
+import { HostService, UserService, GeneralService } from "@/service";
 
 type UserProfile = {
   id: string;
@@ -45,6 +39,7 @@ export default function ProfilePage() {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [showEditForm, setShowEditForm] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -95,6 +90,42 @@ export default function ProfilePage() {
     window.location.href = "/";
   };
 
+  const handleDeleteAccount = async () => {
+    if (
+      !confirm("האם אתה בטוח שברצונך למחוק את החשבון? פעולה זו אינה הפיכה.")
+    ) {
+      return;
+    }
+    try {
+      setIsSubmitting(true);
+      await UserService.deleteAccount();
+      alert("החשבון נמחק בהצלחה");
+      handleLogout();
+    } catch (error) {
+      console.error("Failed to delete account:", error);
+      alert("שגיאה במחיקת החשבון");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleReportProblem = async () => {
+    const description = prompt("תאר/י את הבעיה בקצרה:");
+    if (!description || !description.trim()) {
+      return;
+    }
+    try {
+      setIsSubmitting(true);
+      await GeneralService.reportProblem({ description: description.trim() });
+      alert("הדיווח נשלח. תודה!");
+    } catch (error) {
+      console.error("Failed to report problem:", error);
+      alert("שגיאה בשליחת הדיווח");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   if (loading || !user) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center pb-20">
@@ -141,8 +172,6 @@ export default function ProfilePage() {
 
       {/* Profile Content */}
       <div className="max-w-4xl mx-auto px-4 py-6">
-        
-
         {/* Profile Card */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 mb-6">
           <div className="flex items-start gap-6">
@@ -169,7 +198,7 @@ export default function ProfilePage() {
                 <div className="flex items-center gap-2">
                   <span>{profile.email}</span>
                 </div>
-              </div>              
+              </div>
 
               {/* Settings Display */}
               {profile.settings && (
@@ -225,16 +254,6 @@ export default function ProfilePage() {
               </div>
               <span className="text-gray-400">→</span>
             </button>
-
-            <button className="w-full flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 transition-colors">
-              <div className="flex items-center gap-3">
-                <User className="h-5 w-5 text-gray-500" />
-                <span className="text-gray-700">פרטיות</span>
-              </div>
-              <span className="text-gray-400">→</span>
-            </button>
-
-            
           </div>
         </div>
 
@@ -245,14 +264,22 @@ export default function ProfilePage() {
           </h3>
 
           <div className="space-y-3">
-            <button className="w-full flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 transition-colors text-red-600">
+            <button
+              onClick={handleReportProblem}
+              disabled={isSubmitting}
+              className="w-full flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 transition-colors text-red-600 disabled:opacity-50"
+            >
               <div className="flex items-center gap-3">
                 <span>דיווח על בעיה</span>
               </div>
               <span className="text-gray-400">→</span>
             </button>
 
-            <button className="w-full flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 transition-colors text-red-600">
+            <button
+              onClick={handleDeleteAccount}
+              disabled={isSubmitting}
+              className="w-full flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 transition-colors text-red-600 disabled:opacity-50"
+            >
               <div className="flex items-center gap-3">
                 <span>מחק חשבון</span>
               </div>
