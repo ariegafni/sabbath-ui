@@ -6,6 +6,7 @@ import { useAuth } from "@/Providers/AuthProvider";
 import { User, Settings, LogOut, Bell, Edit3 } from "lucide-react";
 import Button from "@/ui/Button";
 import { HostService, UserService, GeneralService } from "@/service";
+import LanguageSwitcher from "@/ui/LanguageSwitcher";
 
 type UserProfile = {
   id: string;
@@ -125,36 +126,34 @@ export default function ProfilePage() {
   };
 
   const handleDeleteAccount = async () => {
-    if (
-      !confirm("האם אתה בטוח שברצונך למחוק את החשבון? פעולה זו אינה הפיכה.")
-    ) {
+    if (!confirm(t("profile.confirmDelete"))) {
       return;
     }
     try {
       setIsSubmitting(true);
       await UserService.deleteAccount();
-      alert("החשבון נמחק בהצלחה");
+      alert(t("profile.deleteSuccess"));
       handleLogout();
     } catch (error) {
       console.error("Failed to delete account:", error);
-      alert("שגיאה במחיקת החשבון");
+      alert(t("profile.deleteError"));
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const handleReportProblem = async () => {
-    const description = prompt("תאר/י את הבעיה בקצרה:");
+    const description = prompt(t("profile.reportPrompt"));
     if (!description || !description.trim()) {
       return;
     }
     try {
       setIsSubmitting(true);
       await GeneralService.reportProblem({ description: description.trim() });
-      alert("הדיווח נשלח. תודה!");
+      alert(t("profile.reportSuccess"));
     } catch (error) {
       console.error("Failed to report problem:", error);
-      alert("שגיאה בשליחת הדיווח");
+      alert(t("profile.reportError"));
     } finally {
       setIsSubmitting(false);
     }
@@ -172,9 +171,9 @@ export default function ProfilePage() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center pb-20">
         <div className="text-center">
-          <p className="text-gray-600">שגיאה בטעינת הפרופיל</p>
+          <p className="text-gray-600">{t("profile.errorLoading")}</p>
           <Button onClick={fetchProfile} className="mt-4">
-            נסה שוב
+            {t("common.retry")}
           </Button>
         </div>
       </div>
@@ -191,14 +190,16 @@ export default function ProfilePage() {
       <div className="bg-white border-b border-gray-200 sticky top-0 z-40">
         <div className="max-w-4xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-bold text-gray-900">הפרופיל שלי</h1>
+            <h1 className="text-2xl font-bold text-gray-900">
+              {t("profile.title")}
+            </h1>
             <Button
               onClick={() => setShowEditForm(!showEditForm)}
               variant="outline"
               className="flex items-center gap-2"
             >
               <Edit3 className="h-4 w-4" />
-              ערוך
+              {t("common.edit")}
             </Button>
           </div>
         </div>
@@ -238,28 +239,38 @@ export default function ProfilePage() {
               {profile.settings && (
                 <div className="mt-4 pt-4 border-t border-gray-200">
                   <h4 className="text-sm font-medium text-gray-700 mb-2">
-                    הגדרות
+                    {t("settings.title")}
                   </h4>
                   <div className="grid grid-cols-2 gap-4 text-sm text-gray-600">
                     <div>
-                      <span className="font-medium">שפה:</span>{" "}
+                      <span className="font-medium">
+                        {t("common.language")}:
+                      </span>{" "}
                       {profile.settings.language === "he"
-                        ? "עברית"
-                        : profile.settings.language}
+                        ? t("common.hebrew")
+                        : t("common.english")}
                     </div>
                     <div>
-                      <span className="font-medium">אזור זמן:</span>{" "}
+                      <span className="font-medium">
+                        {t("common.timezone")}:
+                      </span>{" "}
                       {profile.settings.timezone}
                     </div>
                     <div>
-                      <span className="font-medium">התראות אימייל:</span>{" "}
+                      <span className="font-medium">
+                        {t("common.emailNotifications")}:
+                      </span>{" "}
                       {profile.settings.email_notifications
-                        ? "פעיל"
-                        : "לא פעיל"}
+                        ? t("common.on")
+                        : t("common.off")}
                     </div>
                     <div>
-                      <span className="font-medium">התראות דחיפה:</span>{" "}
-                      {profile.settings.push_notifications ? "פעיל" : "לא פעיל"}
+                      <span className="font-medium">
+                        {t("common.pushNotifications")}:
+                      </span>{" "}
+                      {profile.settings.push_notifications
+                        ? t("common.on")
+                        : t("common.off")}
                     </div>
                   </div>
                 </div>
@@ -270,17 +281,19 @@ export default function ProfilePage() {
 
         {/* Settings */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 mb-6">
-          <h3 className="text-lg font-medium text-gray-900 mb-4">הגדרות</h3>
+          <h3 className="text-lg font-medium text-gray-900 mb-4">
+            {t("settings.title")}
+          </h3>
 
           <div className="space-y-3">
-            {/* Language Selector (collapsible) */}
+            {/* Language Selector (collapsible with shared component) */}
             <button
               onClick={() => setLanguageOpen(!languageOpen)}
               className="w-full flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 transition-colors"
             >
               <div className="flex items-center gap-3">
                 <Settings className="h-5 w-5 text-gray-500" />
-                <span className="text-gray-700">שפה</span>
+                <span className="text-gray-700">{t("settings.language")}</span>
               </div>
               <span
                 className={`text-gray-400 transition-transform ${
@@ -291,34 +304,15 @@ export default function ProfilePage() {
               </span>
             </button>
             {languageOpen && (
-              <div className="pl-10 flex items-center gap-2">
-                <button
-                  onClick={() => handleChangeLanguage("he")}
-                  className={`px-3 py-1 rounded-md text-sm border transition-colors ${
-                    language === "he"
-                      ? "bg-blue-600 text-white border-blue-600"
-                      : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
-                  }`}
-                >
-                  עברית
-                </button>
-                <button
-                  onClick={() => handleChangeLanguage("en")}
-                  className={`px-3 py-1 rounded-md text-sm border transition-colors ${
-                    language === "en"
-                      ? "bg-blue-600 text-white border-blue-600"
-                      : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
-                  }`}
-                >
-                  English
-                </button>
+              <div className="pl-10">
+                <LanguageSwitcher />
               </div>
             )}
 
             <button className="w-full flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 transition-colors">
               <div className="flex items-center gap-3">
                 <Settings className="h-5 w-5 text-gray-500" />
-                <span className="text-gray-700">הגדרות חשבון</span>
+                <span className="text-gray-700">{t("settings.account")}</span>
               </div>
               <span className="text-gray-400">→</span>
             </button>
@@ -326,7 +320,9 @@ export default function ProfilePage() {
             <button className="w-full flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 transition-colors">
               <div className="flex items-center gap-3">
                 <Bell className="h-5 w-5 text-gray-500" />
-                <span className="text-gray-700">התראות</span>
+                <span className="text-gray-700">
+                  {t("settings.notifications")}
+                </span>
               </div>
               <span className="text-gray-400">→</span>
             </button>
@@ -336,7 +332,7 @@ export default function ProfilePage() {
         {/* Account Actions */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
           <h3 className="text-lg font-medium text-gray-900 mb-4">
-            פעולות חשבון
+            {t("profile.accountActions")}
           </h3>
 
           <div className="space-y-3">
@@ -346,7 +342,7 @@ export default function ProfilePage() {
               className="w-full flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 transition-colors text-red-600 disabled:opacity-50"
             >
               <div className="flex items-center gap-3">
-                <span>דיווח על בעיה</span>
+                <span>{t("common.reportProblem")}</span>
               </div>
               <span className="text-gray-400">→</span>
             </button>
@@ -357,7 +353,7 @@ export default function ProfilePage() {
               className="w-full flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 transition-colors text-red-600 disabled:opacity-50"
             >
               <div className="flex items-center gap-3">
-                <span>מחק חשבון</span>
+                <span>{t("settings.deleteAccount")}</span>
               </div>
               <span className="text-gray-400">→</span>
             </button>
@@ -368,7 +364,7 @@ export default function ProfilePage() {
               className="w-full flex items-center justify-center gap-2 text-red-600 border-red-200 hover:bg-red-50"
             >
               <LogOut className="h-4 w-4" />
-              התנתקות
+              {t("auth.logout")}
             </Button>
           </div>
         </div>

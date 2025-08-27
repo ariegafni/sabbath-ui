@@ -50,7 +50,7 @@ export default function HostProfileForm() {
           value={name}
           onChange={(e) => setName(e.target.value)}
           className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-sm sm:text-base"
-          placeholder="הכנס את שמך המלא"
+          placeholder={t("auth.fullNamePlaceholder")}
           required
         />
       </div>
@@ -66,7 +66,7 @@ export default function HostProfileForm() {
           value={location}
           onChange={(e) => setLocation(e.target.value)}
           className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-sm sm:text-base"
-          placeholder="הכנס את המיקום שלך"
+          placeholder={t("search.location")}
           required
         />
       </div>
@@ -132,7 +132,7 @@ export default function HostProfileForm() {
           onChange={(e) => setDescription(e.target.value)}
           rows={4}
           className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-sm sm:text-base resize-none"
-          placeholder="תארו את עצמכם ואת הארוחה שלכם..."
+          placeholder={t("hostProfile.description")}
           required
         />
       </div>

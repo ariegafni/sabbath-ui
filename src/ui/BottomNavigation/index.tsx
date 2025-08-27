@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Home, User, Plus, Calendar, Briefcase } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -19,6 +20,7 @@ export default function BottomNavigation() {
   const pathname = usePathname();
   const { user } = useAuth();
   const [isHost, setIsHost] = useState(false);
+  const { t } = useTranslation();
 
   useEffect(() => {
     const check = async () => {
@@ -40,13 +42,13 @@ export default function BottomNavigation() {
   const hostNavItem: NavigationItem = isHost
     ? {
         id: "manage-hosting",
-        label: "נהל אירוח",
+        label: t("nav.manageHosting", { defaultValue: "נהל אירוח" }),
         icon: Calendar,
         href: "/manage-hosting",
       }
     : {
         id: "host",
-        label: "פרסם אירוח",
+        label: t("nav.publish", { defaultValue: "פרסם אירוח" }),
         icon: Plus,
         href: "/host",
       };
@@ -54,20 +56,20 @@ export default function BottomNavigation() {
   const navigationItems: NavigationItem[] = [
     {
       id: "home",
-      label: "בית",
+      label: t("nav.home"),
       icon: Home,
       href: "/",
     },
     {
       id: "personal-area",
-      label: "אזור אישי",
+      label: t("nav.personalArea", { defaultValue: "אזור אישי" }),
       icon: Briefcase,
       href: "/personal-area",
     },
     hostNavItem,
     {
       id: "profile",
-      label: "פרופיל",
+      label: t("nav.profile", { defaultValue: "פרופיל" }),
       icon: User,
       href: "/profile",
     },

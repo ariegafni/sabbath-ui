@@ -7,7 +7,10 @@
     "hosts": "Hosts",
     "search": "Search",
     "publish": "Publish Meal",
-    "settings": "Settings"
+    "settings": "Settings",
+    "personalArea": "Personal Area",
+    "profile": "Profile",
+    "manageHosting": "Manage Hosting"
   },
   "settings": {
     "title": "Settings",
@@ -17,6 +20,21 @@
   },
   "publish": {
     "title": "Publish Meal",
+    "submit": "Publish",
+    "form": {
+      "preferencesTitle": "Preferences & Hosting Style",
+      "kashrutLabel": "Kashrut level",
+      "hostingTypeLabel": "Hosting type",
+      "languagesLabelOptional": "Languages (optional)",
+      "detailsTitle": "Hosting Details",
+      "maxGuestsLabel": "Max number of guests",
+      "bioLabel": "Short description about you and your hosting",
+      "bioPlaceholder": "Tell about yourself, your home, and what you offer...",
+      "photosTitle": "Home Photos",
+      "addPhoto": "Add photo",
+      "photosLimit": "You can upload up to 8 photos",
+      "photoAlt": "Photo {{index}}"
+    },
     "subtitle": "Select at least one option in each required category.",
     "religion": {
       "title": "Religious Level",
@@ -79,7 +97,23 @@
   },
   "common": {
     "cancel": "Cancel",
-    "submit": "Submit"
+    "submit": "Submit",
+    "retry": "Retry",
+    "language": "Language",
+    "hebrew": "Hebrew",
+    "english": "English",
+    "timezone": "Timezone",
+    "emailNotifications": "Email notifications",
+    "pushNotifications": "Push notifications",
+    "on": "On",
+    "off": "Off",
+    "comingSoon": "Coming soon",
+    "yesterday": "Yesterday",
+    "recentActivity": "Recent Activity",
+    "noActivity": "No activity yet",
+    "location": "Location",
+    "notSet": "Not set",
+    "capacity": "Capacity"
   },
   "profile": {
     "title": "User Profile",
@@ -132,8 +166,160 @@
     "time": "Time"
   },
   "auth": {
-  "login": "Login",
-  "register": "Register"
-}
-
+    "login": "Login",
+    "register": "Register",
+    "welcome": "Welcome",
+    "loginSubtitle": "Sign in to your account",
+    "fullName": "Full name",
+    "fullNamePlaceholder": "Enter your full name",
+    "email": "Email",
+    "emailPlaceholder": "Enter your email",
+    "password": "Password",
+    "passwordPlaceholder": "Enter your password",
+    "loggingIn": "Logging in...",
+    "loginError": "Invalid credentials or server error",
+    "noAccount": "Don't have an account?",
+    "createAccount": "Create a new account",
+    "registerSubtitle": "Create a new account",
+    "firstName": "First name",
+    "firstNamePlaceholder": "Enter your first name",
+    "lastName": "Last name",
+    "lastNamePlaceholder": "Enter your last name",
+    "passwordStrongPlaceholder": "Enter a strong password",
+    "registerError": "Registration failed",
+    "haveAccount": "Already have an account?",
+    "loginToAccount": "Login to your account",
+    "logout": "Logout"
+  },
+  "host": {
+    "header": { "subtitle": "Share your home with guests" },
+    "success": {
+      "title": "Host profile created successfully!",
+      "description": "You can now receive hosting requests and manage your profile",
+      "backHome": "Back to home"
+    }
+  },
+  "manageHosting": {
+    "title": "Manage Hostings",
+    "subtitle": "Manage your hostings",
+    "activeHostings": "Active hostings",
+    "guestsHosted": "Guests hosted",
+    "availability": {
+      "title": "Availability Management",
+      "description": "Set when your home is available for hosting and conditions",
+      "cta": "Set availability"
+    },
+    "requests": {
+      "title": "Hosting Requests",
+      "description": "View and respond to new hosting requests",
+      "cta": "View requests"
+    },
+    "activity": {
+      "placeholder": "When you get requests or host guests, activity will appear here"
+    },
+    "hostProfile": {
+      "title": "Host Profile Management"
+    }
+  },
+  "messages": {
+    "title": "Messages",
+    "subtitle": "All your chats",
+    "host": "Host",
+    "guest": "Guest",
+    "activeChat": "Active chat",
+    "chatWith": "Chat with {{name}}",
+    "requestNumber": "Request #{{id}}",
+    "empty": {
+      "title": "No messages yet",
+      "description": "When you start messaging hosts, your chats will appear here"
+    }
+  },
+  "countries": {
+    "title": "Find hosting around the world",
+    "subtitle": "Choose a country and search for available hosts",
+    "searchPlaceholder": "Search country...",
+    "hostsAvailable": "{{count}} hosts available",
+    "viewHosts": "View hosts",
+    "noResults": "No countries match your search",
+    "tryDifferentQuery": "Try different search terms",
+    "errorLoading": "Failed to load countries"
+  },
+  "hosts": {
+    "errorLoading": "Failed to load hosts",
+    "backToCountries": "Back to countries",
+    "titleInCountry": "Hosts in {{country}}",
+    "available": "{{count}} hosts available",
+    "searchCityPlaceholder": "Search city...",
+    "kashrut": {
+      "all": "All kashrut levels",
+      "kosher": "Kosher",
+      "mehadrin": "Mehadrin"
+    },
+    "guests": {
+      "any": "Any number of guests",
+      "atLeast": "{{n}}+ guests"
+    },
+    "spots": "{{count}} spots",
+    "requestHosting": "Request hosting",
+    "empty": {
+      "title": "No hosts found",
+      "description": "Try changing your filters"
+    }
+  },
+  "profile": {
+    "errorLoading": "Error loading profile",
+    "confirmDelete": "Are you sure you want to delete your account? This action cannot be undone.",
+    "deleteSuccess": "Account deleted successfully",
+    "deleteError": "Error deleting account",
+    "reportPrompt": "Briefly describe the problem:",
+    "reportSuccess": "Report sent. Thank you!",
+    "reportError": "Error sending report",
+    "accountActions": "Account Actions",
+    "title": "User Profile"
+  },
+  "settings": {
+    "account": "Account Settings",
+    "notifications": "Notifications",
+    "title": "Settings",
+    "language": "Language Settings",
+    "deleteAccount": "Delete Account",
+    "contact": "Contact Us"
+  },
+  "common": {
+    "cancel": "Cancel",
+    "submit": "Submit",
+    "retry": "Retry",
+    "language": "Language",
+    "hebrew": "Hebrew",
+    "english": "English",
+    "timezone": "Timezone",
+    "emailNotifications": "Email notifications",
+    "pushNotifications": "Push notifications",
+    "on": "On",
+    "off": "Off",
+    "comingSoon": "Coming soon",
+    "yesterday": "Yesterday",
+    "recentActivity": "Recent Activity",
+    "noActivity": "No activity yet",
+    "location": "Location",
+    "notSet": "Not set",
+    "capacity": "Capacity",
+    "edit": "Edit",
+    "reportProblem": "Report a problem",
+    "back": "Back"
+  },
+  "personalArea": {
+    "title": "Personal Area",
+    "backToPersonalArea": "Back to personal area",
+    "myRequestsTitle": "My requests",
+    "messages": {
+      "description": "View your messages and contact hosts",
+      "open": "Open messages"
+    },
+    "requests": {
+      "description": "View hosting requests you've submitted and track their status",
+      "open": "Open requests"
+    },
+    "footerNote": "Here you can manage all your personal activity in the app"
+  }
 }

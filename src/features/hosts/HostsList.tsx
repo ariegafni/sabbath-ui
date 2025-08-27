@@ -13,7 +13,6 @@ type HostsListProps = {
   onBack?: () => void;
 };
 
-
 export default function HostsList({
   country,
   onHostSelect,
@@ -99,7 +98,7 @@ export default function HostsList({
       const enriched = await resolveCityNames(data);
       setHosts(enriched);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to fetch hosts");
+      setError(err instanceof Error ? err.message : t("hosts.errorLoading"));
       setHosts([]);
     } finally {
       setLoading(false);
@@ -177,14 +176,14 @@ export default function HostsList({
             className="text-blue-600 hover:text-blue-700 mb-2 flex items-center gap-2 font-sans"
             style={{ fontFamily: "system-ui, -apple-system, sans-serif" }}
           >
-            ← חזרה למדינות
+            ← {t("hosts.backToCountries")}
           </button>
           <h2 className="text-2xl font-bold text-gray-900 font-sans">
-            מארחים ב{country.display_name}
+            {t("hosts.titleInCountry", { country: country.display_name })}
           </h2>
 
           <p className="text-gray-600 font-sans">
-            {filteredHosts.length} מארחים זמינים
+            {t("hosts.available", { count: filteredHosts.length })}
           </p>
         </div>
       </div>
@@ -193,7 +192,7 @@ export default function HostsList({
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <input
             type="text"
-            placeholder="חיפוש עיר..."
+            placeholder={t("hosts.searchCityPlaceholder")}
             value={filters.city}
             onChange={(e) => {
               const value = e.target.value;
@@ -216,9 +215,9 @@ export default function HostsList({
             lang="he"
             style={{ fontFamily: "system-ui, -apple-system, sans-serif" }}
           >
-            <option value="">כל הכשרויות</option>
-            <option value="כשר">כשר</option>
-            <option value="כשר למהדרין">כשר למהדרין</option>
+            <option value="">{t("hosts.kashrut.all")}</option>
+            <option value="כשר">{t("hosts.kashrut.kosher")}</option>
+            <option value="כשר למהדרין">{t("hosts.kashrut.mehadrin")}</option>
           </select>
 
           <select
@@ -235,11 +234,11 @@ export default function HostsList({
             lang="he"
             style={{ fontFamily: "system-ui, -apple-system, sans-serif" }}
           >
-            <option value="0">כל מספר אורחים</option>
-            <option value="1">1+ אורחים</option>
-            <option value="2">2+ אורחים</option>
-            <option value="4">4+ אורחים</option>
-            <option value="6">6+ אורחים</option>
+            <option value="0">{t("hosts.guests.any")}</option>
+            <option value="1">{t("hosts.guests.atLeast", { n: 1 })}</option>
+            <option value="2">{t("hosts.guests.atLeast", { n: 2 })}</option>
+            <option value="4">{t("hosts.guests.atLeast", { n: 4 })}</option>
+            <option value="6">{t("hosts.guests.atLeast", { n: 6 })}</option>
           </select>
         </div>
       </div>
@@ -263,7 +262,7 @@ export default function HostsList({
                   className="object-cover hover:scale-105 transition-transform duration-300"
                 />
                 <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-full text-xs font-medium text-gray-700">
-                  {host.max_guests} מקומות
+                  {t("hosts.spots", { count: host.max_guests })}
                 </div>
                 {host.rating && (
                   <div className="absolute top-3 right-3 bg-yellow-400 text-white px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1">
@@ -336,7 +335,7 @@ export default function HostsList({
                       fontFamily: "system-ui, -apple-system, sans-serif",
                     }}
                   >
-                    בקש אירוח
+                    {t("hosts.requestHosting")}
                   </button>
                   <button className="px-3 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-sans">
                     <MessageCircle className="h-4 w-4" />
@@ -351,9 +350,11 @@ export default function HostsList({
           <div className="text-gray-400 mb-4">
             <Users className="h-16 w-16 mx-auto" />
           </div>
-          <p className="text-gray-500 text-lg font-sans">לא נמצאו מארחים</p>
+          <p className="text-gray-500 text-lg font-sans">
+            {t("hosts.empty.title")}
+          </p>
           <p className="text-gray-400 text-sm mt-2 font-sans">
-            נסו לשנות את הפילטרים שלכם
+            {t("hosts.empty.description")}
           </p>
         </div>
       )}

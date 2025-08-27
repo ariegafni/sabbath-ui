@@ -29,7 +29,7 @@ export default function HostPage() {
       setIsSubmitted(true);
     } catch (err) {
       console.error("Failed to create host:", err);
-      alert("שגיאה בתקשורת עם השרת");
+      alert(t("common.serverError"));
     } finally {
       setLoading(false);
     }
@@ -43,16 +43,14 @@ export default function HostPage() {
             <CheckCircle className="h-16 w-16 text-green-500 mx-auto" />
           </div>
           <h1 className="text-2xl font-bold text-gray-900 mb-4">
-            פרופיל מארח נוצר בהצלחה!
+            {t("host.success.title")}
           </h1>
-          <p className="text-gray-600 mb-6">
-            עכשיו תוכלו לקבל בקשות אירוח ולנהל את הפרופיל שלכם
-          </p>
+          <p className="text-gray-600 mb-6">{t("host.success.description")}</p>
           <Button
             onClick={() => (window.location.href = "/")}
             className="w-full"
           >
-            חזרה לדף הבית
+            {t("host.success.backHome")}
           </Button>
         </div>
       </div>
@@ -73,9 +71,11 @@ export default function HostPage() {
               <ArrowRight className="h-5 w-5" />
             </Button>
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">פרסם אירוח</h1>
+              <h1 className="text-2xl font-bold text-gray-900">
+                {t("publish.title")}
+              </h1>
               <p className="text-gray-600 text-sm">
-                שתפו את הבית שלכם עם אורחים
+                {t("host.header.subtitle")}
               </p>
             </div>
           </div>

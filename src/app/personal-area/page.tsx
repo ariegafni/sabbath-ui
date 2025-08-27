@@ -24,9 +24,11 @@ export default function PersonalAreaPage() {
                 className="flex items-center gap-2 text-gray-600 hover:text-gray-800 transition-colors"
               >
                 <ArrowLeft className="h-5 w-5" />
-                חזור לאזור אישי
+                {t("personalArea.backToPersonalArea")}
               </button>
-              <h1 className="text-2xl font-bold text-gray-900">הבקשות שלי</h1>
+              <h1 className="text-2xl font-bold text-gray-900">
+                {t("personalArea.myRequestsTitle")}
+              </h1>
               <div className="w-10"></div> {/* Spacer for centering */}
             </div>
           </div>
@@ -51,9 +53,11 @@ export default function PersonalAreaPage() {
               className="flex items-center gap-2 text-gray-600 hover:text-gray-800 transition-colors"
             >
               <ArrowLeft className="h-5 w-5" />
-              חזור
+              {t("common.back")}
             </button>
-            <h1 className="text-2xl font-bold text-gray-900">אזור אישי</h1>
+            <h1 className="text-2xl font-bold text-gray-900">
+              {t("personalArea.title")}
+            </h1>
             <div className="w-10"></div> {/* Spacer for centering */}
           </div>
         </div>
@@ -72,13 +76,13 @@ export default function PersonalAreaPage() {
                 <MessageCircle className="h-8 w-8 text-blue-600" />
               </div>
               <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                הודעות
+                {t("messages.title")}
               </h3>
               <p className="text-gray-600 mb-4">
-                צפה בהודעות שלך וצור קשר עם מארחים
+                {t("personalArea.messages.description")}
               </p>
               <div className="inline-flex items-center gap-2 text-blue-600 font-medium group-hover:text-blue-700 transition-colors">
-                <span>פתח הודעות</span>
+                <span>{t("personalArea.messages.open")}</span>
                 <span className="text-lg">→</span>
               </div>
             </div>
@@ -94,13 +98,13 @@ export default function PersonalAreaPage() {
                 <Calendar className="h-8 w-8 text-green-600" />
               </div>
               <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                הבקשות שלי
+                {t("personalArea.myRequestsTitle")}
               </h3>
               <p className="text-gray-600 mb-4">
-                צפה בבקשות האירוח שהגשת ועקוב אחר הסטטוס שלהן
+                {t("personalArea.requests.description")}
               </p>
               <div className="inline-flex items-center gap-2 text-green-600 font-medium group-hover:text-green-700 transition-colors">
-                <span>פתח בקשות</span>
+                <span>{t("personalArea.requests.open")}</span>
                 <span className="text-lg">→</span>
               </div>
             </div>
@@ -110,7 +114,7 @@ export default function PersonalAreaPage() {
         {/* Additional Info */}
         <div className="mt-8 text-center">
           <p className="text-gray-500 text-sm">
-            כאן תוכל לנהל את כל הפעילות האישית שלך באפליקציה
+            {t("personalArea.footerNote")}
           </p>
         </div>
       </div>

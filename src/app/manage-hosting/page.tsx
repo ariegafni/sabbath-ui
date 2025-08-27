@@ -16,7 +16,7 @@ import {
 import Button from "@/ui/Button";
 
 export default function ManageHostingPage() {
-  useTranslation();
+  const { t } = useTranslation();
   const { user } = useAuth();
   const router = useRouter();
   const [loading, setLoading] = useState(true);
@@ -45,9 +45,11 @@ export default function ManageHostingPage() {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-2xl font-bold text-gray-900">
-                ניהול אירוחים
+                {t("manageHosting.title")}
               </h1>
-              <p className="text-gray-600 text-sm">נהל את האירוחים שלך</p>
+              <p className="text-gray-600 text-sm">
+                {t("manageHosting.subtitle")}
+              </p>
             </div>
             {/* Removed add hosting button per request */}
           </div>
@@ -64,7 +66,9 @@ export default function ManageHostingPage() {
                 <Calendar className="h-6 w-6 text-blue-600" />
               </div>
               <div>
-                <p className="text-sm text-gray-600">אירוחים פעילים</p>
+                <p className="text-sm text-gray-600">
+                  {t("manageHosting.activeHostings")}
+                </p>
                 <p className="text-2xl font-bold text-gray-900">0</p>
               </div>
             </div>
@@ -76,13 +80,13 @@ export default function ManageHostingPage() {
                 <Users className="h-6 w-6 text-green-600" />
               </div>
               <div>
-                <p className="text-sm text-gray-600">אורחים שהתארחו</p>
+                <p className="text-sm text-gray-600">
+                  {t("manageHosting.guestsHosted")}
+                </p>
                 <p className="text-2xl font-bold text-gray-900">0</p>
               </div>
             </div>
           </div>
-
-     
         </div>
 
         {/* Main Actions */}
@@ -94,19 +98,19 @@ export default function ManageHostingPage() {
                 <Clock className="h-5 w-5 text-blue-600" />
               </div>
               <h3 className="text-lg font-semibold text-gray-900">
-                ניהול זמינות
+                {t("manageHosting.availability.title")}
               </h3>
             </div>
             <p className="text-gray-600 mb-4">
-              הגדר מתי הבית שלך זמין לאירוח ומה התנאים
+              {t("manageHosting.availability.description")}
             </p>
             <Button
-              onClick={() => alert("ניהול זמינות - בקרוב")}
+              onClick={() => alert(t("common.comingSoon"))}
               variant="outline"
               className="w-full"
             >
               <Clock className="h-4 w-4 mr-2" />
-              הגדר זמינות
+              {t("manageHosting.availability.cta")}
             </Button>
           </div>
 
@@ -117,17 +121,19 @@ export default function ManageHostingPage() {
                 <MessageSquare className="h-5 w-5 text-green-600" />
               </div>
               <h3 className="text-lg font-semibold text-gray-900">
-                בקשות אירוח
+                {t("manageHosting.requests.title")}
               </h3>
             </div>
-            <p className="text-gray-600 mb-4">צפה וענה לבקשות אירוח חדשות</p>
+            <p className="text-gray-600 mb-4">
+              {t("manageHosting.requests.description")}
+            </p>
             <Button
               onClick={() => router.push("/manage-hosting/hosting-requests")}
               variant="outline"
               className="w-full"
             >
               <MessageSquare className="h-4 w-4 mr-2" />
-              צפה בבקשות
+              {t("manageHosting.requests.cta")}
             </Button>
           </div>
         </div>
@@ -135,15 +141,15 @@ export default function ManageHostingPage() {
         {/* Recent Activity */}
         <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 mb-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">
-            פעילות אחרונה
+            {t("common.recentActivity")}
           </h3>
           <div className="text-center py-8">
             <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <Calendar className="h-8 w-8 text-gray-400" />
             </div>
-            <p className="text-gray-500 mb-2">אין פעילות עדיין</p>
+            <p className="text-gray-500 mb-2">{t("common.noActivity")}</p>
             <p className="text-sm text-gray-400">
-              כשתקבל בקשות אירוח או תארח אורחים, הפעילות תופיע כאן
+              {t("manageHosting.activity.placeholder")}
             </p>
           </div>
         </div>
@@ -152,7 +158,7 @@ export default function ManageHostingPage() {
         <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold text-gray-900">
-              ניהול פרופיל מארח
+              {t("manageHosting.hostProfile.title")}
             </h3>
             <Button
               onClick={() => router.push("/profile")}
@@ -160,22 +166,26 @@ export default function ManageHostingPage() {
               size="sm"
             >
               <Settings className="h-4 w-4 mr-2" />
-              הגדרות
+              {t("settings.title")}
             </Button>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="flex items-center gap-3 p-3 rounded-lg bg-gray-50">
               <MapPin className="h-5 w-5 text-gray-500" />
               <div>
-                <p className="text-sm font-medium text-gray-900">מיקום</p>
-                <p className="text-sm text-gray-600">לא הוגדר</p>
+                <p className="text-sm font-medium text-gray-900">
+                  {t("common.location")}
+                </p>
+                <p className="text-sm text-gray-600">{t("common.notSet")}</p>
               </div>
             </div>
             <div className="flex items-center gap-3 p-3 rounded-lg bg-gray-50">
               <Users className="h-5 w-5 text-gray-500" />
               <div>
-                <p className="text-sm font-medium text-gray-900">קיבולת</p>
-                <p className="text-sm text-gray-600">לא הוגדר</p>
+                <p className="text-sm font-medium text-gray-900">
+                  {t("common.capacity")}
+                </p>
+                <p className="text-sm text-gray-600">{t("common.notSet")}</p>
               </div>
             </div>
           </div>

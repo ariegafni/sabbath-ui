@@ -6,7 +6,10 @@
     "home": "בית",
     "search": "חיפוש",
     "publish": "פרסם ארוחה",
-    "settings": "הגדרות"
+    "settings": "הגדרות",
+    "personalArea": "אזור אישי",
+    "profile": "פרופיל",
+    "manageHosting": "נהל אירוח"
   },
   "settings": {
     "title": "הגדרות",
@@ -16,6 +19,21 @@
   },
   "publish": {
     "title": "פרסם ארוחה",
+    "submit": "פרסם",
+    "form": {
+      "preferencesTitle": "העדפות וסגנון אירוח",
+      "kashrutLabel": "רמת כשרות",
+      "hostingTypeLabel": "סוג אירוח",
+      "languagesLabelOptional": "שפות (לא חובה)",
+      "detailsTitle": "פרטי אירוח",
+      "maxGuestsLabel": "מספר אורחים מקסימלי",
+      "bioLabel": "תיאור קצר עליך ועל האירוח שלך",
+      "bioPlaceholder": "ספר על עצמך, על הבית שלך, ועל מה שאתה מציע לאורחים...",
+      "photosTitle": "תמונות מהבית",
+      "addPhoto": "הוסף תמונה",
+      "photosLimit": "ניתן להעלות עד 8 תמונות",
+      "photoAlt": "תמונה {{index}}"
+    },
     "religion": {
       "title": "רמת דתיות",
       "haredi": "חרדי",
@@ -31,7 +49,25 @@
     "submit": "פרסם"
   },
   "common": {
-    "cancel": "ביטול"
+    "cancel": "ביטול",
+    "retry": "נסה שוב",
+    "language": "שפה",
+    "hebrew": "עברית",
+    "english": "אנגלית",
+    "timezone": "אזור זמן",
+    "emailNotifications": "התראות אימייל",
+    "pushNotifications": "התראות דחיפה",
+    "on": "פעיל",
+    "off": "לא פעיל",
+    "comingSoon": "זמין בקרוב",
+    "yesterday": "אתמול",
+    "recentActivity": "פעילות אחרונה",
+    "noActivity": "אין פעילות עדיין",
+    "location": "מיקום",
+    "notSet": "לא הוגדר",
+    "capacity": "קיבולת",
+    "serverError": "שגיאה בתקשורת עם השרת",
+    "back": "חזור"
   },
   "profile": {
     "title": "פרופיל משתמש",
@@ -82,9 +118,142 @@
     "uploadPlaceholder": "העלה תמונה מהמכשיר שלך",
     "description": "תאר את הארוחה שלך בכמה מילים"
   },
+  "host": {
+    "header": { "subtitle": "שתפו את הבית שלכם עם אורחים" },
+    "success": {
+      "title": "פרופיל מארח נוצר בהצלחה!",
+      "description": "עכשיו תוכלו לקבל בקשות אירוח ולנהל את הפרופיל שלכם",
+      "backHome": "חזרה לדף הבית"
+    }
+  },
   "auth": {
     "login": "התחבר",
-    "register": "הרשמה"
+    "register": "הרשמה",
+    "welcome": "ברוכים הבאים",
+    "loginSubtitle": "התחברו לחשבון שלכם",
+    "fullName": "שם מלא",
+    "fullNamePlaceholder": "הכנס את שמך המלא",
+    "email": "אימייל",
+    "emailPlaceholder": "הכנס את האימייל שלך",
+    "password": "סיסמה",
+    "passwordPlaceholder": "הכנס את הסיסמה שלך",
+    "loggingIn": "מתחבר...",
+    "loginError": "פרטי ההתחברות שגויים או שיש שגיאה בשרת",
+    "noAccount": "אין לך חשבון?",
+    "createAccount": "צור חשבון חדש",
+    "registerSubtitle": "צרו חשבון חדש",
+    "firstName": "שם פרטי",
+    "firstNamePlaceholder": "הכנס את שמך הפרטי",
+    "lastName": "שם משפחה",
+    "lastNamePlaceholder": "הכנס את שם המשפחה שלך",
+    "passwordStrongPlaceholder": "הכנס סיסמה חזקה",
+    "registerError": "הרשמה נכשלה",
+    "haveAccount": "כבר יש לך חשבון?",
+    "loginToAccount": "התחבר לחשבון שלך",
+    "logout": "התנתקות"
+  },
+  "manageHosting": {
+    "title": "ניהול אירוחים",
+    "subtitle": "נהל את האירוחים שלך",
+    "activeHostings": "אירוחים פעילים",
+    "guestsHosted": "אורחים שהתארחו",
+    "availability": {
+      "title": "ניהול זמינות",
+      "description": "הגדר מתי הבית שלך זמין לאירוח ומה התנאים",
+      "cta": "הגדר זמינות"
+    },
+    "requests": {
+      "title": "בקשות אירוח",
+      "description": "צפה וענה לבקשות אירוח חדשות",
+      "cta": "צפה בבקשות"
+    },
+    "activity": {
+      "placeholder": "כשתקבל בקשות אירוח או תארח אורחים, הפעילות תופיע כאן"
+    },
+    "hostProfile": {
+      "title": "ניהול פרופיל מארח"
+    }
+  },
+  "messages": {
+    "title": "הודעות",
+    "subtitle": "כל הצ'אטים שלכם",
+    "host": "מארח",
+    "guest": "אורח",
+    "activeChat": "צ'אט פעיל",
+    "chatWith": "צ'אט עם {{name}}",
+    "requestNumber": "בקשה #{{id}}",
+    "empty": {
+      "title": "אין הודעות עדיין",
+      "description": "כאשר תתחילו לתקשר עם מארחים, ההודעות יופיעו כאן"
+    }
+  },
+  "countries": {
+    "title": "מצאו אירוח ברחבי העולם",
+    "subtitle": "בחרו מדינה וחפשו מארחים זמינים",
+    "searchPlaceholder": "חיפוש מדינה...",
+    "hostsAvailable": "{{count}} מארחים זמינים",
+    "viewHosts": "צפה במארחים",
+    "noResults": "לא נמצאו מדינות התואמות לחיפוש שלכם",
+    "tryDifferentQuery": "נסו לחפש עם מילים אחרות",
+    "errorLoading": "שגיאה בטעינת מדינות"
+  },
+  "hosts": {
+    "errorLoading": "שגיאה בטעינת מארחים",
+    "backToCountries": "חזרה למדינות",
+    "titleInCountry": "מארחים ב{{country}}",
+    "available": "{{count}} מארחים זמינים",
+    "searchCityPlaceholder": "חיפוש עיר...",
+    "kashrut": {
+      "all": "כל הכשרויות",
+      "kosher": "כשר",
+      "mehadrin": "כשר למהדרין"
+    },
+    "guests": {
+      "any": "כל מספר אורחים",
+      "atLeast": "{{n}}+ אורחים"
+    },
+    "spots": "{{count}} מקומות",
+    "requestHosting": "בקש אירוח",
+    "empty": {
+      "title": "לא נמצאו מארחים",
+      "description": "נסו לשנות את הפילטרים שלכם"
+    }
+  },
+  "profile": {
+    "errorLoading": "שגיאה בטעינת הפרופיל",
+    "confirmDelete": "האם אתה בטוח שברצונך למחוק את החשבון? פעולה זו אינה הפיכה.",
+    "deleteSuccess": "החשבון נמחק בהצלחה",
+    "deleteError": "שגיאה במחיקת החשבון",
+    "reportPrompt": "תאר/י את הבעיה בקצרה:",
+    "reportSuccess": "הדיווח נשלח. תודה!",
+    "reportError": "שגיאה בשליחת הדיווח",
+    "accountActions": "פעולות חשבון",
+    "title": "פרופיל משתמש"
+  },
+  "settings": {
+    "account": "הגדרות חשבון",
+    "notifications": "התראות",
+    "title": "הגדרות",
+    "language": "הגדרות שפה",
+    "deleteAccount": "מחיקת חשבון",
+    "contact": "צור קשר"
+  },
+  "commonExtra": {
+    "edit": "ערוך",
+    "reportProblem": "דיווח על בעיה"
+  },
+  "personalArea": {
+    "title": "אזור אישי",
+    "backToPersonalArea": "חזור לאזור אישי",
+    "myRequestsTitle": "הבקשות שלי",
+    "messages": {
+      "description": "צפה בהודעות שלך וצור קשר עם מארחים",
+      "open": "פתח הודעות"
+    },
+    "requests": {
+      "description": "צפה בבקשות האירוח שהגשת ועקוב אחר הסטטוס שלהן",
+      "open": "פתח בקשות"
+    },
+    "footerNote": "כאן תוכל לנהל את כל הפעילות האישית שלך באפליקציה"
   }
-
 }

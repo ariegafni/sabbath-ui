@@ -81,12 +81,14 @@ export default function BecomeHostForm({
       {/* העדפות וסגנון אירוח */}
       <div className="space-y-4">
         <h3 className="text-lg font-medium text-gray-900">
-          העדפות וסגנון אירוח
+          {t("publish.form.preferencesTitle")}
         </h3>
 
         {/* כשרות */}
         <div className="space-y-2">
-          <label className="text-sm font-medium text-gray-700">רמת כשרות</label>
+          <label className="text-sm font-medium text-gray-700">
+            {t("publish.form.kashrutLabel")}
+          </label>
           <BubbleGroup
             mode="single"
             value={formData.kashrut_level ? [formData.kashrut_level] : []}
@@ -100,7 +102,9 @@ export default function BecomeHostForm({
 
         {/* סוג אירוח */}
         <div className="space-y-2">
-          <label className="text-sm font-medium text-gray-700">סוג אירוח</label>
+          <label className="text-sm font-medium text-gray-700">
+            {t("publish.form.hostingTypeLabel")}
+          </label>
           <BubbleGroup
             mode="multi"
             value={formData.hosting_type}
@@ -115,7 +119,7 @@ export default function BecomeHostForm({
         {/* שפות */}
         <div className="space-y-2">
           <label className="text-sm font-medium text-gray-700">
-            שפות (לא חובה)
+            {t("publish.form.languagesLabelOptional")}
           </label>
           <BubbleGroup
             mode="multi"
@@ -144,11 +148,13 @@ export default function BecomeHostForm({
 
       {/* פרטי אירוח */}
       <div className="space-y-4">
-        <h3 className="text-lg font-medium text-gray-900">פרטי אירוח</h3>
+        <h3 className="text-lg font-medium text-gray-900">
+          {t("publish.form.detailsTitle")}
+        </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
             <label className="text-sm font-medium text-gray-700">
-              מספר אורחים מקסימלי
+              {t("publish.form.maxGuestsLabel")}
             </label>
             <input
               type="number"
@@ -166,14 +172,14 @@ export default function BecomeHostForm({
         {/* תיאור */}
         <div className="space-y-2">
           <label className="text-sm font-medium text-gray-700">
-            תיאור קצר עליך ועל האירוח שלך
+            {t("publish.form.bioLabel")}
           </label>
           <textarea
             rows={4}
             value={formData.bio}
             onChange={(e) => updateFormData("bio", e.target.value)}
             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            placeholder="ספר על עצמך, על הבית שלך, ועל מה שאתה מציע לאורחים..."
+            placeholder={t("publish.form.bioPlaceholder")}
           />
         </div>
       </div>
@@ -181,14 +187,14 @@ export default function BecomeHostForm({
       {/* תמונות */}
       <div className="space-y-3">
         <label className="text-lg font-medium text-gray-900">
-          תמונות מהבית
+          {t("publish.form.photosTitle")}
         </label>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {formData.photos.map((photo, index) => (
             <div key={index} className="relative">
               <img
                 src={URL.createObjectURL(photo)}
-                alt={`תמונה ${index + 1}`}
+                alt={t("publish.form.photoAlt", { index: index + 1 })}
                 className="w-full h-24 object-cover rounded-lg"
               />
               <button
@@ -212,12 +218,14 @@ export default function BecomeHostForm({
               />
               <div className="text-center">
                 <Upload className="h-6 w-6 text-gray-400 mx-auto mb-1" />
-                <p className="text-xs text-gray-500">הוסף תמונה</p>
+                <p className="text-xs text-gray-500">
+                  {t("publish.form.addPhoto")}
+                </p>
               </div>
             </label>
           )}
         </div>
-        <p className="text-sm text-gray-500">ניתן להעלות עד 8 תמונות</p>
+        <p className="text-sm text-gray-500">{t("publish.form.photosLimit")}</p>
       </div>
 
       {/* כפתור שליחה */}
@@ -229,7 +237,7 @@ export default function BecomeHostForm({
         {loading ? (
           <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mx-auto"></div>
         ) : (
-          "פרסם אירוח"
+          t("publish.submit")
         )}
       </Button>
     </form>

@@ -39,8 +39,8 @@ export default function MessagesPage() {
         id: thread.id,
         host_id: thread.participant_ids[0],
         guest_id: thread.participant_ids[1],
-        host_name: "מארח", // TODO: Get actual names from participants
-        guest_name: "אורח", // TODO: Get actual names from participants
+        host_name: t("messages.host"), // TODO: Get actual names from participants
+        guest_name: t("messages.guest"), // TODO: Get actual names from participants
         last_message: thread.last_message.content,
         last_message_at: thread.last_message.created_at,
         unread_count: thread.unread_count,
@@ -65,7 +65,7 @@ export default function MessagesPage() {
         minute: "2-digit",
       });
     } else if (diffInHours < 48) {
-      return "אתמול";
+      return t("common.yesterday");
     } else {
       return date.toLocaleDateString("he-IL");
     }
@@ -101,7 +101,9 @@ export default function MessagesPage() {
                   <h1 className="font-medium text-gray-900">
                     {selectedThread.host_name}
                   </h1>
-                  <p className="text-sm text-gray-500">צ'אט פעיל</p>
+                  <p className="text-sm text-gray-500">
+                    {t("messages.activeChat")}
+                  </p>
                 </div>
               </div>
             </div>
@@ -113,8 +115,10 @@ export default function MessagesPage() {
           <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
             <div className="text-center text-gray-500 py-8">
               <MessageCircle className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-              <p>צ'אט עם {selectedThread.host_name}</p>
-              <p className="text-sm mt-2">התכונה תהיה זמינה בקרוב</p>
+              <p>
+                {t("messages.chatWith", { name: selectedThread.host_name })}
+              </p>
+              <p className="text-sm mt-2">{t("common.comingSoon")}</p>
             </div>
           </div>
         </div>
@@ -127,8 +131,10 @@ export default function MessagesPage() {
       {/* Header */}
       <div className="bg-white border-b border-gray-200 sticky top-0 z-40">
         <div className="max-w-4xl mx-auto px-4 py-4">
-          <h1 className="text-2xl font-bold text-gray-900">הודעות</h1>
-          <p className="text-gray-600 text-sm">כל הצ'אטים שלכם</p>
+          <h1 className="text-2xl font-bold text-gray-900">
+            {t("messages.title")}
+          </h1>
+          <p className="text-gray-600 text-sm">{t("messages.subtitle")}</p>
         </div>
       </div>
 
@@ -167,7 +173,11 @@ export default function MessagesPage() {
                     {thread.hosting_request_id && (
                       <div className="flex items-center gap-2 mt-2 text-xs text-gray-500">
                         <Calendar className="h-3 w-3" />
-                        <span>בקשה #{thread.hosting_request_id}</span>
+                        <span>
+                          {t("messages.requestNumber", {
+                            id: thread.hosting_request_id,
+                          })}
+                        </span>
                       </div>
                     )}
                   </div>
@@ -186,11 +196,9 @@ export default function MessagesPage() {
           <div className="text-center py-12">
             <MessageCircle className="h-16 w-16 text-gray-400 mx-auto mb-4" />
             <h3 className="text-lg font-medium text-gray-900 mb-2">
-              אין הודעות עדיין
+              {t("messages.empty.title")}
             </h3>
-            <p className="text-gray-500">
-              כאשר תתחילו לתקשר עם מארחים, ההודעות יופיעו כאן
-            </p>
+            <p className="text-gray-500">{t("messages.empty.description")}</p>
           </div>
         )}
       </div>

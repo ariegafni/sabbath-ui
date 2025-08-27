@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { MapPin, Users, Search } from "lucide-react";
 import { LocationService, Country } from "../../service";
 
@@ -14,6 +15,7 @@ export default function CountriesList({
 }: {
   onCountrySelect?: (country: CountryView) => void;
 }) {
+  const { t } = useTranslation();
   const [countries, setCountries] = useState<CountryView[]>([]);
   const [filteredCountries, setFilteredCountries] = useState<CountryView[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -69,7 +71,9 @@ export default function CountriesList({
         setCountries(enriched);
         setFilteredCountries(enriched);
       } catch (err) {
-        setError(err instanceof Error ? err.message : "שגיאה בטעינת מדינות");
+        setError(
+          err instanceof Error ? err.message : t("countries.errorLoading")
+        );
       } finally {
         setLoading(false);
       }
@@ -80,9 +84,12 @@ export default function CountriesList({
     if (searchTerm.trim() === "") {
       setFilteredCountries(countries);
     } else {
-      const filtered = countries.filter((country) =>
-        country.display_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        country.name?.toLowerCase().includes(searchTerm.toLowerCase())
+      const filtered = countries.filter(
+        (country) =>
+          country.display_name
+            ?.toLowerCase()
+            .includes(searchTerm.toLowerCase()) ||
+          country.name?.toLowerCase().includes(searchTerm.toLowerCase())
       );
       setFilteredCountries(filtered);
     }
@@ -102,7 +109,7 @@ export default function CountriesList({
         <div className="text-red-500 mb-4">
           <MapPin className="h-16 w-16 mx-auto" />
         </div>
-        <p className="text-red-600 text-lg">שגיאה בטעינת מדינות</p>
+        <p className="text-red-600 text-lg">{t("countries.errorLoading")}</p>
         <p className="text-red-500 text-sm mt-2">{error}</p>
       </div>
     );
@@ -112,9 +119,9 @@ export default function CountriesList({
     <div className="space-y-8" dir="rtl">
       <div className="text-center">
         <h2 className="text-2xl font-bold text-gray-900 mb-2">
-          מצאו אירוח ברחבי העולם
+          {t("countries.title")}
         </h2>
-        <p className="text-gray-600">בחרו מדינה וחפשו מארחים זמינים</p>
+        <p className="text-gray-600">{t("countries.subtitle")}</p>
       </div>
 
       <div className="max-w-md mx-auto">
@@ -122,7 +129,7 @@ export default function CountriesList({
           <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
           <input
             type="text"
-            placeholder="חיפוש מדינה..."
+            placeholder={t("countries.searchPlaceholder")}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full pl-4 pr-10 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-right"
@@ -147,7 +154,9 @@ export default function CountriesList({
               <div className="flex items-center gap-2 text-gray-600">
                 <Users className="h-4 w-4" />
                 <span className="text-sm">
-                  {country.host_count} מארחים זמינים
+                  {t("countries.hostsAvailable", {
+                    count: country.host_count || 0,
+                  })}
                 </span>
               </div>
             </div>
@@ -166,18 +175,20 @@ export default function CountriesList({
                 ))}
               </div>
               <button className="w-full px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg font-medium hover:from-blue-700 hover:to-purple-700 transform group-hover:-translate-y-0.5 transition-all duration-200">
-                צפה במארחים
+                {t("countries.viewHosts")}
               </button>
             </div>
           </div>
         ))}
       </div>
 
-      {/* הודעה אם לא נמצאו תוצאות חיפוש */}
+      {/* Empty search results */}
       {searchTerm && filteredCountries.length === 0 && (
         <div className="text-center py-8">
-          <p className="text-gray-500 text-lg">לא נמצאו מדינות התואמות לחיפוש שלכם</p>
-          <p className="text-gray-400 text-sm mt-2">נסו לחפש עם מילים אחרות</p>
+          <p className="text-gray-500 text-lg">{t("countries.noResults")}</p>
+          <p className="text-gray-400 text-sm mt-2">
+            {t("countries.tryDifferentQuery")}
+          </p>
         </div>
       )}
     </div>

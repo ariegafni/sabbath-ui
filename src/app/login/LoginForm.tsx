@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Mail, Lock, User, ArrowRight } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { useRouter } from "next/navigation";
 import { AuthService } from "@/service";
 import { useAuth } from "@/Providers/AuthProvider";
@@ -11,6 +12,7 @@ interface Props {
 }
 
 export default function LoginForm({ onSwitchToRegister }: Props) {
+  const { t } = useTranslation();
   const [form, setForm] = useState({ name: "", email: "", password: "" });
   const [loading, setLoading] = useState(false);
   const router = useRouter();
@@ -39,7 +41,7 @@ export default function LoginForm({ onSwitchToRegister }: Props) {
       await refresh();
       router.replace("/");
     } catch (err) {
-      alert("פרטי ההתחברות שגויים או שיש שגיאה בשרת");
+      alert(t("auth.loginError"));
       console.error("Login failed", err);
     } finally {
       setLoading(false);
@@ -50,15 +52,17 @@ export default function LoginForm({ onSwitchToRegister }: Props) {
     <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
       <div className="bg-gradient-to-r from-blue-600 to-purple-600 px-6 py-8 text-center">
         <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2">
-          ברוכים הבאים
+          {t("auth.welcome")}
         </h1>
-        <p className="text-blue-100 text-sm sm:text-base">התחברו לחשבון שלכם</p>
+        <p className="text-blue-100 text-sm sm:text-base">
+          {t("auth.loginSubtitle")}
+        </p>
       </div>
 
       <form onSubmit={handleSubmit} className="px-6 py-8 space-y-6">
         <div className="space-y-2">
           <label className="block text-sm font-medium text-gray-700">
-            שם מלא
+            {t("auth.fullName")}
           </label>
           <div className="relative">
             <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
@@ -67,7 +71,7 @@ export default function LoginForm({ onSwitchToRegister }: Props) {
             <input
               type="text"
               name="name"
-              placeholder="הכנס את שמך המלא"
+              placeholder={t("auth.fullNamePlaceholder")}
               value={form.name}
               onChange={handleChange}
               className="w-full pr-10 pl-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-sm sm:text-base"
@@ -77,7 +81,7 @@ export default function LoginForm({ onSwitchToRegister }: Props) {
         </div>
         <div className="space-y-2">
           <label className="block text-sm font-medium text-gray-700">
-            אימייל
+            {t("auth.email")}
           </label>
           <div className="relative">
             <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
@@ -86,7 +90,7 @@ export default function LoginForm({ onSwitchToRegister }: Props) {
             <input
               type="email"
               name="email"
-              placeholder="הכנס את האימייל שלך"
+              placeholder={t("auth.emailPlaceholder")}
               value={form.email}
               onChange={handleChange}
               className="w-full pr-10 pl-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-sm sm:text-base"
@@ -96,7 +100,7 @@ export default function LoginForm({ onSwitchToRegister }: Props) {
         </div>
         <div className="space-y-2">
           <label className="block text-sm font-medium text-gray-700">
-            סיסמה
+            {t("auth.password")}
           </label>
           <div className="relative">
             <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
@@ -105,7 +109,7 @@ export default function LoginForm({ onSwitchToRegister }: Props) {
             <input
               type="password"
               name="password"
-              placeholder="הכנס את הסיסמה שלך"
+              placeholder={t("auth.passwordPlaceholder")}
               value={form.password}
               onChange={handleChange}
               className="w-full pr-10 pl-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-sm sm:text-base"
@@ -118,18 +122,18 @@ export default function LoginForm({ onSwitchToRegister }: Props) {
           className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl py-3 font-semibold hover:from-blue-700 hover:to-purple-700 transform hover:-translate-y-0.5 transition-all duration-200 flex items-center justify-center gap-2 text-sm sm:text-base"
           disabled={loading}
         >
-          {loading ? "מתחבר..." : "כניסה"}
+          {loading ? t("auth.loggingIn") : t("auth.login")}
           <ArrowRight className="h-4 w-4" />
         </button>
         <div className="text-center pt-4 border-t border-gray-100">
           <p className="text-sm text-gray-600">
-            אין לך חשבון?{" "}
+            {t("auth.noAccount")}{" "}
             <button
               type="button"
               onClick={onSwitchToRegister}
               className="text-blue-600 hover:text-blue-700 font-medium hover:underline transition-colors duration-200"
             >
-              צור חשבון חדש
+              {t("auth.createAccount")}
             </button>
           </p>
         </div>

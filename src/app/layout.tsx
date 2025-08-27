@@ -7,8 +7,8 @@ import AppLayoutClient from "./AppLayoutClient";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "ShabbesGuest - מצאו אירוח לשבת",
-  description: "פלטפורמה לאירוח בשבת - מצאו מארחים או פרסמו אירוח משלכם",
+  title: "ShabbesGuest",
+  description: "Sabbath hosting platform",
 };
 
 export default function RootLayout({
