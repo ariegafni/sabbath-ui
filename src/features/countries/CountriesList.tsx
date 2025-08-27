@@ -4,12 +4,15 @@ import { useState, useEffect } from "react";
 import { MapPin, Users, Search } from "lucide-react";
 import { LocationService, Country } from "../../service";
 
-type CountryView = Country & { display_name: string };
+type CountryView = Country & {
+  display_name: string;
+  host_count?: number;
+};
 
 export default function CountriesList({
   onCountrySelect,
 }: {
-  onCountrySelect?: (country: Country) => void;
+  onCountrySelect?: (country: CountryView) => void;
 }) {
   const [countries, setCountries] = useState<CountryView[]>([]);
   const [filteredCountries, setFilteredCountries] = useState<CountryView[]>([]);
@@ -17,7 +20,6 @@ export default function CountriesList({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // טוען את גוגל אם לא נטען
   const loadGoogle = () =>
     new Promise<void>((resolve) => {
       if (typeof window !== "undefined" && (window as any).google)
@@ -115,7 +117,6 @@ export default function CountriesList({
         <p className="text-gray-600">בחרו מדינה וחפשו מארחים זמינים</p>
       </div>
 
-      {/* שדה חיפוש מדינה */}
       <div className="max-w-md mx-auto">
         <div className="relative">
           <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />

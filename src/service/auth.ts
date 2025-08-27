@@ -1,7 +1,7 @@
 import { createApiUrl } from "../shared/lib/config";
 
-export interface User {
-  id: string; // היה number, עכשיו string
+export interface AuthUser {
+  id: string; 
   email: string;
   first_name: string;
   last_name: string;
@@ -13,6 +13,7 @@ export interface User {
   created_at: string;
   updated_at: string;
 }
+
 
 export interface LoginRequest {
   email: string;
@@ -31,7 +32,7 @@ export interface RegisterRequest {
 }
 
 export interface AuthResponse {
-  user: User;
+  user: AuthUser;
   access_token: string;
   refresh_token: string;
   token_type: string;

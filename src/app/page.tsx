@@ -14,7 +14,7 @@ type ViewMode = "countries" | "hosts";
 export default function HomePage() {
   const { t } = useTranslation();
   const [viewMode, setViewMode] = useState<ViewMode>("countries");
-  const [selectedCountry, setSelectedCountry] = useState<string>("");
+const [selectedCountry, setSelectedCountry] = useState<{ place_id: string; display_name: string } | null>(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const { user, loading } = useAuth();
   const router = useRouter();
@@ -29,14 +29,15 @@ export default function HomePage() {
 
   // Removed initials bubble from top bar per new spec
 
-  const handleCountrySelect = (country: { place_id: string }) => {
-    setSelectedCountry(country.place_id);
-    setViewMode("hosts");
-  };
+const handleCountrySelect = (country: { place_id: string; display_name: string }) => {
+  setSelectedCountry(country);
+  setViewMode("hosts");
+};
+
 
   const handleBackToCountries = () => {
     setViewMode("countries");
-    setSelectedCountry("");
+    setSelectedCountry(null);
   };
 
   const handleHostSelect = (host: any) => {
@@ -84,15 +85,18 @@ export default function HomePage() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-        {viewMode === "countries" ? (
-          <CountriesList onCountrySelect={handleCountrySelect} />
-        ) : (
-          <HostsList
-            country={selectedCountry}
-            onHostSelect={handleHostSelect}
-            onBack={handleBackToCountries}
-          />
-        )}
+       {viewMode === "countries" ? (
+  <CountriesList onCountrySelect={handleCountrySelect} />
+) : (
+  selectedCountry && (
+    <HostsList
+      country={selectedCountry}
+      onHostSelect={handleHostSelect}
+      onBack={handleBackToCountries}
+    />
+  )
+)}
+
       </div>
 
       <AuthModal

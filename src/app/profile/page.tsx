@@ -8,7 +8,6 @@ import {
   Settings,
   LogOut,
   Bell,
-  Star,
   Edit3,
 } from "lucide-react";
 import Button from "@/ui/Button";
@@ -168,45 +167,9 @@ export default function ProfilePage() {
 
               <div className="space-y-2 text-gray-600">
                 <div className="flex items-center gap-2">
-                  <span className="font-medium">אימייל:</span>
                   <span>{profile.email}</span>
                 </div>
-
-                {profile.phone && (
-                  <div className="flex items-center gap-2">
-                    <span className="font-medium">טלפון:</span>
-                    <span>{profile.phone}</span>
-                  </div>
-                )}
-
-                {profile.bio && (
-                  <div className="mt-3">
-                    <p className="text-gray-700">{profile.bio}</p>
-                  </div>
-                )}
-              </div>
-
-              {/* User Stats */}
-              {profile.stats && (
-                <div className="flex items-center gap-6 mt-4 pt-4 border-t border-gray-200">
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-blue-600">
-                      {profile.total_hostings || 0}
-                    </div>
-                    <div className="text-sm text-gray-600">אירוחים</div>
-                  </div>
-
-                  <div className="text-center">
-                    <div className="flex items-center gap-1 text-2xl font-bold text-yellow-600">
-                      <Star className="h-6 w-6 fill-current" />
-                      {profile.rating || 0}
-                    </div>
-                    <div className="text-sm text-gray-600">דירוג</div>
-                  </div>
-                </div>
-              )}
-
-              
+              </div>              
 
               {/* Settings Display */}
               {profile.settings && (

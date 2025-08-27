@@ -8,10 +8,11 @@ import { Host, HostService } from "../../service";
 import HostingRequestForm from "../host/HostingRequestForm";
 
 type HostsListProps = {
-  country: string;
+  country: { place_id: string; display_name: string };
   onHostSelect?: (host: Host) => void;
   onBack?: () => void;
 };
+
 
 export default function HostsList({
   country,
@@ -94,7 +95,7 @@ export default function HostsList({
   const fetchHosts = async () => {
     try {
       setLoading(true);
-      const data = await HostService.getHostsByCountry(country);
+      const data = await HostService.getHostsByCountry(country.place_id);
       const enriched = await resolveCityNames(data);
       setHosts(enriched);
     } catch (err) {
@@ -179,8 +180,9 @@ export default function HostsList({
             ← חזרה למדינות
           </button>
           <h2 className="text-2xl font-bold text-gray-900 font-sans">
-            מארחים ב{country}
+            מארחים ב{country.display_name}
           </h2>
+
           <p className="text-gray-600 font-sans">
             {filteredHosts.length} מארחים זמינים
           </p>

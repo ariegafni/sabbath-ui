@@ -2,7 +2,8 @@
 
 import { useEffect } from "react";
 import i18n from "@/shared/i18n/config";
-import Header from "@/ui/Header";
+import BottomNavigation from "@/ui/BottomNavigation";
+import { usePathname } from "next/navigation";
 
 export default function AppLayoutClient({
   children,
@@ -21,8 +22,8 @@ export default function AppLayoutClient({
 
   return (
     <>
-      <Header />
-      <main className="min-h-[calc(100vh-3.5rem)]">{children}</main>
+      <main className="min-h-screen">{children}</main>
+      {usePathname() !== "/login" && <BottomNavigation />}
     </>
   );
 }

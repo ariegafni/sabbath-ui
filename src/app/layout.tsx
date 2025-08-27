@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import Providers from "@/shared/lib/providers";
-import BottomNavigation from "@/ui/BottomNavigation";
+import AppLayoutClient from "./AppLayoutClient";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -20,8 +20,7 @@ export default function RootLayout({
     <html lang="he" dir="rtl">
       <body className={inter.className}>
         <Providers>
-          {children}
-          <BottomNavigation />
+          <AppLayoutClient>{children}</AppLayoutClient>
         </Providers>
       </body>
     </html>
