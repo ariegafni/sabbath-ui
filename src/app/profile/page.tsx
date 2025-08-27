@@ -34,12 +34,34 @@ type UserProfile = {
 };
 
 export default function ProfilePage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { user } = useAuth();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [showEditForm, setShowEditForm] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [languageOpen, setLanguageOpen] = useState(false);
+  const [language, setLanguage] = useState(
+    typeof window !== "undefined" &&
+      (i18n.language || localStorage.getItem("i18nextLng") || "he")
+        .toString()
+        .startsWith("he")
+      ? "he"
+      : "en"
+  );
+
+  // Sync language from localStorage on mount and whenever i18n changes
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const stored = localStorage.getItem("i18nextLng") || i18n.language || "he";
+    const normalized = stored.toString().startsWith("he") ? "he" : "en";
+    if (normalized !== language) {
+      setLanguage(normalized);
+    }
+    if (i18n.language !== normalized) {
+      i18n.changeLanguage(normalized).catch(() => {});
+    }
+  }, [i18n.language]);
 
   useEffect(() => {
     if (user) {
@@ -88,6 +110,18 @@ export default function ProfilePage() {
     localStorage.removeItem("user");
     document.cookie = "auth=; Max-Age=0; path=/";
     window.location.href = "/";
+  };
+
+  const handleChangeLanguage = async (lang: "he" | "en") => {
+    try {
+      setLanguage(lang);
+      await i18n.changeLanguage(lang);
+      if (typeof window !== "undefined") {
+        localStorage.setItem("i18nextLng", lang);
+      }
+    } catch (error) {
+      console.error("Failed to change language:", error);
+    }
   };
 
   const handleDeleteAccount = async () => {
@@ -239,6 +273,48 @@ export default function ProfilePage() {
           <h3 className="text-lg font-medium text-gray-900 mb-4">הגדרות</h3>
 
           <div className="space-y-3">
+            {/* Language Selector (collapsible) */}
+            <button
+              onClick={() => setLanguageOpen(!languageOpen)}
+              className="w-full flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 transition-colors"
+            >
+              <div className="flex items-center gap-3">
+                <Settings className="h-5 w-5 text-gray-500" />
+                <span className="text-gray-700">שפה</span>
+              </div>
+              <span
+                className={`text-gray-400 transition-transform ${
+                  languageOpen ? "rotate-90" : ""
+                }`}
+              >
+                →
+              </span>
+            </button>
+            {languageOpen && (
+              <div className="pl-10 flex items-center gap-2">
+                <button
+                  onClick={() => handleChangeLanguage("he")}
+                  className={`px-3 py-1 rounded-md text-sm border transition-colors ${
+                    language === "he"
+                      ? "bg-blue-600 text-white border-blue-600"
+                      : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
+                  }`}
+                >
+                  עברית
+                </button>
+                <button
+                  onClick={() => handleChangeLanguage("en")}
+                  className={`px-3 py-1 rounded-md text-sm border transition-colors ${
+                    language === "en"
+                      ? "bg-blue-600 text-white border-blue-600"
+                      : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
+                  }`}
+                >
+                  English
+                </button>
+              </div>
+            )}
+
             <button className="w-full flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 transition-colors">
               <div className="flex items-center gap-3">
                 <Settings className="h-5 w-5 text-gray-500" />
