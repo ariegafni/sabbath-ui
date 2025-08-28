@@ -27,9 +27,8 @@ export interface Host {
     last_name: string;
     profile_image?: string;
   };
-  name?: string; 
+  name?: string;
 }
-
 
 export interface CreateHostRequest {
   country_place_id: string;
@@ -65,6 +64,7 @@ export class HostService {
       photo_url: host.user?.profile_image || host.photo_url,
     };
   }
+
 
   static async getAllHosts(): Promise<Host[]> {
     const response = await fetch(this.baseUrl);

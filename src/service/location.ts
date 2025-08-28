@@ -1,4 +1,5 @@
 import { createApiUrl } from "../shared/lib/config";
+import { Host } from "./host";
 
 export interface Country {
   place_id: string;
@@ -25,12 +26,35 @@ export interface AutocompleteItem {
 
 export class LocationService {
   private static baseUrl = createApiUrl("/api/locations");
-
-  static async getCountries(): Promise<Country[]> {
-    const r = await fetch(`${this.baseUrl}/countries`);
-    if (!r.ok) throw new Error("Failed to fetch countries");
-    return r.json();
+    private static normalize(host: any): Host {
+    return {
+      ...host,
+      id: host._id,
+      name: host.user
+        ? `${host.user.first_name ?? ""} ${host.user.last_name ?? ""}`.trim()
+        : "",
+      photo_url: host.user?.profile_image || host.photo_url,
+    };
   }
+
+    // Returns list of countries that have hosts with up to 5 sample hosts per country
+    static async getCountriesWithHosts(): Promise<
+      {
+        country_place_id: string;
+        hosts: Host[];
+      }[]
+    > {
+      const response = await fetch(`${this.baseUrl}/countries`);
+      if (!response.ok) throw new Error("Failed to fetch countries with hosts");
+      const data = await response.json();
+      // Normalize hosts in each country bucket
+      return (data as Array<{ country_place_id: string; hosts: any[] }>).map(
+        (bucket) => ({
+          country_place_id: bucket.country_place_id,
+          hosts: (bucket.hosts || []).map(this.normalize),
+        })
+      );
+    }
 
   static async getCitiesByCountry(country_place_id: string): Promise<City[]> {
     const r = await fetch(`${this.baseUrl}/cities/country/${country_place_id}`);
@@ -52,49 +76,49 @@ export class LocationService {
     return r.json();
   }
 
-  static async getLocationByCoordinates(
-    lat: number,
-    lng: number
-  ): Promise<{
-    country_place_id: string | null;
-    city_place_id: string | null;
-    address: string;
-  }> {
-    const r = await fetch(
-      `${this.baseUrl}/reverse-geocode?lat=${lat}&lng=${lng}`
-    );
-    if (!r.ok) throw new Error("Failed to get location by coordinates");
-    return r.json();
-  }
+  // static async getLocationByCoordinates(
+  //   lat: number,
+  //   lng: number
+  // ): Promise<{
+  //   country_place_id: string | null;
+  //   city_place_id: string | null;
+  //   address: string;
+  // }> {
+  //   const r = await fetch(
+  //     `${this.baseUrl}/reverse-geocode?lat=${lat}&lng=${lng}`
+  //   );
+  //   if (!r.ok) throw new Error("Failed to get location by coordinates");
+  //   return r.json();
+  // }
 
-  static async getNearbyLocations(
-    lat: number,
-    lng: number,
-    radius = 10
-  ): Promise<{ countries: Country[]; cities: City[] }> {
-    const r = await fetch(
-      `${this.baseUrl}/nearby?lat=${lat}&lng=${lng}&radius=${radius}`
-    );
-    if (!r.ok) throw new Error("Failed to get nearby locations");
-    return r.json();
-  }
+  // static async getNearbyLocations(
+  //   lat: number,
+  //   lng: number,
+  //   radius = 10
+  // ): Promise<{ countries: Country[]; cities: City[] }> {
+  //   const r = await fetch(
+  //     `${this.baseUrl}/nearby?lat=${lat}&lng=${lng}&radius=${radius}`
+  //   );
+  //   if (!r.ok) throw new Error("Failed to get nearby locations");
+  //   return r.json();
+  // }
 
-  static async getPopularLocations(): Promise<{
-    countries: Country[];
-    cities: City[];
-  }> {
-    const r = await fetch(`${this.baseUrl}/popular`);
-    if (!r.ok) throw new Error("Failed to get popular locations");
-    return r.json();
-  }
+  // static async getPopularLocations(): Promise<{
+  //   countries: Country[];
+  //   cities: City[];
+  // }> {
+  //   const r = await fetch(`${this.baseUrl}/popular`);
+  //   if (!r.ok) throw new Error("Failed to get popular locations");
+  //   return r.json();
+  // }
 
-  static async getLocationAutocomplete(
-    query: string
-  ): Promise<AutocompleteItem[]> {
-    const r = await fetch(
-      `${this.baseUrl}/autocomplete?query=${encodeURIComponent(query)}`
-    );
-    if (!r.ok) throw new Error("Failed to get location autocomplete");
-    return r.json();
-  }
+  // static async getLocationAutocomplete(
+  //   query: string
+  // ): Promise<AutocompleteItem[]> {
+  //   const r = await fetch(
+  //     `${this.baseUrl}/autocomplete?query=${encodeURIComponent(query)}`
+  //   );
+  //   if (!r.ok) throw new Error("Failed to get location autocomplete");
+  //   return r.json();
+  // }
 }
