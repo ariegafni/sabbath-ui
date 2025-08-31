@@ -67,16 +67,6 @@ export default function BecomeHostForm({
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  const toggleArrayValue = (field: keyof HostFormData, value: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      [field]: (prev[field] as string[] | undefined)?.includes(value)
-  ? (prev[field] as string[]).filter((v) => v !== value)
-  : [ ...(prev[field] as string[] || []), value ],
-
-    }));
-  };
-
   return (
     <form onSubmit={handleSubmit} className="space-y-6" dir="rtl">
       {/* העדפות וסגנון אירוח */}
