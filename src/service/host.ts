@@ -3,31 +3,20 @@ import { AuthService } from "./auth";
 
 export interface Host {
   id: string;
+  name: string;
+  photo_url?: string;
   country_place_id: string;
   city_place_id: string;
   city?: string;
   area?: string;
-  address?: string;
-  description?: string;
-  bio?: string;
   max_guests: number;
   hosting_type: string[];
   kashrut_level?: string;
   languages: string[];
+  bio?: string;
   total_hostings: number;
   is_always_available: boolean;
-  available?: boolean;
-  photo_url?: string;
-  created_at?: string;
-  updated_at?: string;
   rating?: number;
-  user?: {
-    _id: string;
-    first_name: string;
-    last_name: string;
-    profile_image?: string;
-  };
-  name?: string;
 }
 
 export interface CreateHostRequest {
@@ -54,43 +43,26 @@ export interface UpdateHostRequest extends Partial<CreateHostRequest> {
 export class HostService {
   private static baseUrl = createApiUrl("/api/hosts");
 
-  private static normalize(host: any): Host {
-    return {
-      ...host,
-      id: host._id,
-      name: host.user
-        ? `${host.user.first_name ?? ""} ${host.user.last_name ?? ""}`.trim()
-        : "",
-      photo_url: host.user?.profile_image || host.photo_url,
-    };
+  static async getHostsByCountry(country: string): Promise<Host[]> {
+    const res = await fetch(`${this.baseUrl}/country/${encodeURIComponent(country)}`);
+    if (!res.ok) throw new Error("Failed to fetch hosts by country");
+    return (await res.json()) as Host[];
   }
-
 
   static async getAllHosts(): Promise<Host[]> {
-    const response = await fetch(this.baseUrl);
-    if (!response.ok) throw new Error("Failed to fetch hosts");
-    const data = await response.json();
-    return data.map(this.normalize);
-  }
-
-  static async getHostsByCountry(country: string): Promise<Host[]> {
-    const response = await fetch(
-      `${this.baseUrl}/country/${encodeURIComponent(country)}`
-    );
-    if (!response.ok) throw new Error("Failed to fetch hosts by country");
-    const data = await response.json();
-    return data.map(this.normalize);
+    const res = await fetch(this.baseUrl);
+    if (!res.ok) throw new Error("Failed to fetch hosts");
+    return (await res.json()) as Host[];
   }
 
   static async getHostById(id: string): Promise<Host> {
-    const response = await fetch(`${this.baseUrl}/${id}`);
-    if (!response.ok) throw new Error("Failed to fetch host");
-    const data = await response.json();
-    return this.normalize(data);
+    const res = await fetch(`${this.baseUrl}/${id}`);
+    if (!res.ok) throw new Error("Failed to fetch host");
+    return (await res.json()) as Host;
   }
 
   static async createHost(hostData: CreateHostRequest): Promise<Host> {
-    const response = await fetch(this.baseUrl, {
+    const res = await fetch(this.baseUrl, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -98,13 +70,12 @@ export class HostService {
       },
       body: JSON.stringify(hostData),
     });
-    if (!response.ok) throw new Error("Failed to create host");
-    const data = await response.json();
-    return this.normalize(data);
+    if (!res.ok) throw new Error("Failed to create host");
+    return (await res.json()) as Host;
   }
 
   static async updateHost(hostData: UpdateHostRequest): Promise<Host> {
-    const response = await fetch(`${this.baseUrl}/${hostData.id}`, {
+    const res = await fetch(`${this.baseUrl}/${hostData.id}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -112,34 +83,32 @@ export class HostService {
       },
       body: JSON.stringify(hostData),
     });
-    if (!response.ok) throw new Error("Failed to update host");
-    const data = await response.json();
-    return this.normalize(data);
+    if (!res.ok) throw new Error("Failed to update host");
+    return (await res.json()) as Host;
   }
 
   static async deleteHost(id: string): Promise<void> {
-    const response = await fetch(`${this.baseUrl}/${id}`, {
+    const res = await fetch(`${this.baseUrl}/${id}`, {
       method: "DELETE",
       headers: {
         ...AuthService.getAuthHeaders(),
       },
     });
-    if (!response.ok) throw new Error("Failed to delete host");
+    if (!res.ok) throw new Error("Failed to delete host");
   }
 
   static async getCurrentUserHostProfile(): Promise<Host | null> {
     try {
-      const response = await fetch(`${this.baseUrl}/me`, {
+      const res = await fetch(`${this.baseUrl}/me`, {
         headers: { ...AuthService.getAuthHeaders() },
       });
-      if (!response.ok) {
-        if (response.status === 404) return null;
+      if (!res.ok) {
+        if (res.status === 404) return null;
         throw new Error("Failed to fetch current user host profile");
       }
-      const data = await response.json();
-      return this.normalize(data);
-    } catch (error) {
-      console.error("Error fetching host profile:", error);
+      return (await res.json()) as Host;
+    } catch (e) {
+      console.error("Error fetching host profile:", e);
       return null;
     }
   }
@@ -147,13 +116,12 @@ export class HostService {
   static async uploadPhoto(file: File): Promise<{ photo_url: string }> {
     const formData = new FormData();
     formData.append("photo", file);
-
-    const response = await fetch(`${this.baseUrl}/upload-photo`, {
+    const res = await fetch(`${this.baseUrl}/upload-photo`, {
       method: "POST",
       headers: { ...AuthService.getAuthHeaders() },
       body: formData,
     });
-    if (!response.ok) throw new Error("Failed to upload host photo");
-    return response.json();
+    if (!res.ok) throw new Error("Failed to upload host photo");
+    return (await res.json()) as { photo_url: string };
   }
 }
