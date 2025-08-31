@@ -233,43 +233,45 @@ export default function MyHostingRequestsAsHost({
           >
             {/* Request Header */}
             <div className="flex items-start justify-between mb-4">
-              <div className="flex items-center space-x-3 space-x-reverse">
-                {(() => {
-                  const guestData =
-                    typeof request.guest_id === "object"
-                      ? request.guest_id
-                      : null;
-                  const guestName = guestData
-                    ? `${guestData.first_name || ""} ${
-                        guestData.last_name || ""
-                      }`.trim()
-                    : request.guest_name || "אורח";
-                  const guestImage =
-                    guestData?.profile_image || request.guest_profile_image;
+             <div className="flex items-center space-x-3 space-x-reverse">
+  {(() => {
+    interface GuestData {
+      first_name?: string;
+      last_name?: string;
+      profile_image?: string;
+    }
 
-                  return (
-                    <>
-                      {guestImage ? (
-                        <img
-                          src={guestImage}
-                          alt={guestName}
-                          className="w-12 h-12 rounded-full object-cover"
-                        />
-                      ) : (
-                        <div className="w-12 h-12 bg-gray-300 rounded-full flex items-center justify-center">
-                          <User className="w-6 h-6 text-gray-600" />
-                        </div>
-                      )}
-                      <div>
-                        <h3 className="font-medium text-gray-900">
-                          {guestName}
-                        </h3>
-                        <p className="text-sm text-gray-600">אורח</p>
-                      </div>
-                    </>
-                  );
-                })()}
-              </div>
+    const guestData: GuestData | null =
+      typeof request.guest_id === "object" ? (request.guest_id as GuestData) : null;
+
+    const guestName = guestData
+      ? `${guestData.first_name || ""} ${guestData.last_name || ""}`.trim()
+      : request.guest_name || "אורח";
+
+    const guestImage = guestData?.profile_image || request.guest_profile_image;
+
+    return (
+      <>
+        {guestImage ? (
+          <img
+            src={guestImage}
+            alt={guestName}
+            className="w-12 h-12 rounded-full object-cover"
+          />
+        ) : (
+          <div className="w-12 h-12 bg-gray-300 rounded-full flex items-center justify-center">
+            <User className="w-6 h-6 text-gray-600" />
+          </div>
+        )}
+        <div>
+          <h3 className="font-medium text-gray-900">{guestName}</h3>
+          <p className="text-sm text-gray-600">אורח</p>
+        </div>
+      </>
+    );
+  })()}
+</div>
+
 
               <div className="flex items-center space-x-2 space-x-reverse">
                 {getStatusIcon(request.status)}

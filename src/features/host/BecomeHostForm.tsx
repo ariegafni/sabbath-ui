@@ -70,9 +70,10 @@ export default function BecomeHostForm({
   const toggleArrayValue = (field: keyof HostFormData, value: string) => {
     setFormData((prev) => ({
       ...prev,
-      [field]: prev[field].includes(value)
-        ? (prev[field] as string[]).filter((v) => v !== value)
-        : [...(prev[field] as string[]), value],
+      [field]: (prev[field] as string[] | undefined)?.includes(value)
+  ? (prev[field] as string[]).filter((v) => v !== value)
+  : [ ...(prev[field] as string[] || []), value ],
+
     }));
   };
 

@@ -211,55 +211,57 @@ export default function MyHostingRequests({
           >
             {/* Request Header */}
             <div className="flex items-start justify-between mb-4">
-              <div className="flex items-center space-x-3 space-x-reverse">
-                {(() => {
-                  const hostData =
-                    typeof request.host_id === "object"
-                      ? request.host_id
-                      : null;
-                  const hostName = hostData
-                    ? `${hostData.first_name || ""} ${
-                        hostData.last_name || ""
-                      }`.trim()
-                    : request.host_name || "מארח";
-                  const hostImage =
-                    hostData?.profile_image || request.host_profile_image;
+  <div className="flex items-center space-x-3 space-x-reverse">
+    {(() => {
+      interface HostData {
+        first_name?: string;
+        last_name?: string;
+        profile_image?: string;
+      }
 
-                  return (
-                    <>
-                      {hostImage ? (
-                        <img
-                          src={hostImage}
-                          alt={hostName}
-                          className="w-12 h-12 rounded-full object-cover"
-                        />
-                      ) : (
-                        <div className="w-12 h-12 bg-gray-300 rounded-full flex items-center justify-center">
-                          <User className="w-6 h-6 text-gray-600" />
-                        </div>
-                      )}
-                      <div>
-                        <h3 className="font-medium text-gray-900">
-                          {hostName}
-                        </h3>
-                        <p className="text-sm text-gray-600">מארח</p>
-                      </div>
-                    </>
-                  );
-                })()}
-              </div>
+      const hostData: HostData | null =
+        typeof request.host_id === "object" ? (request.host_id as HostData) : null;
 
-              <div className="flex items-center space-x-2 space-x-reverse">
-                {getStatusIcon(request.status)}
-                <span
-                  className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(
-                    request.status
-                  )}`}
-                >
-                  {getStatusText(request.status)}
-                </span>
-              </div>
+      const hostName = hostData
+        ? `${hostData.first_name || ""} ${hostData.last_name || ""}`.trim()
+        : request.host_name || "מארח";
+
+      const hostImage = hostData?.profile_image || request.host_profile_image;
+
+      return (
+        <>
+          {hostImage ? (
+            <img
+              src={hostImage}
+              alt={hostName}
+              className="w-12 h-12 rounded-full object-cover"
+            />
+          ) : (
+            <div className="w-12 h-12 bg-gray-300 rounded-full flex items-center justify-center">
+              <User className="w-6 h-6 text-gray-600" />
             </div>
+          )}
+          <div>
+            <h3 className="font-medium text-gray-900">{hostName}</h3>
+            <p className="text-sm text-gray-600">מארח</p>
+          </div>
+        </>
+      );
+    })()}
+  </div>
+
+  <div className="flex items-center space-x-2 space-x-reverse">
+    {getStatusIcon(request.status)}
+    <span
+      className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(
+        request.status
+      )}`}
+    >
+      {getStatusText(request.status)}
+    </span>
+  </div>
+</div>
+
 
             {/* Request Details */}
             <div className="space-y-3 mb-4">
