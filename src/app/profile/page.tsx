@@ -16,11 +16,21 @@ type UserProfile = {
   bio?: string;
   phone?: string;
   is_host: boolean;
+  total_hostings?: number;
+  rating?: number;
   settings?: {
     email_notifications: boolean;
     push_notifications: boolean;
     language: string;
     timezone: string;
+    privacy_level: string;
+  };
+  stats?: {
+    total_hostings: number;
+    total_guests: number;
+    average_rating: number;
+    response_rate: number;
+    response_time_hours: number;
   };
 };
 
@@ -34,10 +44,11 @@ export default function ProfilePage() {
   const [isUploading, setIsUploading] = useState(false);
   const [preview, setPreview] = useState<string | null>(null);
   const [languageOpen, setLanguageOpen] = useState(false);
+  const [showEditForm, setShowEditForm] = useState(false);
 
   useEffect(() => {
     if (!user) return;
-    const init = async () => {
+    const fetchProfile = async () => {
       setLoading(true);
       try {
         const data = JSON.parse(localStorage.getItem("user") || "{}");
@@ -50,7 +61,10 @@ export default function ProfilePage() {
           bio: data.bio,
           phone: data.phone,
           is_host: !!hostProfile,
+          total_hostings: hostProfile?.total_hostings || 0,
+          rating: hostProfile?.rating || 0,
           settings: data.settings,
+          stats: data.stats,
         });
       } catch {
         setProfile(null);
@@ -58,7 +72,7 @@ export default function ProfilePage() {
         setLoading(false);
       }
     };
-    init();
+    fetchProfile();
   }, [user]);
 
   const handleLogout = () => {
@@ -134,16 +148,22 @@ export default function ProfilePage() {
   if (!profile)
     return (
       <div className="min-h-screen flex items-center justify-center">
+        <p>{t("profile.errorLoading")}</p>
         <Button onClick={() => location.reload()}>{t("common.retry")}</Button>
       </div>
     );
 
   return (
     <div className="min-h-screen bg-gray-50 pb-20">
+      {/* Header */}
       <div className="bg-white border-b sticky top-0 z-40">
         <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
           <h1 className="text-2xl font-bold">{t("profile.title")}</h1>
-          <Button variant="outline" className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            className="flex items-center gap-2"
+            onClick={() => setShowEditForm(!showEditForm)}
+          >
             <Edit3 className="h-4 w-4" /> {t("common.edit")}
           </Button>
         </div>
@@ -189,6 +209,32 @@ export default function ProfilePage() {
                 {t("profile.uploadConfirm")}
               </Button>
             )}
+
+            {profile.settings && (
+              <div className="mt-4 pt-4 border-t text-sm text-gray-600 space-y-1">
+                <div>
+                  {t("common.language")}:{" "}
+                  {profile.settings.language === "he"
+                    ? t("common.hebrew")
+                    : t("common.english")}
+                </div>
+                <div>
+                  {t("common.timezone")}: {profile.settings.timezone}
+                </div>
+                <div>
+                  {t("common.emailNotifications")}:{" "}
+                  {profile.settings.email_notifications
+                    ? t("common.on")
+                    : t("common.off")}
+                </div>
+                <div>
+                  {t("common.pushNotifications")}:{" "}
+                  {profile.settings.push_notifications
+                    ? t("common.on")
+                    : t("common.off")}
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
@@ -207,7 +253,19 @@ export default function ProfilePage() {
               →
             </span>
           </button>
-          {languageOpen && <div className="pl-10"><LanguageSwitcher /></div>}
+          {languageOpen && (
+            <div className="pl-10">
+              <LanguageSwitcher />
+            </div>
+          )}
+          <div className="flex items-center gap-3 p-3 text-gray-700">
+            <Settings className="h-5 w-5 text-gray-500" />
+            <span>{t("settings.account")}</span>
+          </div>
+          <div className="flex items-center gap-3 p-3 text-gray-700">
+            <Bell className="h-5 w-5 text-gray-500" />
+            <span>{t("settings.notifications")}</span>
+          </div>
         </div>
 
         {/* Account Actions */}
