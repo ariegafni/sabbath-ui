@@ -26,16 +26,16 @@ export interface AutocompleteItem {
 
 export class LocationService {
   private static baseUrl = createApiUrl("/api/locations");
-    private static normalize(host: any): Host {
-    return {
-      ...host,
-      id: host._id,
-      name: host.user
-        ? `${host.user.first_name ?? ""} ${host.user.last_name ?? ""}`.trim()
-        : "",
-      photo_url: host.user?.profile_image || host.photo_url,
-    };
-  }
+ static normalize(host: any): Host {
+  return {
+    ...host,
+    name: `${host.user_first_name || ""} ${host.user_last_name || ""}`.trim(),
+    city: host.city_name || null, // אם תוסיף city_name מהשרת
+    area: host.area,
+    photo_url: host.photo_url,
+  };
+}
+
 
     // Returns list of countries that have hosts with up to 5 sample hosts per country
     static async getCountriesWithHosts(): Promise<
@@ -47,6 +47,7 @@ export class LocationService {
       const response = await fetch(`${this.baseUrl}/countries`);
       if (!response.ok) throw new Error("Failed to fetch countries with hosts");
       const data = await response.json();
+      console.log("countries data:", data);
       // Normalize hosts in each country bucket
       return (data as Array<{ country_place_id: string; hosts: any[] }>).map(
         (bucket) => ({

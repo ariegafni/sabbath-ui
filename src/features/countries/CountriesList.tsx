@@ -213,10 +213,10 @@ export default function CountriesList({
                               <div className="text-lg font-bold text-gray-900 mb-1">
                                 {host.name || t("hosts.unknown")}
                               </div>
-                              <div className="text-sm text-gray-600 flex items-center gap-1">
+                              {/* <div className="text-sm text-gray-600 flex items-center gap-1">
                                 <MapPin className="h-3 w-3" />
                                 {host.city || host.area || "מיקום לא ידוע"}
-                              </div>
+                              </div> */}
                             </div>
                           </div>
                         </div>
