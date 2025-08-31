@@ -93,7 +93,7 @@ export class HostingRequestService {
     }
     return response.json();
   }
-   static async respondToHostingRequest(
+  static async respondToHostingRequest(
     requestId: string,
     status: "accepted" | "rejected",
     responseMessage?: string
@@ -114,7 +114,9 @@ export class HostingRequestService {
     return response.json();
   }
 
-  static async cancelHostingRequest(requestId: string): Promise<HostingRequest> {
+  static async cancelHostingRequest(
+    requestId: string
+  ): Promise<HostingRequest> {
     const response = await fetch(`${this.baseUrl}/${requestId}/cancel`, {
       method: "PUT",
       headers: {

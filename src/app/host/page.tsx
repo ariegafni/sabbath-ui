@@ -24,7 +24,6 @@ export default function HostPage() {
         languages: data.languages,
         kashrut_level: data.kashrut_level || undefined,
         bio: data.bio || undefined,
-        // available/is_always_available/total_hostings/photo_url – אופציונלי לפי צורך
       });
       setIsSubmitted(true);
     } catch (err) {

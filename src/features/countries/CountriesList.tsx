@@ -68,9 +68,7 @@ export default function CountriesList({
     (async () => {
       try {
         setLoading(true);
-        // Fetch countries that have hosts, with up to 5 hosts per country
         const countriesWithHosts = await LocationService.getCountriesWithHosts();
-        // Resolve country names and merge hosts into the country view
         const baseCountries: Country[] = countriesWithHosts.map((c) => ({
           place_id: c.country_place_id,
           name: "",
@@ -110,191 +108,218 @@ export default function CountriesList({
     }
   }, [searchTerm, countries]);
 
+  const scrollHosts = (containerId: string, direction: 'left' | 'right') => {
+    const container = document.getElementById(containerId);
+    if (container) {
+      const scrollAmount = container.offsetWidth * 0.85;
+      container.scrollBy({
+        left: direction === 'right' ? scrollAmount : -scrollAmount,
+        behavior: 'smooth'
+      });
+    }
+  };
+
   if (loading) {
     return (
-      <div className="flex justify-center items-center py-12">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      <div className="min-h-screen bg-gray-50">
+        <div className="flex justify-center items-center py-20">
+          <div className="animate-spin rounded-full h-16 w-16 border-4 border-gray-200 border-t-pink-500"></div>
+        </div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="text-center py-12">
-        <div className="text-red-500 mb-4">
-          <MapPin className="h-16 w-16 mx-auto" />
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+        <div className="text-center max-w-md">
+          <div className="text-pink-500 mb-6">
+            <MapPin className="h-20 w-20 mx-auto" />
+          </div>
+          <h3 className="text-xl font-semibold text-gray-900 mb-2">
+            {t("countries.errorLoading")}
+          </h3>
+          <p className="text-gray-600">{error}</p>
         </div>
-        <p className="text-red-600 text-lg">{t("countries.errorLoading")}</p>
-        <p className="text-red-500 text-sm mt-2">{error}</p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-8" dir="rtl">
-      <div className="text-center">
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">
-          {t("countries.title")}
-        </h2>
-        <p className="text-gray-600">{t("countries.subtitle")}</p>
-      </div>
+    <div className="min-h-screen bg-gray-50" dir="rtl">
+      {/* Hero Section */}
+      <div className="bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+          <div className="text-center mb-8">
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-4">
+              {t("countries.title")}
+            </h1>
+            <p className="text-lg sm:text-xl text-gray-600 max-w-2xl mx-auto">
+              {t("countries.subtitle")}
+            </p>
+          </div>
 
-      <div className="max-w-md mx-auto">
-        <div className="relative">
-          <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-          <input
-            type="text"
-            placeholder={t("countries.searchPlaceholder")}
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-4 pr-10 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-right"
-          />
+          {/* Search Bar */}
+          <div className="max-w-2xl mx-auto">
+            <div className="relative">
+              <Search className="absolute right-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+              <input
+                type="text"
+                placeholder={t("countries.searchPlaceholder")}
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-6 pr-12 py-4 text-lg border border-gray-200 rounded-full focus:ring-2 focus:ring-pink-500 focus:border-pink-500 shadow-sm hover:shadow-md transition-shadow text-right bg-white"
+              />
+            </div>
+          </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {filteredCountries.map((country) => (
-          <div
-            key={country.place_id}
-            className="bg-white rounded-2xl shadow-sm hover:shadow-xl transition-shadow duration-300 overflow-hidden border border-gray-100 cursor-pointer group"
-            onClick={() => onCountrySelect?.(country)}
-          >
-            {/* Header Section */}
-            <div className="p-6 border-b border-gray-100">
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="text-xl font-bold text-gray-900">
-                  {country.display_name || country.name}
-                </h3>
-              </div>
-              <div className="flex items-center gap-2 text-gray-600">
-                <Users className="h-4 w-4" />
-                <span className="text-sm">
-                  {t("countries.hostsAvailable", {
-                    count: country.host_count || 0,
-                  })}
-                </span>
-              </div>
+      {/* Countries Grid */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {filteredCountries.length === 0 && searchTerm ? (
+          <div className="text-center py-16">
+            <div className="text-gray-400 mb-6">
+              <Search className="h-20 w-20 mx-auto" />
             </div>
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">
+              {t("countries.noResults")}
+            </h3>
+            <p className="text-gray-600">{t("countries.tryDifferentQuery")}</p>
+          </div>
+        ) : (
+          <div className="space-y-12">
+            {filteredCountries.map((country) => (
+              <div key={country.place_id} className="group">
+                {/* Country Header */}
+                <div className="mb-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
+                        {country.display_name || country.name}
+                      </h2>
+                      <div className="flex items-center gap-2 text-gray-600">
+                        <Users className="h-5 w-5" />
+                        <span className="text-sm sm:text-base">
+                          {t("countries.hostsAvailable", {
+                            count: country.host_count || 0,
+                          })}
+                        </span>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => onCountrySelect?.(country)}
+                      className="hidden sm:flex items-center gap-2 px-6 py-3 bg-white border-2 border-gray-900 text-gray-900 rounded-full font-semibold hover:bg-gray-900 hover:text-white transition-colors"
+                    >
+                      {t("countries.viewHosts")}
+                      <ChevronLeft className="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
 
-            {/* Host Cards Carousel Section */}
-            <div className="p-6">
-              {country.hosts && country.hosts.length > 0 ? (
-                <div className="relative mb-6">
-                  {/* Enhanced Host Carousel */}
-                  <div
-                    id={`country-hosts-${country.place_id}`}
-                    className="flex gap-4 overflow-hidden scroll-smooth"
-                    style={{ scrollSnapType: 'x mandatory' }}
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    {country.hosts.map((host) => (
-                      <div
-                        key={host.id}
-                        className="relative min-w-full w-full flex-shrink-0 bg-white rounded-2xl overflow-hidden shadow-lg"
-                        style={{ scrollSnapAlign: 'start' }}
-                      >
-                        {/* Host Image with Overlay */}
-                        <div className="relative w-full h-64 bg-gradient-to-br from-gray-100 to-gray-200">
-                          <Image
-                            src={
-                              host.photo_url ||
-                              "https://picsum.photos/400/300?random=" + host.id
-                            }
-                            alt={host.name ?? "Host"}
-                            fill
-                            className="object-cover"
-                          />
-                          {/* Gradient Overlay */}
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-60"></div>
-                          
-                          {/* Host Info Overlay */}
-                          <div className="absolute bottom-4 left-4 right-4">
-                            <div className="bg-white/90 backdrop-blur-sm rounded-xl p-3 shadow-lg">
-                              <div className="text-lg font-bold text-gray-900 mb-1">
-                                {host.name || t("hosts.unknown")}
-                              </div>
-                              {/* <div className="text-sm text-gray-600 flex items-center gap-1">
-                                <MapPin className="h-3 w-3" />
-                                {host.city || host.area || "מיקום לא ידוע"}
-                              </div> */}
-                            </div>
+                {/* Hosts Horizontal Scroll */}
+                {country.hosts && country.hosts.length > 0 ? (
+                  <div className="relative">
+                    <div
+                      id={`hosts-container-${country.place_id}`}
+                      className="flex gap-4 sm:gap-6 overflow-x-auto scrollbar-hide pb-4"
+                      style={{
+                        scrollSnapType: 'x mandatory',
+                        WebkitOverflowScrolling: 'touch'
+                      }}
+                    >
+                      {country.hosts.map((host, index) => (
+                        <div
+                          key={host.id}
+                          className="flex-none w-72 sm:w-80 bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-shadow cursor-pointer"
+                          style={{ scrollSnapAlign: 'start' }}
+                          onClick={() => onCountrySelect?.(country)}
+                        >
+                          <div className="relative w-full h-48 sm:h-56">
+                            <Image
+                              src={
+                                host.photo_url ||
+                                `https://picsum.photos/400/300?random=${host.id}`
+                              }
+                              alt={host.name ?? "Host"}
+                              fill
+                              className="object-cover"
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
+                          </div>
+                          <div className="p-4 sm:p-6">
+                            <h3 className="font-semibold text-gray-900 text-lg mb-1">
+                              {host.name || t("hosts.unknown")}
+                            </h3>
+                            <p className="text-gray-600 text-sm">
+                              מארח מקצועי
+                            </p>
                           </div>
                         </div>
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* Navigation Arrows - Positioned over the images */}
-                  {country.hosts.length > 1 && (
-                    <>
-                      <button
-                        className="absolute right-3 top-1/2 -translate-y-1/2 z-20 w-10 h-10 bg-white/90 backdrop-blur-sm border border-white/20 rounded-full shadow-lg hover:bg-white hover:shadow-xl transition-all duration-200 flex items-center justify-center group/btn"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          const el = document.getElementById(
-                            `country-hosts-${country.place_id}`
-                          );
-                          if (el) {
-                            const scrollAmount = el.clientWidth;
-                            el.scrollBy({ left: -scrollAmount, behavior: "smooth" });
-                          }
-                        }}
-                        aria-label="scroll right"
-                      >
-                        <ChevronRight className="h-5 w-5 text-gray-700 group-hover/btn:text-blue-600 transition-colors" />
-                      </button>
-
-                      <button
-                        className="absolute left-3 top-1/2 -translate-y-1/2 z-20 w-10 h-10 bg-white/90 backdrop-blur-sm border border-white/20 rounded-full shadow-lg hover:bg-white hover:shadow-xl transition-all duration-200 flex items-center justify-center group/btn"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          const el = document.getElementById(
-                            `country-hosts-${country.place_id}`
-                          );
-                          if (el) {
-                            const scrollAmount = el.clientWidth;
-                            el.scrollBy({ left: scrollAmount, behavior: "smooth" });
-                          }
-                        }}
-                        aria-label="scroll left"
-                      >
-                        <ChevronLeft className="h-5 w-5 text-gray-700 group-hover/btn:text-blue-600 transition-colors" />
-                      </button>
-                    </>
-                  )}
-                </div>
-              ) : (
-                <div className="relative mb-6">
-                  <div className="w-full h-64 bg-gradient-to-br from-gray-100 to-gray-200 rounded-2xl flex items-center justify-center">
-                    <div className="text-center">
-                      <Users className="h-12 w-12 text-gray-400 mx-auto mb-3" />
-                      <p className="text-gray-500 text-sm">אין מארחים זמינים</p>
+                      ))}
                     </div>
+
+                    {/* Navigation Arrows - Hidden on Mobile */}
+                    {country.hosts.length > 1 && (
+                      <>
+                        <button
+                          className="hidden sm:flex absolute left-4 top-1/2 -translate-y-1/2 z-10 w-12 h-12 bg-white/95 backdrop-blur-sm border border-gray-200 rounded-full shadow-lg hover:shadow-xl transition-all items-center justify-center group/btn"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            scrollHosts(`hosts-container-${country.place_id}`, 'left');
+                          }}
+                          aria-label="Previous hosts"
+                        >
+                          <ChevronLeft className="h-6 w-6 text-gray-700 group-hover/btn:text-gray-900" />
+                        </button>
+
+                        <button
+                          className="hidden sm:flex absolute right-4 top-1/2 -translate-y-1/2 z-10 w-12 h-12 bg-white/95 backdrop-blur-sm border border-gray-200 rounded-full shadow-lg hover:shadow-xl transition-all items-center justify-center group/btn"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            scrollHosts(`hosts-container-${country.place_id}`, 'right');
+                          }}
+                          aria-label="Next hosts"
+                        >
+                          <ChevronRight className="h-6 w-6 text-gray-700 group-hover/btn:text-gray-900" />
+                        </button>
+                      </>
+                    )}
                   </div>
+                ) : (
+                  <div className="bg-white rounded-2xl p-8 sm:p-12 text-center shadow-sm">
+                    <div className="text-gray-300 mb-4">
+                      <Users className="h-16 w-16 mx-auto" />
+                    </div>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                      אין מארחים זמינים כרגע
+                    </h3>
+                    <p className="text-gray-600 mb-6">
+                      בקרוב יהיו מארחים זמינים באזור זה
+                    </p>
+                    <button
+                      onClick={() => onCountrySelect?.(country)}
+                      className="px-8 py-3 bg-gray-100 text-gray-700 rounded-full font-semibold hover:bg-gray-200 transition-colors"
+                    >
+                      עדכן אותי כשיהיו מארחים
+                    </button>
+                  </div>
+                )}
+
+                {/* Mobile View All Button */}
+                <div className="sm:hidden mt-6">
+                  <button
+                    onClick={() => onCountrySelect?.(country)}
+                    className="w-full py-4 bg-gray-900 text-white rounded-2xl font-semibold text-lg hover:bg-gray-800 transition-colors"
+                  >
+                    {t("countries.viewHosts")}
+                  </button>
                 </div>
-              )}
-
-              {/* Action Button */}
-              <button className="w-full px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl font-semibold hover:from-blue-700 hover:to-purple-700 transition-colors duration-300 shadow-lg hover:shadow-xl">
-                {t("countries.viewHosts")}
-              </button>
-            </div>
+              </div>
+            ))}
           </div>
-        ))}
+        )}
       </div>
-
-      {/* Empty search results */}
-      {searchTerm && filteredCountries.length === 0 && (
-        <div className="text-center py-12">
-          <div className="text-gray-400 mb-4">
-            <Search className="h-16 w-16 mx-auto" />
-          </div>
-          <p className="text-gray-500 text-lg">{t("countries.noResults")}</p>
-          <p className="text-gray-400 text-sm mt-2">
-            {t("countries.tryDifferentQuery")}
-          </p>
-        </div>
-      )}
     </div>
   );
 }

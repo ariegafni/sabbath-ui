@@ -47,8 +47,6 @@ export class LocationService {
       const response = await fetch(`${this.baseUrl}/countries`);
       if (!response.ok) throw new Error("Failed to fetch countries with hosts");
       const data = await response.json();
-      console.log("countries data:", data);
-      // Normalize hosts in each country bucket
       return (data as Array<{ country_place_id: string; hosts: any[] }>).map(
         (bucket) => ({
           country_place_id: bucket.country_place_id,
