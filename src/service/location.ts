@@ -76,49 +76,4 @@ export class LocationService {
     return r.json();
   }
 
-  // static async getLocationByCoordinates(
-  //   lat: number,
-  //   lng: number
-  // ): Promise<{
-  //   country_place_id: string | null;
-  //   city_place_id: string | null;
-  //   address: string;
-  // }> {
-  //   const r = await fetch(
-  //     `${this.baseUrl}/reverse-geocode?lat=${lat}&lng=${lng}`
-  //   );
-  //   if (!r.ok) throw new Error("Failed to get location by coordinates");
-  //   return r.json();
-  // }
-
-  // static async getNearbyLocations(
-  //   lat: number,
-  //   lng: number,
-  //   radius = 10
-  // ): Promise<{ countries: Country[]; cities: City[] }> {
-  //   const r = await fetch(
-  //     `${this.baseUrl}/nearby?lat=${lat}&lng=${lng}&radius=${radius}`
-  //   );
-  //   if (!r.ok) throw new Error("Failed to get nearby locations");
-  //   return r.json();
-  // }
-
-  // static async getPopularLocations(): Promise<{
-  //   countries: Country[];
-  //   cities: City[];
-  // }> {
-  //   const r = await fetch(`${this.baseUrl}/popular`);
-  //   if (!r.ok) throw new Error("Failed to get popular locations");
-  //   return r.json();
-  // }
-
-  // static async getLocationAutocomplete(
-  //   query: string
-  // ): Promise<AutocompleteItem[]> {
-  //   const r = await fetch(
-  //     `${this.baseUrl}/autocomplete?query=${encodeURIComponent(query)}`
-  //   );
-  //   if (!r.ok) throw new Error("Failed to get location autocomplete");
-  //   return r.json();
-  // }
 }

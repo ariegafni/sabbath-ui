@@ -2,7 +2,14 @@
 
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Home, User, Plus, Calendar, Briefcase } from "lucide-react";
+import {
+  Home,
+  User,
+  Plus,
+  Calendar,
+  Briefcase,
+  MessageCircle,
+} from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/Providers/AuthProvider";
@@ -62,9 +69,15 @@ export default function BottomNavigation() {
     },
     {
       id: "personal-area",
-      label: t("nav.personalArea", { defaultValue: "אזור אישי" }),
+      label: t("nav.myRequests", { defaultValue: "הבקשות שלי" }),
       icon: Briefcase,
       href: "/personal-area",
+    },
+    {
+      id: "messages",
+      label: t("nav.messages", { defaultValue: "הודעות" }),
+      icon: MessageCircle,
+      href: "/messages",
     },
     hostNavItem,
     {

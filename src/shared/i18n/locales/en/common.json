@@ -9,6 +9,8 @@
     "publish": "Publish Meal",
     "settings": "Settings",
     "personalArea": "Personal Area",
+    "myRequests": "My Requests",
+    "messages": "Messages",
     "profile": "Profile",
     "manageHosting": "Manage Hosting"
   },
