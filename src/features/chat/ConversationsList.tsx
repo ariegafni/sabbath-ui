@@ -4,6 +4,8 @@ import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { MessageCircle, Search, Clock, User, ChevronLeft } from "lucide-react";
 import { Conversation, ChatService } from "@/service";
+import { socketService } from "@/service";
+
 
 interface ConversationsListProps {
   onConversationSelect: (conversation: Conversation) => void;
@@ -24,6 +26,39 @@ export default function ConversationsList({
   useEffect(() => {
     loadConversations();
   }, []);
+  useEffect(() => {
+  const handleNewMessage = (data: any) => {
+    setConversations(prev => {
+      const updated = [...prev];
+      const idx = updated.findIndex(c => c.id === data.conversation_id);
+      if (idx !== -1) {
+        updated[idx] = {
+          ...updated[idx],
+          last_message_content: data.message.content,
+          last_message_created_at: data.message.created_at,
+          unread_count: updated[idx].unread_count + 1,
+        };
+      } else {
+        // אם זו שיחה חדשה לגמרי – תוכל להוסיף אותה כאן
+        updated.unshift({
+          id: data.conversation_id,
+          other_user_first_name: data.message.sender_first_name,
+          other_user_last_name: data.message.sender_last_name,
+          other_user_profile_image: data.message.sender_profile_image,
+          last_message_content: data.message.content,
+          last_message_created_at: data.message.created_at,
+          unread_count: 1,
+        } as Conversation);
+      }
+      return updated;
+    });
+  };
+
+  socketService.on("new_message", handleNewMessage);
+  return () => {
+    socketService.off("new_message", handleNewMessage);
+  };
+}, []);
 
   useEffect(() => {
     if (searchTerm.trim() === "") {

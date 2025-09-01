@@ -20,7 +20,7 @@ export default function ChatWindow({ conversation, onBack }: ChatWindowProps) {
   const [sending, setSending] = useState(false);
   const [typingUsers, setTypingUsers] = useState<Set<string>>(new Set());
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const typingTimeoutRef = useRef<NodeJS.Timeout>();
+const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     loadMessages();
@@ -129,26 +129,42 @@ export default function ChatWindow({ conversation, onBack }: ChatWindowProps) {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
-  const sendMessage = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newMessage.trim() || sending) return;
+const sendMessage = async (e: React.FormEvent) => {
+  e.preventDefault();
+  if (!newMessage.trim() || sending) return;
 
-    try {
-      setSending(true);
-      await ChatService.sendMessage({
-        conversation_id: conversation.id,
-        content: newMessage.trim(),
-      });
-      setNewMessage("");
-      
-      // Stop typing indicator
-      socketService.sendTyping(conversation.id, false);
-    } catch (error) {
-      console.error("Error sending message:", error);
-    } finally {
-      setSending(false);
-    }
-  };
+const tempId = `temp-${Date.now()}`;
+const tempMessage: Message = {
+  id: tempId,
+  conversation_id: conversation.id,
+  sender_id: user!.id,
+  content: newMessage.trim(),
+  created_at: new Date().toISOString(),
+  updated_at: new Date().toISOString(),
+  is_read: false,
+  message_type: "text", // נניח שהטייפ ברירת מחדל הוא טקסט
+};
+
+
+  // מוסיפים מיד לסטייט
+  setMessages(prev => [...prev, tempMessage]);
+  setNewMessage("");
+
+  try {
+    setSending(true);
+    await ChatService.sendMessage({
+      conversation_id: conversation.id,
+      content: tempMessage.content,
+    });
+    socketService.sendTyping(conversation.id, false);
+  } catch (error) {
+    console.error("Error sending message:", error);
+    // אפשר להוסיף טיפול בסטטוס "נכשל" כאן
+  } finally {
+    setSending(false);
+  }
+};
+
 
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setNewMessage(e.target.value);
