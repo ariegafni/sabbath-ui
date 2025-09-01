@@ -18,6 +18,8 @@ import {
   HostingRequestService,
   HostingRequest,
 } from "@/service/HostingRequest";
+import { ChatService } from "@/service/chat";
+import { useRouter } from "next/navigation";
 
 interface MyHostingRequestsAsHostProps {
   className?: string;
@@ -27,6 +29,7 @@ export default function MyHostingRequestsAsHost({
   className = "",
 }: MyHostingRequestsAsHostProps) {
   const { t } = useTranslation();
+  const router = useRouter();
   const [requests, setRequests] = useState<HostingRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -109,6 +112,41 @@ export default function MyHostingRequestsAsHost({
     } catch (error) {
       console.error("Error deleting request:", error);
       alert("שגיאה במחיקת בקשת האירוח");
+    }
+  };
+
+  const handleStartChat = async (request: HostingRequest) => {
+    try {
+      // Extract guest ID from the request
+      let guestId: string;
+      if (typeof request.guest_id === "object" && request.guest_id) {
+        // If guest_id is an object, we need to get the actual ID
+        guestId = (request.guest_id as any).id || "";
+      } else {
+        guestId = request.guest_id as string;
+      }
+
+      if (!guestId) {
+        alert("שגיאה: לא ניתן לזהות את האורח");
+        return;
+      }
+
+      // Get the guest's user_id (guest_id should already be user_id)
+      const guestUserId = guestId;
+
+      // Start or find existing conversation
+      const conversation = await ChatService.startConversation({
+        host_id: request.host_id as string,
+        guest_id: guestUserId,
+        accommodation_request_id: request.id,
+        initial_message: `שלום! הגעתי אליך בנוגע לבקשת האירוח שלך ל${formatDate(request.requested_date)}`
+      });
+
+      // Navigate to messages page with conversation selected
+      router.push(`/messages`);
+    } catch (error) {
+      console.error("Error starting chat:", error);
+      alert("שגיאה ביצירת השיחה");
     }
   };
 
@@ -325,28 +363,41 @@ export default function MyHostingRequestsAsHost({
                 </div>
 
                 {/* Action Buttons */}
-                <div className="flex items-center space-x-3 space-x-reverse">
-                  <Button
-                    onClick={() =>
-                      handleRespondToRequest(request.id, "accepted")
-                    }
-                    variant="primary"
-                    className="flex-1 bg-green-600 hover:bg-green-700"
-                  >
-                    <Check className="w-4 h-4 ml-2" />
-                    אשר בקשה
-                  </Button>
+                <div className="space-y-3">
+                  <div className="flex items-center space-x-3 space-x-reverse">
+                    <Button
+                      onClick={() =>
+                        handleRespondToRequest(request.id, "accepted")
+                      }
+                      variant="primary"
+                      className="flex-1 bg-green-600 hover:bg-green-700"
+                    >
+                      <Check className="w-4 h-4 ml-2" />
+                      אשר בקשה
+                    </Button>
 
-                  <Button
-                    onClick={() =>
-                      handleRespondToRequest(request.id, "rejected")
-                    }
-                    variant="outline"
-                    className="flex-1 border-red-300 text-red-600 hover:bg-red-50"
-                  >
-                    <X className="w-4 h-4 ml-2" />
-                    דחה בקשה
-                  </Button>
+                    <Button
+                      onClick={() =>
+                        handleRespondToRequest(request.id, "rejected")
+                      }
+                      variant="outline"
+                      className="flex-1 border-red-300 text-red-600 hover:bg-red-50"
+                    >
+                      <X className="w-4 h-4 ml-2" />
+                      דחה בקשה
+                    </Button>
+                  </div>
+                  
+                  <div className="flex items-center">
+                    <Button
+                      onClick={() => handleStartChat(request)}
+                      variant="outline"
+                      className="w-full border-blue-300 text-blue-600 hover:bg-blue-50"
+                    >
+                      <MessageSquare className="w-4 h-4 ml-2" />
+                      התחל שיחה עם האורח
+                    </Button>
+                  </div>
                 </div>
               </div>
             )}
@@ -376,18 +427,33 @@ export default function MyHostingRequestsAsHost({
               </div>
             )}
 
-            {/* Delete Button for Completed Requests */}
+            {/* Action Buttons for Completed Requests */}
             {(request.status === "accepted" ||
               request.status === "rejected") && (
-              <div className="flex items-center space-x-3 space-x-reverse pt-4 border-t">
-                <Button
-                  onClick={() => handleDeleteRequest(request.id)}
-                  variant="outline"
-                  className="flex-1 border-gray-300 text-gray-600 hover:bg-gray-50"
-                >
-                  <X className="w-4 h-4 ml-2" />
-                  מחק בקשה
-                </Button>
+              <div className="space-y-3 pt-4 border-t">
+                {request.status === "accepted" && (
+                  <div className="flex items-center">
+                    <Button
+                      onClick={() => handleStartChat(request)}
+                      variant="primary"
+                      className="w-full bg-blue-600 hover:bg-blue-700"
+                    >
+                      <MessageSquare className="w-4 h-4 ml-2" />
+                      שלח הודעה לאורח
+                    </Button>
+                  </div>
+                )}
+                
+                <div className="flex items-center">
+                  <Button
+                    onClick={() => handleDeleteRequest(request.id)}
+                    variant="outline"
+                    className="w-full border-gray-300 text-gray-600 hover:bg-gray-50"
+                  >
+                    <X className="w-4 h-4 ml-2" />
+                    מחק בקשה
+                  </Button>
+                </div>
               </div>
             )}
           </div>

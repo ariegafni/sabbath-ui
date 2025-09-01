@@ -9,7 +9,8 @@ export function middleware(req: NextRequest) {
     PROTECTED_PREFIXES.some((p) => pathname.startsWith(p)) || pathname === "/";
   if (!isProtected) return NextResponse.next();
 
-  const token = req.cookies.get("auth")?.value;
+  // Check both cookie and localStorage (via custom header)
+  const token = req.cookies.get("auth")?.value || req.headers.get("x-auth-token");
   if (!token) {
     const loginUrl = new URL("/login", req.url);
     return NextResponse.redirect(loginUrl);

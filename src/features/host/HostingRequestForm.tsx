@@ -8,6 +8,9 @@ import {
   HostingRequestService,
   CreateHostingRequestRequest,
 } from "@/service/HostingRequest";
+import { ChatService } from "@/service";
+import { useAuth } from "@/Providers/AuthProvider";
+import { AuthService } from "@/service/auth";
 
 interface HostingRequestFormProps {
   hostId: string;
@@ -25,6 +28,7 @@ export default function HostingRequestForm({
   onSuccess,
 }: HostingRequestFormProps) {
   const { t } = useTranslation();
+  const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     requested_date: "",
@@ -99,7 +103,34 @@ export default function HostingRequestForm({
         message: formData.message.trim(),
       };
       console.log(requestData);
-      await HostingRequestService.createHostingRequest(requestData);
+      const hostingRequest = await HostingRequestService.createHostingRequest(requestData);
+
+      // Start a conversation with the host
+      if (user) {
+        try {
+          // Get the host's user_id from the host record
+          const hostResponse = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/hosts/${hostId}`, {
+            headers: { ...AuthService.getAuthHeaders() },
+          });
+          
+          if (hostResponse.ok) {
+            const hostData = await hostResponse.json();
+            const hostUserId = hostData.user_id || hostData.user?.id;
+            
+            if (hostUserId) {
+              await ChatService.startConversation({
+                host_id: hostUserId,
+                guest_id: user.id,
+                accommodation_request_id: hostingRequest.id,
+                initial_message: formData.message.trim()
+              });
+            }
+          }
+        } catch (chatError) {
+          console.error("Error starting conversation:", chatError);
+          // Don't fail the request if chat fails
+        }
+      }
 
       alert("בקשת האירוח נשלחה בהצלחה!");
       onSuccess?.();

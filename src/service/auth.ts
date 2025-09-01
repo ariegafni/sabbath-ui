@@ -56,51 +56,117 @@ export class AuthService {
 
   // התחברות
   static async login(credentials: LoginRequest): Promise<AuthResponse> {
-    console.log(
-      "NEXT_PUBLIC_API_BASE_URL:",
-      process.env.NEXT_PUBLIC_API_BASE_URL
-    );
+    try {
+      console.log(
+        "NEXT_PUBLIC_API_BASE_URL:",
+        process.env.NEXT_PUBLIC_API_BASE_URL
+      );
+      console.log("Logging in with URL:", `${this.baseUrl}/login`);
 
-    const response = await fetch(`${this.baseUrl}/login`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(credentials),
-    });
-    if (!response.ok) {
-      throw new Error("Login failed");
+      const response = await fetch(`${this.baseUrl}/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(credentials),
+      });
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("Login failed:", response.status, errorText);
+        
+        // Try to parse error message
+        try {
+          const errorData = JSON.parse(errorText);
+          if (errorData.error) {
+            if (errorData.error.includes("Invalid credentials")) {
+              throw new Error("אימייל או סיסמה שגויים");
+            } else {
+              throw new Error(errorData.error);
+            }
+          }
+        } catch (parseError) {
+          // If we can't parse the error, use the raw text
+          throw new Error(`Login failed: ${response.status} ${response.statusText}`);
+        }
+        
+        throw new Error(`Login failed: ${response.status} ${response.statusText}`);
+      }
+      return response.json();
+    } catch (error) {
+      console.error("Login error:", error);
+      if (error instanceof TypeError && error.message.includes("Failed to fetch")) {
+        throw new Error("Network error - please check your connection");
+      }
+      throw error;
     }
-    return response.json();
   }
 
   // הרשמה
   static async register(userData: RegisterRequest): Promise<AuthResponse> {
-    const response = await fetch(`${this.baseUrl}/register`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(userData),
-    });
-    if (!response.ok) {
-      throw new Error("Registration failed");
+    try {
+      console.log("Registering user with URL:", `${this.baseUrl}/register`);
+      console.log("User data:", userData);
+      
+      const requestBody = JSON.stringify(userData);
+      console.log("Request body:", requestBody);
+      
+      const response = await fetch(`${this.baseUrl}/register`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: requestBody,
+      });
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("Registration failed:", response.status, errorText);
+        
+        // Try to parse error message
+        try {
+          const errorData = JSON.parse(errorText);
+          if (errorData.error) {
+            if (errorData.error.includes("Email already exists")) {
+              throw new Error("האימייל כבר קיים במערכת");
+            } else if (errorData.error.includes("validation error")) {
+              throw new Error("נתונים לא תקינים - אנא בדוק את הפרטים");
+            } else {
+              throw new Error(errorData.error);
+            }
+          }
+        } catch (parseError) {
+          // If we can't parse the error, use the raw text
+          throw new Error(`Registration failed: ${response.status} ${response.statusText}`);
+        }
+        
+        throw new Error(`Registration failed: ${response.status} ${response.statusText}`);
+      }
+      return response.json();
+    } catch (error) {
+      console.error("Registration error:", error);
+      if (error instanceof TypeError && error.message.includes("Failed to fetch")) {
+        throw new Error("Network error - please check your connection");
+      }
+      throw error;
     }
-    return response.json();
   }
 
   // התנתקות
   static async logout(): Promise<void> {
-    const response = await fetch(`${this.baseUrl}/logout`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${this.getAccessToken()}`,
-      },
-    });
-    if (!response.ok) {
-      throw new Error("Logout failed");
+    try {
+      const response = await fetch(`${this.baseUrl}/logout`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${this.getAccessToken()}`,
+        },
+      });
+      if (!response.ok) {
+        console.warn("Logout request failed, but clearing local tokens");
+      }
+    } catch (error) {
+      console.warn("Logout request failed, but clearing local tokens:", error);
+    } finally {
+      this.clearTokens();
     }
-    this.clearTokens();
   }
 
   // רענון טוקן
@@ -205,6 +271,8 @@ export class AuthService {
   private static clearTokens(): void {
     localStorage.removeItem("access_token");
     localStorage.removeItem("refresh_token");
+    // Clear cookie as well
+    document.cookie = "auth=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
   }
 
   // בדיקה אם המשתמש מחובר
@@ -215,6 +283,14 @@ export class AuthService {
   // קבלת headers עם authorization
   static getAuthHeaders(): HeadersInit {
     const token = this.getAccessToken();
-    return token ? { Authorization: `Bearer ${token}` } : {};
+    return token ? { 
+      Authorization: `Bearer ${token}`,
+      'x-auth-token': token // For middleware compatibility
+    } : {};
+  }
+
+  // קבלת טוקן (public method for socket connection)
+  static getToken(): string | null {
+    return this.getAccessToken();
   }
 }

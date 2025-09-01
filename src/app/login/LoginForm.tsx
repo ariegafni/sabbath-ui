@@ -27,6 +27,8 @@ export default function LoginForm({ onSwitchToRegister }: Props) {
     if (!form.email || !form.password) return;
     setLoading(true);
     try {
+      console.log("Attempting login with:", { email: form.email.trim(), password: "***" });
+      
       const res = await AuthService.login({
         email: form.email.trim(),
         password: form.password,
@@ -36,12 +38,13 @@ export default function LoginForm({ onSwitchToRegister }: Props) {
       localStorage.setItem("refresh_token", res.refresh_token);
       localStorage.setItem("user", JSON.stringify(res.user));
       // Mirror to cookie for middleware protection
-      document.cookie = `auth=${res.access_token}; path=/; max-age=604800; samesite=lax`;
+      document.cookie = `auth=${res.access_token}; path=/; max-age=604800; samesite=lax; secure=${window.location.protocol === 'https:'}`;
       // Refresh auth context and redirect
       await refresh();
       router.replace("/");
     } catch (err) {
-      alert(t("auth.loginError"));
+      const errorMessage = err instanceof Error ? err.message : "שגיאה בהתחברות";
+      alert(errorMessage);
       console.error("Login failed", err);
     } finally {
       setLoading(false);

@@ -13,7 +13,7 @@ import {
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/Providers/AuthProvider";
-import { HostService } from "@/service";
+import { HostService, ChatService } from "@/service";
 
 type NavigationItem = {
   id: string;
@@ -27,23 +27,48 @@ export default function BottomNavigation() {
   const pathname = usePathname();
   const { user } = useAuth();
   const [isHost, setIsHost] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
   const { t } = useTranslation();
 
   useEffect(() => {
     const check = async () => {
       if (!user) {
         setIsHost(false);
+        setUnreadCount(0);
         return;
       }
       try {
-        const hostProfile = await HostService.getCurrentUserHostProfile();
+        const [hostProfile, unreadMessages] = await Promise.all([
+          HostService.getCurrentUserHostProfile().catch(() => null),
+          ChatService.getUnreadCount().catch((error) => {
+            console.warn("Chat service not available:", error.message);
+            return 0;
+          })
+        ]);
         setIsHost(!!hostProfile);
+        setUnreadCount(unreadMessages);
       } catch (error) {
-        console.error("Failed to check host status:", error);
+        console.error("Failed to check status:", error);
         setIsHost(false);
+        setUnreadCount(0);
       }
     };
     check();
+
+    // Update unread count every 30 seconds
+    const interval = setInterval(async () => {
+      if (user) {
+        try {
+          const count = await ChatService.getUnreadCount();
+          setUnreadCount(count);
+        } catch (error) {
+          console.warn("Chat service not available for unread count update:", error.message);
+          setUnreadCount(0);
+        }
+      }
+    }, 30000);
+
+    return () => clearInterval(interval);
   }, [user]);
 
   const hostNavItem: NavigationItem = isHost
@@ -78,6 +103,7 @@ export default function BottomNavigation() {
       label: t("nav.messages", { defaultValue: "הודעות" }),
       icon: MessageCircle,
       href: "/messages",
+      badge: unreadCount,
     },
     hostNavItem,
     {

@@ -9,6 +9,8 @@ export interface Host {
   city_place_id: string;
   city?: string;
   area?: string;
+  address?: string;
+  description?: string;
   max_guests: number;
   hosting_type: string[];
   kashrut_level?: string;
@@ -16,6 +18,7 @@ export interface Host {
   bio?: string;
   total_hostings: number;
   is_always_available: boolean;
+  available?: boolean;
   rating?: number;
 }
 

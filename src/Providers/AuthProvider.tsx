@@ -1,6 +1,7 @@
 "use client";
 import { createContext, useContext, useEffect, useState } from "react";
 import { UserService } from "../service";
+import { AuthService } from "../service/auth";
 
 type User = { id: string; name?: string; email?: string } | null;
 
@@ -24,6 +25,13 @@ export default function AuthProvider({
   const refresh = async () => {
     setLoading(true);
     try {
+      // Check if user is authenticated
+      if (!AuthService.isAuthenticated()) {
+        console.log("User not authenticated");
+        setUser(null);
+        return;
+      }
+
       const data = await UserService.getCurrentUser();
       setUser({
         id: data.id.toString(),
@@ -33,6 +41,10 @@ export default function AuthProvider({
     } catch (error) {
       console.error("Failed to fetch user:", error);
       setUser(null);
+      // Clear tokens if they're invalid
+      if (error instanceof Error && error.message.includes("Unauthorized")) {
+        AuthService.logout();
+      }
     } finally {
       setLoading(false);
     }

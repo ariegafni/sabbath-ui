@@ -1,7 +1,7 @@
 // קונפיגורציה של האפליקציה
 export const config = {
   // Base URL של ה-backend
-  API_BASE_URL: process.env.NEXT_PUBLIC_API_BASE_URL || "http://127.0.0.1:3002",
+  API_BASE_URL: process.env.NEXT_PUBLIC_API_BASE_URL || "http://127.0.0.1:3005",
 
   // Endpoints של ה-API
   API_ENDPOINTS: {

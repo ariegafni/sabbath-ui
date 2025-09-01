@@ -29,7 +29,20 @@ export default function RegisterForm({ onSwitchToLogin }: Props) {
     const email = form.email.trim();
     const password = form.password;
 
+    // Validation
+    if (!first_name || !last_name || !email || !password) {
+      alert("אנא מלא את כל השדות");
+      return;
+    }
+
+    if (password.length < 6) {
+      alert("הסיסמה חייבת להיות לפחות 6 תווים");
+      return;
+    }
+
     try {
+      console.log("Submitting registration with data:", { first_name, last_name, email, password: "***" });
+      
       await AuthService.register({
         first_name,
         last_name,
@@ -39,7 +52,8 @@ export default function RegisterForm({ onSwitchToLogin }: Props) {
       onSwitchToLogin();
     } catch (err) {
       console.error("Register failed:", err);
-      alert(t("auth.registerError"));
+      const errorMessage = err instanceof Error ? err.message : "שגיאה בהרשמה";
+      alert(errorMessage);
     }
   };
 

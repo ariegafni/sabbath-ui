@@ -36,15 +36,29 @@ export class UserService {
 
   // קבלת פרופיל המשתמש הנוכחי
   static async getCurrentUser(): Promise<User> {
-    const response = await fetch(`${this.baseUrl}/me`, {
-      headers: {
-        ...AuthService.getAuthHeaders(),
-      },
-    });
-    if (!response.ok) {
-      throw new Error("Failed to fetch current user");
+    try {
+      console.log("Fetching current user from:", `${this.baseUrl}/me`);
+      console.log("Auth headers:", AuthService.getAuthHeaders());
+      
+      const response = await fetch(`${this.baseUrl}/me`, {
+        headers: {
+          ...AuthService.getAuthHeaders(),
+        },
+      });
+      if (!response.ok) {
+        if (response.status === 401) {
+          throw new Error("Unauthorized - please login again");
+        }
+        throw new Error(`Failed to fetch current user: ${response.status} ${response.statusText}`);
+      }
+      return response.json();
+    } catch (error) {
+      console.error("Error fetching current user:", error);
+      if (error instanceof TypeError && error.message.includes("Failed to fetch")) {
+        throw new Error("Network error - please check your connection");
+      }
+      throw error;
     }
-    return response.json();
   }
 
   // עדכון פרופיל המשתמש

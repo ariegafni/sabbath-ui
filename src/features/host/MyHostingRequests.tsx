@@ -17,6 +17,9 @@ import {
   HostingRequestService,
   HostingRequest,
 } from "@/service/HostingRequest";
+import { ChatService } from "@/service/chat";
+import { useRouter } from "next/navigation";
+import { AuthService } from "@/service/auth";
 
 interface MyHostingRequestsProps {
   className?: string;
@@ -26,6 +29,7 @@ export default function MyHostingRequests({
   className = "",
 }: MyHostingRequestsProps) {
   const { t } = useTranslation();
+  const router = useRouter();
   const [requests, setRequests] = useState<HostingRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -91,6 +95,56 @@ export default function MyHostingRequests({
     } catch (error) {
       console.error("Error deleting request:", error);
       alert("שגיאה במחיקת בקשת האירוח");
+    }
+  };
+
+  const handleStartChat = async (request: HostingRequest) => {
+    try {
+      // Extract host ID from the request
+      let hostId: string;
+      if (typeof request.host_id === "object" && request.host_id) {
+        // If host_id is an object, we need to get the actual ID
+        hostId = (request.host_id as any).id || "";
+      } else {
+        hostId = request.host_id as string;
+      }
+
+      if (!hostId) {
+        alert("שגיאה: לא ניתן לזהות את המארח");
+        return;
+      }
+
+      // Get the host's user_id from the host record
+      const hostResponse = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/hosts/${hostId}`, {
+        headers: { ...AuthService.getAuthHeaders() },
+      });
+      
+      if (!hostResponse.ok) {
+        alert("שגיאה: לא ניתן לטעון את פרטי המארח");
+        return;
+      }
+      
+      const hostData = await hostResponse.json();
+      const hostUserId = hostData.user_id || hostData.user?.id;
+      
+      if (!hostUserId) {
+        alert("שגיאה: לא ניתן לזהות את המשתמש של המארח");
+        return;
+      }
+
+      // Start or find existing conversation
+      const conversation = await ChatService.startConversation({
+        host_id: hostUserId,
+        guest_id: request.guest_id as string,
+        accommodation_request_id: request.id,
+        initial_message: `שלום! אני האורח ששלח את הבקשה לאירוח ב${formatDate(request.requested_date)}`
+      });
+
+      // Navigate to messages page with conversation selected
+      router.push(`/messages`);
+    } catch (error) {
+      console.error("Error starting chat:", error);
+      alert("שגיאה ביצירת השיחה");
     }
   };
 
@@ -282,31 +336,59 @@ export default function MyHostingRequests({
 
             {/* Action Buttons */}
             {request.status === "pending" && (
-              <div className="flex items-center space-x-3 space-x-reverse pt-4 border-t">
-                <Button
-                  onClick={() => handleCancelRequest(request.id)}
-                  variant="outline"
-                  className="flex-1 border-red-300 text-red-600 hover:bg-red-50"
-                >
-                  <X className="w-4 h-4 ml-2" />
-                  בטל בקשה
-                </Button>
+              <div className="space-y-3 pt-4 border-t">
+                <div className="flex items-center">
+                  <Button
+                    onClick={() => handleStartChat(request)}
+                    variant="outline"
+                    className="w-full border-blue-300 text-blue-600 hover:bg-blue-50"
+                  >
+                    <MessageSquare className="w-4 h-4 ml-2" />
+                    שלח הודעה למארח
+                  </Button>
+                </div>
+                
+                <div className="flex items-center">
+                  <Button
+                    onClick={() => handleCancelRequest(request.id)}
+                    variant="outline"
+                    className="w-full border-red-300 text-red-600 hover:bg-red-50"
+                  >
+                    <X className="w-4 h-4 ml-2" />
+                    בטל בקשה
+                  </Button>
+                </div>
               </div>
             )}
 
-            {/* Delete Button for Completed/Cancelled Requests */}
+            {/* Action Buttons for Completed/Cancelled Requests */}
             {(request.status === "accepted" ||
               request.status === "rejected" ||
               request.status === "cancelled") && (
-              <div className="flex items-center space-x-3 space-x-reverse pt-4 border-t">
-                <Button
-                  onClick={() => handleDeleteRequest(request.id)}
-                  variant="outline"
-                  className="flex-1 border-gray-300 text-gray-600 hover:bg-gray-50"
-                >
-                  <X className="w-4 h-4 ml-2" />
-                  מחק בקשה
-                </Button>
+              <div className="space-y-3 pt-4 border-t">
+                {request.status === "accepted" && (
+                  <div className="flex items-center">
+                    <Button
+                      onClick={() => handleStartChat(request)}
+                      variant="primary"
+                      className="w-full bg-blue-600 hover:bg-blue-700"
+                    >
+                      <MessageSquare className="w-4 h-4 ml-2" />
+                      שלח הודעה למארח
+                    </Button>
+                  </div>
+                )}
+                
+                <div className="flex items-center">
+                  <Button
+                    onClick={() => handleDeleteRequest(request.id)}
+                    variant="outline"
+                    className="w-full border-gray-300 text-gray-600 hover:bg-gray-50"
+                  >
+                    <X className="w-4 h-4 ml-2" />
+                    מחק בקשה
+                  </Button>
+                </div>
               </div>
             )}
 

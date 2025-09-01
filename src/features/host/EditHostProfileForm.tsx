@@ -34,6 +34,7 @@ export default function EditHostProfileForm({
     kashrut_level: "",
     languages: [],
     is_always_available: false,
+    available: true,
   });
 
   const [photo, setPhoto] = useState<File | null>(null);
@@ -57,14 +58,15 @@ export default function EditHostProfileForm({
           country_place_id: profile.country_place_id,
           city_place_id: profile.city_place_id,
           area: profile.area || "",
-          address: "",
-          description: "",
+          address: profile.address || "",
+          description: profile.description || "",
           bio: profile.bio || "",
           max_guests: profile.max_guests,
           hosting_type: profile.hosting_type,
           kashrut_level: profile.kashrut_level || "",
           languages: profile.languages,
           is_always_available: profile.is_always_available,
+          available: profile.available ?? true,
         });
         if (profile.photo_url) {
           setPhotoPreview(profile.photo_url);
@@ -231,6 +233,62 @@ export default function EditHostProfileForm({
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
+          
+          <div className="space-y-2">
+            <div className="flex items-center space-x-3">
+              <input
+                type="checkbox"
+                id="available"
+                checked={formData.available || false}
+                onChange={(e) => updateFormData("available", e.target.checked)}
+                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+              />
+              <label htmlFor="available" className="text-sm font-medium text-gray-700">
+                {t("publish.form.availableLabel")}
+              </label>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <div className="flex items-center space-x-3">
+              <input
+                type="checkbox"
+                id="is_always_available"
+                checked={formData.is_always_available || false}
+                onChange={(e) => updateFormData("is_always_available", e.target.checked)}
+                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+              />
+              <label htmlFor="is_always_available" className="text-sm font-medium text-gray-700">
+                {t("publish.form.alwaysAvailableLabel")}
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-gray-700">
+            {t("publish.form.addressLabel")}
+          </label>
+          <input
+            type="text"
+            value={formData.address || ""}
+            onChange={(e) => updateFormData("address", e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            placeholder={t("publish.form.addressPlaceholder")}
+          />
+        </div>
+
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-gray-700">
+            {t("publish.form.descriptionLabel")}
+          </label>
+          <textarea
+            rows={3}
+            value={formData.description || ""}
+            onChange={(e) => updateFormData("description", e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            placeholder={t("publish.form.descriptionPlaceholder")}
+          />
         </div>
 
         <div className="space-y-2">
