@@ -6,6 +6,7 @@ import { Upload } from "lucide-react";
 import Button from "@/ui/Button";
 import LocationPicker from "./LocationPicker";
 import BubbleGroup from "./BubbleGroup";
+import { HostService } from "@/service";
 
 type BecomeHostFormProps = {
   onSubmit: (data: HostFormData) => void;
@@ -57,11 +58,24 @@ export default function BecomeHostForm({
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log("Submitting formData:", formData);
-    onSubmit(formData);
+ const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+
+  const uploaded: string[] = [];
+  for (const file of formData.photos) {
+    const res = await HostService.uploadPhoto(file);
+    uploaded.push(res.photo_url);
+  }
+
+  const finalData = {
+    ...formData,
+    photos: [],
+    host_photo_url: uploaded[0] ?? undefined,
   };
+
+  console.log("Submitting host data:", finalData);
+  onSubmit(finalData);
+};
 
   const updateFormData = (field: keyof HostFormData, value: any) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -69,13 +83,10 @@ export default function BecomeHostForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6" dir="rtl">
-      {/* העדפות וסגנון אירוח */}
       <div className="space-y-4">
         <h3 className="text-lg font-medium text-gray-900">
           {t("publish.form.preferencesTitle")}
         </h3>
-
-        {/* כשרות */}
         <div className="space-y-2">
           <label className="text-sm font-medium text-gray-700">
             {t("publish.form.kashrutLabel")}
@@ -90,8 +101,6 @@ export default function BecomeHostForm({
             ]}
           />
         </div>
-
-        {/* סוג אירוח */}
         <div className="space-y-2">
           <label className="text-sm font-medium text-gray-700">
             {t("publish.form.hostingTypeLabel")}
@@ -107,7 +116,6 @@ export default function BecomeHostForm({
           />
         </div>
 
-        {/* שפות */}
         <div className="space-y-2">
           <label className="text-sm font-medium text-gray-700">
             {t("publish.form.languagesLabelOptional")}
@@ -127,7 +135,6 @@ export default function BecomeHostForm({
         </div>
       </div>
 
-      {/* מיקום (Google Places Component) */}
       <div className="space-y-4">
         <LocationPicker
           country_place_id={formData.country_place_id}
@@ -137,7 +144,6 @@ export default function BecomeHostForm({
         />
       </div>
 
-      {/* פרטי אירוח */}
       <div className="space-y-4">
         <h3 className="text-lg font-medium text-gray-900">
           {t("publish.form.detailsTitle")}
@@ -160,7 +166,6 @@ export default function BecomeHostForm({
           </div>
         </div>
 
-        {/* תיאור */}
         <div className="space-y-2">
           <label className="text-sm font-medium text-gray-700">
             {t("publish.form.bioLabel")}
@@ -175,7 +180,6 @@ export default function BecomeHostForm({
         </div>
       </div>
 
-      {/* תמונות */}
       <div className="space-y-3">
         <label className="text-lg font-medium text-gray-900">
           {t("publish.form.photosTitle")}
@@ -219,7 +223,6 @@ export default function BecomeHostForm({
         <p className="text-sm text-gray-500">{t("publish.form.photosLimit")}</p>
       </div>
 
-      {/* כפתור שליחה */}
       <Button
         type="submit"
         disabled={loading}
