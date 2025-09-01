@@ -52,6 +52,7 @@
   },
   "common": {
     "cancel": "ביטול",
+    "submit": "עדכן",
     "retry": "נסה שוב",
     "language": "שפה",
     "hebrew": "עברית",
@@ -68,8 +69,10 @@
     "location": "מיקום",
     "notSet": "לא הוגדר",
     "capacity": "קיבולת",
+    "guests": "אורחים",
     "serverError": "שגיאה בתקשורת עם השרת",
-    "back": "חזור"
+    "back": "חזור",
+    "select": "בחר"
   },
   "profile": {
     "title": "פרופיל משתמש",
@@ -173,7 +176,11 @@
       "placeholder": "כשתקבל בקשות אירוח או תארח אורחים, הפעילות תופיע כאן"
     },
     "hostProfile": {
-      "title": "ניהול פרופיל מארח"
+      "title": "ניהול פרופיל מארח",
+      "editHostingDetails": "ערוך פרטי אירוח",
+      "updateSuccess": "פרטי האירוח עודכנו בהצלחה",
+      "updateError": "שגיאה בעדכון פרטי האירוח",
+      "loading": "מעדכן..."
     }
   },
   "messages": {

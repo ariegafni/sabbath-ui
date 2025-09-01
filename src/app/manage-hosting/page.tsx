@@ -12,22 +12,37 @@ import {
   Clock,
   Star,
   MapPin,
+  Edit,
 } from "lucide-react";
 import Button from "@/ui/Button";
+import EditHostProfileModal from "@/features/host/EditHostProfileModal";
+import { HostService } from "@/service/host";
 
 export default function ManageHostingPage() {
   const { t } = useTranslation();
   const { user } = useAuth();
   const router = useRouter();
   const [loading, setLoading] = useState(true);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [hostProfile, setHostProfile] = useState<any>(null);
 
   useEffect(() => {
     if (!user) {
       router.replace("/login");
       return;
     }
+    loadHostProfile();
     setLoading(false);
   }, [user, router]);
+
+  const loadHostProfile = async () => {
+    try {
+      const profile = await HostService.getCurrentUserHostProfile();
+      setHostProfile(profile);
+    } catch (error) {
+      console.error("Error loading host profile:", error);
+    }
+  };
 
   if (loading) {
     return (
@@ -161,12 +176,12 @@ export default function ManageHostingPage() {
               {t("manageHosting.hostProfile.title")}
             </h3>
             <Button
-              onClick={() => router.push("/profile")}
+              onClick={() => setIsEditModalOpen(true)}
               variant="outline"
               size="sm"
             >
-              <Settings className="h-4 w-4 mr-2" />
-              {t("settings.title")}
+              <Edit className="h-4 w-4 mr-2" />
+              {t("manageHosting.hostProfile.editHostingDetails")}
             </Button>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -176,7 +191,9 @@ export default function ManageHostingPage() {
                 <p className="text-sm font-medium text-gray-900">
                   {t("common.location")}
                 </p>
-                <p className="text-sm text-gray-600">{t("common.notSet")}</p>
+                <p className="text-sm text-gray-600">
+                  {hostProfile?.area || t("common.notSet")}
+                </p>
               </div>
             </div>
             <div className="flex items-center gap-3 p-3 rounded-lg bg-gray-50">
@@ -185,11 +202,23 @@ export default function ManageHostingPage() {
                 <p className="text-sm font-medium text-gray-900">
                   {t("common.capacity")}
                 </p>
-                <p className="text-sm text-gray-600">{t("common.notSet")}</p>
+                <p className="text-sm text-gray-600">
+                  {hostProfile?.max_guests ? `${hostProfile.max_guests} ${t("common.guests")}` : t("common.notSet")}
+                </p>
               </div>
             </div>
           </div>
         </div>
+
+        {/* Edit Host Profile Modal */}
+        <EditHostProfileModal
+          isOpen={isEditModalOpen}
+          onClose={() => setIsEditModalOpen(false)}
+          onSuccess={() => {
+            setIsEditModalOpen(false);
+            loadHostProfile(); // רענון הנתונים אחרי עדכון מוצלח
+          }}
+        />
       </div>
     </div>
   );

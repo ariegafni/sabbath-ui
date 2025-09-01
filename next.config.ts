@@ -16,6 +16,12 @@ const nextConfig: NextConfig = {
         port: "3002",
         pathname: "/**",
       },
+      {
+        protocol: "http",
+        hostname: "localhost",
+        port: "3005",
+        pathname: "/idrive-proxy/**",
+      },
     ],
   },
   async rewrites() {

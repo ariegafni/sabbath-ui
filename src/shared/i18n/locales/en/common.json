@@ -220,7 +220,11 @@
       "placeholder": "When you get requests or host guests, activity will appear here"
     },
     "hostProfile": {
-      "title": "Host Profile Management"
+      "title": "Host Profile Management",
+      "editHostingDetails": "Edit Hosting Details",
+      "updateSuccess": "Hosting details updated successfully",
+      "updateError": "Error updating hosting details",
+      "loading": "Updating..."
     }
   },
   "messages": {
@@ -306,9 +310,11 @@
     "location": "Location",
     "notSet": "Not set",
     "capacity": "Capacity",
+    "guests": "guests",
     "edit": "Edit",
     "reportProblem": "Report a problem",
-    "back": "Back"
+    "back": "Back",
+    "select": "Select"
   },
   "personalArea": {
     "title": "Personal Area",
