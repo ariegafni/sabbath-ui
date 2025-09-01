@@ -53,7 +53,11 @@ export default function ChatWindow({ conversation, onBack }: ChatWindowProps) {
     try {
       setLoading(true);
       const data = await ChatService.getMessages(conversation.id);
-      setMessages(data);
+      // Remove duplicates based on message ID
+      const uniqueMessages = data.filter((message, index, self) => 
+        index === self.findIndex(m => m.id === message.id)
+      );
+      setMessages(uniqueMessages);
     } catch (error) {
       console.error("Error loading messages:", error);
     } finally {
@@ -71,7 +75,14 @@ export default function ChatWindow({ conversation, onBack }: ChatWindowProps) {
 
   const handleNewMessage = useCallback((data: any) => {
     if (data.conversation_id === conversation.id) {
-      setMessages(prev => [...prev, data.message]);
+      setMessages(prev => {
+        // Check if message already exists to prevent duplicates
+        const messageExists = prev.some(msg => msg.id === data.message.id);
+        if (messageExists) {
+          return prev;
+        }
+        return [...prev, data.message];
+      });
       
       // If message is from other user, mark as read
       if (data.message.sender_id !== user?.id) {
@@ -246,7 +257,7 @@ export default function ChatWindow({ conversation, onBack }: ChatWindowProps) {
             const showDateSeparator = shouldShowDateSeparator(message, previousMessage);
 
             return (
-              <div key={message.id}>
+              <div key={`${message.id}-${index}`}>
                 {/* Date Separator */}
                 {showDateSeparator && (
                   <div className="flex justify-center my-4">
