@@ -61,18 +61,29 @@ export class HostService {
     return (await res.json()) as Host;
   }
 // יצירת מארח חדש
-  static async createHost(hostData: CreateHostRequest): Promise<Host> {
-    const res = await fetch(this.baseUrl, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        ...AuthService.getAuthHeaders(),
-      },
-      body: JSON.stringify(hostData),
-    });
-    if (!res.ok) throw new Error("Failed to create host");
-    return (await res.json()) as Host;
-  }
+static async createHost(hostData: CreateHostRequest): Promise<Host> {
+  const formData = new FormData();
+  Object.entries(hostData).forEach(([key, value]) => {
+    if (value !== undefined && value !== null) {
+      if (value instanceof File) {
+        formData.append("photo", value);
+      } else if (Array.isArray(value)) {
+        value.forEach((v) => formData.append(`${key}[]`, v));
+      } else {
+        formData.append(key, value.toString());
+      }
+    }
+  });
+
+  const res = await fetch(this.baseUrl, {
+    method: "POST",
+    headers: { ...AuthService.getAuthHeaders() },
+    body: formData,
+  });
+  if (!res.ok) throw new Error("Failed to create host");
+  return (await res.json()) as Host;
+}
+
 // עדכון מארח קיים
   static async updateHost(hostData: UpdateHostRequest): Promise<Host> {
     const res = await fetch(`${this.baseUrl}/${hostData.id}`, {
@@ -112,16 +123,5 @@ export class HostService {
       return null;
     }
   }
-//העלת תמונה של מארח
-  static async uploadPhoto(file: File): Promise<{ photo_url: string }> {
-    const formData = new FormData();
-    formData.append("photo", file);
-    const res = await fetch(`${this.baseUrl}/upload-photo`, {
-      method: "POST",
-      headers: { ...AuthService.getAuthHeaders() },
-      body: formData,
-    });
-    if (!res.ok) throw new Error("Failed to upload host photo");
-    return (await res.json()) as { photo_url: string };
-  }
+
 }

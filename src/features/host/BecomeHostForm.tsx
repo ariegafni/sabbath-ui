@@ -58,24 +58,18 @@ export default function BecomeHostForm({
     }));
   };
 
- const handleSubmit = async (e: React.FormEvent) => {
+const handleSubmit = async (e: React.FormEvent) => {
   e.preventDefault();
-
-  const uploaded: string[] = [];
-  for (const file of formData.photos) {
-    const res = await HostService.uploadPhoto(file);
-    uploaded.push(res.photo_url);
-  }
 
   const finalData = {
     ...formData,
-    photos: [],
-    host_photo_url: uploaded[0] ?? undefined,
+    photo: formData.photos[0], 
   };
 
   console.log("Submitting host data:", finalData);
   onSubmit(finalData);
 };
+
 
   const updateFormData = (field: keyof HostFormData, value: any) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
