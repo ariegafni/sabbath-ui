@@ -8,10 +8,7 @@ import {
   Calendar,
   Users,
   MessageSquare,
-  Settings,
   Clock,
-  Star,
-  MapPin,
   Edit,
 } from "lucide-react";
 import Button from "@/ui/Button";
@@ -170,47 +167,19 @@ export default function ManageHostingPage() {
         </div>
 
         {/* Profile Management */}
-        <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-900">
-              {t("manageHosting.hostProfile.title")}
-            </h3>
-            <Button
-              onClick={() => setIsEditing(true)}
-              variant="outline"
-              className="w-full md:w-auto"
-            >
-              <Edit className="h-4 w-4 mr-2" />
-              {t("manageHosting.hostProfile.editHostingDetails")}
-            </Button>
-          </div>
-          {!isEditing && (
-            <div className="space-y-4">
-              <div className="flex items-center gap-3 p-3 rounded-lg bg-gray-50">
-                <MapPin className="h-5 w-5 text-gray-500" />
-                <div>
-                  <p className="text-sm font-medium text-gray-900">
-                    {t("common.location")}
-                  </p>
-                  <p className="text-sm text-gray-600">
-                    {hostProfile?.area || t("common.notSet")}
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-center gap-3 p-3 rounded-lg bg-gray-50">
-                <Users className="h-5 w-5 text-gray-500" />
-                <div>
-                  <p className="text-sm font-medium text-gray-900">
-                    {t("common.capacity")}
-                  </p>
-                  <p className="text-sm text-gray-600">
-                    {hostProfile?.max_guests ? `${hostProfile.max_guests} ${t("common.guests")}` : t("common.notSet")}
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
+       <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+  <div className="flex items-center justify-between">
+    <Button
+      onClick={() => setIsEditing(true)}
+      variant="outline"
+      className="w-full md:w-auto"
+    >
+      <Edit className="h-4 w-4 mr-2" />
+      {t("manageHosting.hostProfile.editHostingDetails")}
+    </Button>
+  </div>
+</div>
+
 
         {/* Edit Host Profile Form */}
         {isEditing && (
