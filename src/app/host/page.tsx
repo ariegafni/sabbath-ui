@@ -24,6 +24,7 @@ export default function HostPage() {
         languages: data.languages,
         kashrut_level: data.kashrut_level || undefined,
         bio: data.bio || undefined,
+        photo: data.photo,
       });
       setIsSubmitted(true);
     } catch (err) {

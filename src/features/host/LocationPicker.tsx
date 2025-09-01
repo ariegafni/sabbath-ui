@@ -6,9 +6,11 @@ import { loadGoogleMaps } from "@/service/loadGoogleMaps";
 type LocationPickerProps = {
   country_place_id: string;
   city_place_id: string;
+  country_display_name: string;
+  city_display_name: string;
   area: string;
   onChange: (
-    field: "country_place_id" | "city_place_id" | "area",
+    field: "country_place_id" | "city_place_id" | "country_display_name" | "city_display_name" | "area",
     value: string
   ) => void;
 };
@@ -16,6 +18,8 @@ type LocationPickerProps = {
 export default function LocationPicker({
   country_place_id,
   city_place_id,
+  country_display_name,
+  city_display_name,
   area,
   onChange,
 }: LocationPickerProps) {
@@ -42,20 +46,17 @@ export default function LocationPicker({
         countryAC.addListener("place_changed", () => {
           const place = countryAC.getPlace();
           if (!place.place_id) return;
-          if (countryRef.current) {
-            countryRef.current.value = place.formatted_address || "";
-          }
           onChange("country_place_id", place.place_id);
+          onChange("country_display_name", place.formatted_address || "");
           onChange("city_place_id", "");
+          onChange("city_display_name", "");
         });
 
         cityAC.addListener("place_changed", () => {
           const place = cityAC.getPlace();
           if (!place.place_id) return;
-          if (cityRef.current) {
-            cityRef.current.value = place.formatted_address || "";
-          }
           onChange("city_place_id", place.place_id);
+          onChange("city_display_name", place.formatted_address || "");
         });
       }
     );
@@ -72,7 +73,8 @@ export default function LocationPicker({
             type="text"
             placeholder="הקלד מדינה"
             required
-            defaultValue={country_place_id}
+            value={country_display_name}
+            onChange={(e) => onChange("country_display_name", e.target.value)}
             className="w-full px-3 py-2 border border-gray-300 rounded-lg"
           />
         </div>
@@ -83,7 +85,8 @@ export default function LocationPicker({
             type="text"
             placeholder="הקלד עיר"
             required
-            defaultValue={city_place_id}
+            value={city_display_name}
+            onChange={(e) => onChange("city_display_name", e.target.value)}
             className="w-full px-3 py-2 border border-gray-300 rounded-lg"
           />
         </div>

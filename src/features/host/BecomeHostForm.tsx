@@ -19,6 +19,8 @@ export type HostFormData = {
   languages: string[];
   country_place_id: string;
   city_place_id: string;
+  country_display_name: string;
+  city_display_name: string;
   area: string;
   max_guests: number;
   bio: string;
@@ -35,6 +37,8 @@ export default function BecomeHostForm({
     languages: [],
     country_place_id: "",
     city_place_id: "",
+    country_display_name: "",
+    city_display_name: "",
     area: "",
     max_guests: 2,
     bio: "",
@@ -119,6 +123,8 @@ export default function BecomeHostForm({
         <LocationPicker
           country_place_id={formData.country_place_id}
           city_place_id={formData.city_place_id}
+          country_display_name={formData.country_display_name}
+          city_display_name={formData.city_display_name}
           area={formData.area}
           onChange={(field, value) => updateFormData(field, value)}
         />

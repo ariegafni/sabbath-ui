@@ -45,26 +45,48 @@ export class HostService {
   private static baseUrl = createApiUrl("/api/hosts");
   // יצירת מארח חדש
 static async createHost(hostData: CreateHostRequest): Promise<Host> {
-  const formData = new FormData();
-  Object.entries(hostData).forEach(([key, value]) => {
-    if (value !== undefined && value !== null) {
-      if (value instanceof File) {
-        formData.append("photo", value);
-      } else if (Array.isArray(value)) {
-        value.forEach((v) => formData.append(`${key}[]`, v));
-      } else {
-        formData.append(key, value.toString());
+  // בדיקה אם יש תמונה
+  const hasPhoto = hostData.photo && hostData.photo instanceof File && hostData.photo.size > 0;
+  
+  if (hasPhoto) {
+    // אם יש תמונה, שולח FormData
+    const formData = new FormData();
+    Object.entries(hostData).forEach(([key, value]) => {
+      if (value !== undefined && value !== null) {
+        if (value instanceof File) {
+          formData.append("photo", value);
+        } else if (Array.isArray(value)) {
+          // שליחת מערכים כטקסט מופרד בפסיקים כפי שה-Backend מצפה
+          formData.append(key, value.join(','));
+        } else {
+          formData.append(key, value.toString());
+        }
       }
-    }
-  });
+    });
 
-  const res = await fetch(this.baseUrl, {
-    method: "POST",
-    headers: { ...AuthService.getAuthHeaders() },
-    body: formData,
-  });
-  if (!res.ok) throw new Error("Failed to create host");
-  return (await res.json()) as Host;
+    const res = await fetch(this.baseUrl, {
+      method: "POST",
+      headers: { ...AuthService.getAuthHeaders() },
+      body: formData,
+    });
+    if (!res.ok) throw new Error("Failed to create host");
+    return (await res.json()) as Host;
+  } else {
+    // אם אין תמונה, שולח JSON
+    const jsonData = { ...hostData };
+    delete jsonData.photo; // מסיר את השדה photo מה-JSON
+    
+    const res = await fetch(this.baseUrl, {
+      method: "POST",
+      headers: { 
+        ...AuthService.getAuthHeaders(),
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(jsonData),
+    });
+    if (!res.ok) throw new Error("Failed to create host");
+    return (await res.json()) as Host;
+  }
 }
 
 //קבלת מארחים לפי מדינה - מחזיר רשימה של מארחים במדינה ספציפית
@@ -88,26 +110,48 @@ static async createHost(hostData: CreateHostRequest): Promise<Host> {
 
 // עדכון מארח קיים
 static async updateHost(hostData: UpdateHostRequest): Promise<Host> {
-  const formData = new FormData();
-  Object.entries(hostData).forEach(([key, value]) => {
-    if (value !== undefined && value !== null) {
-      if (value instanceof File) {
-        formData.append("photo", value);
-      } else if (Array.isArray(value)) {
-        value.forEach((v) => formData.append(`${key}[]`, v));
-      } else {
-        formData.append(key, value.toString());
+  // בדיקה אם יש תמונה
+  const hasPhoto = hostData.photo && hostData.photo instanceof File && hostData.photo.size > 0;
+  
+  if (hasPhoto) {
+    // אם יש תמונה, שולח FormData
+    const formData = new FormData();
+    Object.entries(hostData).forEach(([key, value]) => {
+      if (value !== undefined && value !== null) {
+        if (value instanceof File) {
+          formData.append("photo", value);
+        } else if (Array.isArray(value)) {
+          // שליחת מערכים כטקסט מופרד בפסיקים כפי שה-Backend מצפה
+          formData.append(key, value.join(','));
+        } else {
+          formData.append(key, value.toString());
+        }
       }
-    }
-  });
+    });
 
-  const res = await fetch(`${this.baseUrl}/${hostData.id}`, {
-    method: "PUT",
-    headers: { ...AuthService.getAuthHeaders() }, 
-    body: formData,
-  });
-  if (!res.ok) throw new Error("Failed to update host");
-  return (await res.json()) as Host;
+    const res = await fetch(`${this.baseUrl}/${hostData.id}`, {
+      method: "PUT",
+      headers: { ...AuthService.getAuthHeaders() }, 
+      body: formData,
+    });
+    if (!res.ok) throw new Error("Failed to update host");
+    return (await res.json()) as Host;
+  } else {
+    // אם אין תמונה, שולח JSON
+    const jsonData = { ...hostData };
+    delete jsonData.photo; // מסיר את השדה photo מה-JSON
+    
+    const res = await fetch(`${this.baseUrl}/${hostData.id}`, {
+      method: "PUT",
+      headers: { 
+        ...AuthService.getAuthHeaders(),
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(jsonData),
+    });
+    if (!res.ok) throw new Error("Failed to update host");
+    return (await res.json()) as Host;
+  }
 }
 
 // מחיקת מארח
