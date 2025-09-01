@@ -69,9 +69,21 @@ static async createHost(hostData: CreateHostRequest): Promise<Host> {
 
 //קבלת מארחים לפי מדינה - מחזיר רשימה של מארחים במדינה ספציפית
   static async getHostsByCountry(country: string): Promise<Host[]> {
-    const res = await fetch(`${this.baseUrl}/country/${encodeURIComponent(country)}`);
-    if (!res.ok) throw new Error("Failed to fetch hosts by country");
-    return (await res.json()) as Host[];
+    const url = `${this.baseUrl}/country/${encodeURIComponent(country)}`;
+    console.log('🔍 קריאת API למארחים במדינה:', url);
+    
+    const res = await fetch(url);
+    
+    if (!res.ok) {
+      console.error('❌ שגיאה בקריאת API:', res.status, res.statusText);
+      throw new Error("Failed to fetch hosts by country");
+    }
+    
+    const data = await res.json();
+    console.log('✅ נתונים שחוזרים מהקריאה:', data);
+    console.log('📊 מספר מארחים שנמצאו:', data.length);
+    
+    return data as Host[];
   }
 // קבלת כל המארחים - כרגע אין לזה באמת צורך
   static async getAllHosts(): Promise<Host[]> {
