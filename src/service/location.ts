@@ -30,7 +30,7 @@ export class LocationService {
   return {
     ...host,
     name: `${host.user_first_name || ""} ${host.user_last_name || ""}`.trim(),
-    city: host.city_name || null, // אם תוסיף city_name מהשרת
+    city: host.city_name || null,
     area: host.area,
     photo_url: host.photo_url,
   };

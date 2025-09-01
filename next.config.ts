@@ -18,6 +18,14 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  async rewrites() {
+    return [
+      {
+        source: "/idrive-proxy/:path*",
+        destination: "http://localhost:3005/idrive-proxy/:path*",
+      },
+    ];
+  },
 };
 
 export default nextConfig;
