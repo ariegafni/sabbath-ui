@@ -185,21 +185,6 @@ export class AuthService {
     return response.json();
   }
 
-  // התחברות עם Facebook
-  static async loginWithFacebook(code: string): Promise<AuthResponse> {
-    const response = await fetch(`${this.baseUrl}/facebook`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ code }),
-    });
-    if (!response.ok) {
-      throw new Error("Facebook login failed");
-    }
-    return response.json();
-  }
-
   // שמירת טוקנים
   private static setTokens(accessToken: string, refreshToken: string): void {
     localStorage.setItem("access_token", accessToken);

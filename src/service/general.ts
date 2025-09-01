@@ -9,7 +9,7 @@ export interface ReportProblemRequest {
 
 export class GeneralService {
   private static baseUrl = createApiUrl("/api/general");
-
+//דיווח על בעיה
   static async reportProblem(payload: ReportProblemRequest): Promise<void> {
     const response = await fetch(`${this.baseUrl}/report-problem`, {
       method: "POST",

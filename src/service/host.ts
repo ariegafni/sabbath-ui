@@ -42,25 +42,25 @@ export interface UpdateHostRequest extends Partial<CreateHostRequest> {
 
 export class HostService {
   private static baseUrl = createApiUrl("/api/hosts");
-
+//קבלת מארחים לפי מדינה - מחזיר רשימה של מארחים במדינה ספציפית
   static async getHostsByCountry(country: string): Promise<Host[]> {
     const res = await fetch(`${this.baseUrl}/country/${encodeURIComponent(country)}`);
     if (!res.ok) throw new Error("Failed to fetch hosts by country");
     return (await res.json()) as Host[];
   }
-
+// קבלת כל המארחים - כרגע אין לזה באמת צורך
   static async getAllHosts(): Promise<Host[]> {
     const res = await fetch(this.baseUrl);
     if (!res.ok) throw new Error("Failed to fetch hosts");
     return (await res.json()) as Host[];
   }
-
+// קבלת מארח לפי מזהה
   static async getHostById(id: string): Promise<Host> {
     const res = await fetch(`${this.baseUrl}/${id}`);
     if (!res.ok) throw new Error("Failed to fetch host");
     return (await res.json()) as Host;
   }
-
+// יצירת מארח חדש
   static async createHost(hostData: CreateHostRequest): Promise<Host> {
     const res = await fetch(this.baseUrl, {
       method: "POST",
@@ -73,7 +73,7 @@ export class HostService {
     if (!res.ok) throw new Error("Failed to create host");
     return (await res.json()) as Host;
   }
-
+// עדכון מארח קיים
   static async updateHost(hostData: UpdateHostRequest): Promise<Host> {
     const res = await fetch(`${this.baseUrl}/${hostData.id}`, {
       method: "PUT",
@@ -86,7 +86,7 @@ export class HostService {
     if (!res.ok) throw new Error("Failed to update host");
     return (await res.json()) as Host;
   }
-
+// מחיקת מארח
   static async deleteHost(id: string): Promise<void> {
     const res = await fetch(`${this.baseUrl}/${id}`, {
       method: "DELETE",
@@ -96,7 +96,7 @@ export class HostService {
     });
     if (!res.ok) throw new Error("Failed to delete host");
   }
-
+// קבלת פרופיל המארח של המשתמש הנוכחי
   static async getCurrentUserHostProfile(): Promise<Host | null> {
     try {
       const res = await fetch(`${this.baseUrl}/me`, {
@@ -112,7 +112,7 @@ export class HostService {
       return null;
     }
   }
-
+//העלת תמונה של מארח
   static async uploadPhoto(file: File): Promise<{ photo_url: string }> {
     const formData = new FormData();
     formData.append("photo", file);

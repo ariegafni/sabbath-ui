@@ -32,7 +32,7 @@ export interface HostingRequestFilters {
 
 export class HostingRequestService {
   private static baseUrl = createApiUrl("/api/hosting-requests");
-
+// יצירת בקשת אירוח חדשה
   static async createHostingRequest(
     requestData: CreateHostingRequestRequest
   ): Promise<HostingRequest> {
@@ -50,6 +50,8 @@ export class HostingRequestService {
     }
     return response.json();
   }
+
+  // מחזיר רשימה של בקשות אירוח שבוצעו על-ידי המשתמש הנוכחי כאורח
 
   static async getMyGuestRequests(
     filters?: HostingRequestFilters
@@ -71,7 +73,7 @@ export class HostingRequestService {
     }
     return response.json();
   }
-
+// קבלת רשימת בקשות אירוח למארח
   static async getMyHostRequests(
     filters?: HostingRequestFilters
   ): Promise<HostingRequest[]> {
@@ -93,6 +95,7 @@ export class HostingRequestService {
     }
     return response.json();
   }
+  //תשובה של מארח לבקשת אירוח
   static async respondToHostingRequest(
     requestId: string,
     status: "accepted" | "rejected",
@@ -113,7 +116,7 @@ export class HostingRequestService {
 
     return response.json();
   }
-
+//ביטול בקשת אירוח של מתארח
   static async cancelHostingRequest(
     requestId: string
   ): Promise<HostingRequest> {
@@ -130,7 +133,7 @@ export class HostingRequestService {
 
     return response.json();
   }
-
+//מחיקת בקשת אירוח - צריך לטפל
   static async deleteHostingRequest(requestId: string): Promise<void> {
     const response = await fetch(`${this.baseUrl}/${requestId}`, {
       method: "DELETE",

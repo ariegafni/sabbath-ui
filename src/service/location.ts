@@ -37,7 +37,7 @@ export class LocationService {
 }
 
 
-    // Returns list of countries that have hosts with up to 5 sample hosts per country
+    // מחזיר רשימת מדינות עם מארחים
     static async getCountriesWithHosts(): Promise<
       {
         country_place_id: string;
@@ -55,24 +55,24 @@ export class LocationService {
       );
     }
 
-  static async getCitiesByCountry(country_place_id: string): Promise<City[]> {
-    const r = await fetch(`${this.baseUrl}/cities/country/${country_place_id}`);
-    if (!r.ok) throw new Error("Failed to fetch cities by country");
-    return r.json();
-  }
+  // static async getCitiesByCountry(country_place_id: string): Promise<City[]> {
+  //   const r = await fetch(`${this.baseUrl}/cities/country/${country_place_id}`);
+  //   if (!r.ok) throw new Error("Failed to fetch cities by country");
+  //   return r.json();
+  // }
 
-  static async searchLocations(
-    params: LocationSearchParams
-  ): Promise<{ countries: Country[]; cities: City[] }> {
-    const sp = new URLSearchParams();
-    if (params.query) sp.append("query", params.query);
-    if (params.country_place_id)
-      sp.append("country_place_id", params.country_place_id);
-    if (params.city_place_id) sp.append("city_place_id", params.city_place_id);
-    if (params.limit) sp.append("limit", String(params.limit));
-    const r = await fetch(`${this.baseUrl}/search?${sp.toString()}`);
-    if (!r.ok) throw new Error("Failed to search locations");
-    return r.json();
-  }
+  // static async searchLocations(
+  //   params: LocationSearchParams
+  // ): Promise<{ countries: Country[]; cities: City[] }> {
+  //   const sp = new URLSearchParams();
+  //   if (params.query) sp.append("query", params.query);
+  //   if (params.country_place_id)
+  //     sp.append("country_place_id", params.country_place_id);
+  //   if (params.city_place_id) sp.append("city_place_id", params.city_place_id);
+  //   if (params.limit) sp.append("limit", String(params.limit));
+  //   const r = await fetch(`${this.baseUrl}/search?${sp.toString()}`);
+  //   if (!r.ok) throw new Error("Failed to search locations");
+  //   return r.json();
+  // }
 
 }
