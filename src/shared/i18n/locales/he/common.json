@@ -31,7 +31,7 @@
       "maxGuestsLabel": "מספר אורחים מקסימלי",
       "bioLabel": "תיאור קצר עליך ועל האירוח שלך",
       "bioPlaceholder": "ספר על עצמך, על הבית שלך, ועל מה שאתה מציע לאורחים...",
-      "photosTitle": "תמונות מהבית",
+      "photoTitle": "תמונות מהבית",
       "addPhoto": "הוסף תמונה",
       "photosLimit": "ניתן להעלות עד 8 תמונות",
       "photoAlt": "תמונה {{index}}"

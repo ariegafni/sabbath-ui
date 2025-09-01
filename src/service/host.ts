@@ -33,8 +33,9 @@ export interface CreateHostRequest {
   total_hostings?: number;
   is_always_available?: boolean;
   available?: boolean;
-  photo_url?: string;
+  photo?: File;
 }
+
 
 export interface UpdateHostRequest extends Partial<CreateHostRequest> {
   id: string;
@@ -42,25 +43,7 @@ export interface UpdateHostRequest extends Partial<CreateHostRequest> {
 
 export class HostService {
   private static baseUrl = createApiUrl("/api/hosts");
-//קבלת מארחים לפי מדינה - מחזיר רשימה של מארחים במדינה ספציפית
-  static async getHostsByCountry(country: string): Promise<Host[]> {
-    const res = await fetch(`${this.baseUrl}/country/${encodeURIComponent(country)}`);
-    if (!res.ok) throw new Error("Failed to fetch hosts by country");
-    return (await res.json()) as Host[];
-  }
-// קבלת כל המארחים - כרגע אין לזה באמת צורך
-  static async getAllHosts(): Promise<Host[]> {
-    const res = await fetch(this.baseUrl);
-    if (!res.ok) throw new Error("Failed to fetch hosts");
-    return (await res.json()) as Host[];
-  }
-// קבלת מארח לפי מזהה
-  static async getHostById(id: string): Promise<Host> {
-    const res = await fetch(`${this.baseUrl}/${id}`);
-    if (!res.ok) throw new Error("Failed to fetch host");
-    return (await res.json()) as Host;
-  }
-// יצירת מארח חדש
+  // יצירת מארח חדש
 static async createHost(hostData: CreateHostRequest): Promise<Host> {
   const formData = new FormData();
   Object.entries(hostData).forEach(([key, value]) => {
@@ -83,6 +66,25 @@ static async createHost(hostData: CreateHostRequest): Promise<Host> {
   if (!res.ok) throw new Error("Failed to create host");
   return (await res.json()) as Host;
 }
+
+//קבלת מארחים לפי מדינה - מחזיר רשימה של מארחים במדינה ספציפית
+  static async getHostsByCountry(country: string): Promise<Host[]> {
+    const res = await fetch(`${this.baseUrl}/country/${encodeURIComponent(country)}`);
+    if (!res.ok) throw new Error("Failed to fetch hosts by country");
+    return (await res.json()) as Host[];
+  }
+// קבלת כל המארחים - כרגע אין לזה באמת צורך
+  static async getAllHosts(): Promise<Host[]> {
+    const res = await fetch(this.baseUrl);
+    if (!res.ok) throw new Error("Failed to fetch hosts");
+    return (await res.json()) as Host[];
+  }
+// קבלת מארח לפי מזהה
+  static async getHostById(id: string): Promise<Host> {
+    const res = await fetch(`${this.baseUrl}/${id}`);
+    if (!res.ok) throw new Error("Failed to fetch host");
+    return (await res.json()) as Host;
+  }
 
 // עדכון מארח קיים
   static async updateHost(hostData: UpdateHostRequest): Promise<Host> {

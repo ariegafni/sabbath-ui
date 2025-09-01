@@ -32,7 +32,7 @@
       "maxGuestsLabel": "Max number of guests",
       "bioLabel": "Short description about you and your hosting",
       "bioPlaceholder": "Tell about yourself, your home, and what you offer...",
-      "photosTitle": "Home Photos",
+      "photoTitle": "Home Photos",
       "addPhoto": "Add photo",
       "photosLimit": "You can upload up to 8 photos",
       "photoAlt": "Photo {{index}}"

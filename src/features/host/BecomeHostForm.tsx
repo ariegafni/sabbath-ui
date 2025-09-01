@@ -6,7 +6,6 @@ import { Upload } from "lucide-react";
 import Button from "@/ui/Button";
 import LocationPicker from "./LocationPicker";
 import BubbleGroup from "./BubbleGroup";
-import { HostService } from "@/service";
 
 type BecomeHostFormProps = {
   onSubmit: (data: HostFormData) => void;
@@ -14,7 +13,7 @@ type BecomeHostFormProps = {
 };
 
 export type HostFormData = {
-  host_photo_url?: string;
+  photo?: File;
   kashrut_level: string;
   hosting_type: string[];
   languages: string[];
@@ -23,7 +22,6 @@ export type HostFormData = {
   area: string;
   max_guests: number;
   bio: string;
-  photos: File[];
 };
 
 export default function BecomeHostForm({
@@ -40,36 +38,24 @@ export default function BecomeHostForm({
     area: "",
     max_guests: 2,
     bio: "",
-    photos: [],
+    photo: undefined,
   });
 
   const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []);
-    setFormData((prev) => ({
-      ...prev,
-      photos: [...prev.photos, ...files],
-    }));
+    const file = e.target.files?.[0];
+    if (file) {
+      setFormData((prev) => ({ ...prev, photo: file }));
+    }
   };
 
-  const removePhoto = (index: number) => {
-    setFormData((prev) => ({
-      ...prev,
-      photos: prev.photos.filter((_, i) => i !== index),
-    }));
+  const removePhoto = () => {
+    setFormData((prev) => ({ ...prev, photo: undefined }));
   };
 
-const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
-
-  const finalData = {
-    ...formData,
-    photo: formData.photos[0], 
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    onSubmit(formData);
   };
-
-  console.log("Submitting host data:", finalData);
-  onSubmit(finalData);
-};
-
 
   const updateFormData = (field: keyof HostFormData, value: any) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -176,32 +162,29 @@ const handleSubmit = async (e: React.FormEvent) => {
 
       <div className="space-y-3">
         <label className="text-lg font-medium text-gray-900">
-          {t("publish.form.photosTitle")}
+          {t("publish.form.photoTitle")}
         </label>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {formData.photos.map((photo, index) => (
-            <div key={index} className="relative">
+          {formData.photo ? (
+            <div className="relative">
               <img
-                src={URL.createObjectURL(photo)}
-                alt={t("publish.form.photoAlt", { index: index + 1 })}
+                src={URL.createObjectURL(formData.photo)}
+                alt={t("publish.form.photoAlt")}
                 className="w-full h-24 object-cover rounded-lg"
               />
               <button
                 type="button"
-                onClick={() => removePhoto(index)}
+                onClick={removePhoto}
                 className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm hover:bg-red-600"
               >
                 ×
               </button>
             </div>
-          ))}
-
-          {formData.photos.length < 8 && (
+          ) : (
             <label className="col-span-full w-full h-24 border-2 border-dashed border-gray-300 rounded-lg hover:border-gray-400 transition-colors cursor-pointer flex items-center justify-center">
               <input
                 type="file"
                 accept="image/*"
-                multiple
                 onChange={handlePhotoUpload}
                 className="hidden"
               />
@@ -214,7 +197,6 @@ const handleSubmit = async (e: React.FormEvent) => {
             </label>
           )}
         </div>
-        <p className="text-sm text-gray-500">{t("publish.form.photosLimit")}</p>
       </div>
 
       <Button
