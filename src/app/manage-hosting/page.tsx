@@ -15,7 +15,7 @@ import {
   Edit,
 } from "lucide-react";
 import Button from "@/ui/Button";
-import EditHostProfileModal from "@/features/host/EditHostProfileModal";
+import EditHostProfileForm from "@/features/host/EditHostProfileForm";
 import { HostService } from "@/service/host";
 
 export default function ManageHostingPage() {
@@ -23,7 +23,7 @@ export default function ManageHostingPage() {
   const { user } = useAuth();
   const router = useRouter();
   const [loading, setLoading] = useState(true);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
   const [hostProfile, setHostProfile] = useState<any>(null);
 
   useEffect(() => {
@@ -176,49 +176,54 @@ export default function ManageHostingPage() {
               {t("manageHosting.hostProfile.title")}
             </h3>
             <Button
-              onClick={() => setIsEditModalOpen(true)}
+              onClick={() => setIsEditing(true)}
               variant="outline"
-              size="sm"
+              className="w-full md:w-auto"
             >
               <Edit className="h-4 w-4 mr-2" />
               {t("manageHosting.hostProfile.editHostingDetails")}
             </Button>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="flex items-center gap-3 p-3 rounded-lg bg-gray-50">
-              <MapPin className="h-5 w-5 text-gray-500" />
-              <div>
-                <p className="text-sm font-medium text-gray-900">
-                  {t("common.location")}
-                </p>
-                <p className="text-sm text-gray-600">
-                  {hostProfile?.area || t("common.notSet")}
-                </p>
+          {!isEditing && (
+            <div className="space-y-4">
+              <div className="flex items-center gap-3 p-3 rounded-lg bg-gray-50">
+                <MapPin className="h-5 w-5 text-gray-500" />
+                <div>
+                  <p className="text-sm font-medium text-gray-900">
+                    {t("common.location")}
+                  </p>
+                  <p className="text-sm text-gray-600">
+                    {hostProfile?.area || t("common.notSet")}
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3 p-3 rounded-lg bg-gray-50">
+                <Users className="h-5 w-5 text-gray-500" />
+                <div>
+                  <p className="text-sm font-medium text-gray-900">
+                    {t("common.capacity")}
+                  </p>
+                  <p className="text-sm text-gray-600">
+                    {hostProfile?.max_guests ? `${hostProfile.max_guests} ${t("common.guests")}` : t("common.notSet")}
+                  </p>
+                </div>
               </div>
             </div>
-            <div className="flex items-center gap-3 p-3 rounded-lg bg-gray-50">
-              <Users className="h-5 w-5 text-gray-500" />
-              <div>
-                <p className="text-sm font-medium text-gray-900">
-                  {t("common.capacity")}
-                </p>
-                <p className="text-sm text-gray-600">
-                  {hostProfile?.max_guests ? `${hostProfile.max_guests} ${t("common.guests")}` : t("common.notSet")}
-                </p>
-              </div>
-            </div>
-          </div>
+          )}
         </div>
 
-        {/* Edit Host Profile Modal */}
-        <EditHostProfileModal
-          isOpen={isEditModalOpen}
-          onClose={() => setIsEditModalOpen(false)}
-          onSuccess={() => {
-            setIsEditModalOpen(false);
-            loadHostProfile(); // רענון הנתונים אחרי עדכון מוצלח
-          }}
-        />
+        {/* Edit Host Profile Form */}
+        {isEditing && (
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 sm:p-8">
+            <EditHostProfileForm
+              onSuccess={() => {
+                setIsEditing(false);
+                loadHostProfile(); // רענון הנתונים אחרי עדכון מוצלח
+              }}
+              onCancel={() => setIsEditing(false)}
+            />
+          </div>
+        )}
       </div>
     </div>
   );
