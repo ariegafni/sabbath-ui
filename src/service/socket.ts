@@ -52,37 +52,30 @@ class SocketService {
     if (!this.socket) return;
 
     this.socket.on('connect', () => {
-      console.log('Socket connected');
       this.emit('connected', null);
     });
 
     this.socket.on('disconnect', (reason) => {
-      console.log('Socket disconnected:', reason);
       this.emit('disconnected', reason);
     });
 
     this.socket.on('new_message', (data: SocketMessage) => {
-      console.log('New message received:', data);
       this.emit('new_message', data);
     });
 
     this.socket.on('user_typing', (data: SocketTyping) => {
-      console.log('User typing:', data);
       this.emit('user_typing', data);
     });
 
     this.socket.on('messages_read', (data: SocketMessagesRead) => {
-      console.log('Messages read:', data);
       this.emit('messages_read', data);
     });
 
     this.socket.on('conversation_updated', (data: any) => {
-      console.log('Conversation updated:', data);
       this.emit('conversation_updated', data);
     });
 
     this.socket.on('error', (error) => {
-      console.error('Socket error:', error);
       this.emit('error', error);
     });
   }

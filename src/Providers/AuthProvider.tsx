@@ -38,6 +38,7 @@ export default function AuthProvider({
         name: `${data.first_name} ${data.last_name}`,
         email: data.email,
       });
+      
     } catch (error) {
       console.error("Failed to fetch user:", error);
       setUser(null);

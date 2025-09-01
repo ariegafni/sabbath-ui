@@ -76,9 +76,8 @@ export default function ChatWindow({ conversation, onBack }: ChatWindowProps) {
   const handleNewMessage = useCallback((data: any) => {
     if (data.conversation_id === conversation.id) {
       setMessages(prev => {
-        // Check if message already exists to prevent duplicates
-        const messageExists = prev.some(msg => msg.id === data.message.id);
-        if (messageExists) {
+        // בדיקה פשוטה - לא להוסיף אם כבר קיימת
+        if (prev.some(msg => msg.id === data.message.id)) {
           return prev;
         }
         return [...prev, data.message];
