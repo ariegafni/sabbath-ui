@@ -87,18 +87,29 @@ static async createHost(hostData: CreateHostRequest): Promise<Host> {
   }
 
 // עדכון מארח קיים
-  static async updateHost(hostData: UpdateHostRequest): Promise<Host> {
-    const res = await fetch(`${this.baseUrl}/${hostData.id}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        ...AuthService.getAuthHeaders(),
-      },
-      body: JSON.stringify(hostData),
-    });
-    if (!res.ok) throw new Error("Failed to update host");
-    return (await res.json()) as Host;
-  }
+static async updateHost(hostData: UpdateHostRequest): Promise<Host> {
+  const formData = new FormData();
+  Object.entries(hostData).forEach(([key, value]) => {
+    if (value !== undefined && value !== null) {
+      if (value instanceof File) {
+        formData.append("photo", value);
+      } else if (Array.isArray(value)) {
+        value.forEach((v) => formData.append(`${key}[]`, v));
+      } else {
+        formData.append(key, value.toString());
+      }
+    }
+  });
+
+  const res = await fetch(`${this.baseUrl}/${hostData.id}`, {
+    method: "PUT",
+    headers: { ...AuthService.getAuthHeaders() }, 
+    body: formData,
+  });
+  if (!res.ok) throw new Error("Failed to update host");
+  return (await res.json()) as Host;
+}
+
 // מחיקת מארח
   static async deleteHost(id: string): Promise<void> {
     const res = await fetch(`${this.baseUrl}/${id}`, {
