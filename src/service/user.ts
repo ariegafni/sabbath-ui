@@ -37,8 +37,7 @@ export class UserService {
   // קבלת פרופיל המשתמש הנוכחי
   static async getCurrentUser(): Promise<User> {
     try {
-      console.log("Fetching current user from:", `${this.baseUrl}/me`);
-      console.log("Auth headers:", AuthService.getAuthHeaders());
+
       
       const response = await fetch(`${this.baseUrl}/me`, {
         headers: {

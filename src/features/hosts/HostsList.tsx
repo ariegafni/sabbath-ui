@@ -95,16 +95,10 @@ export default function HostsList({
   const fetchHosts = async () => {
     try {
       setLoading(true);
-      console.log('🚀 מתחיל לטעון מארחים עבור מדינה:', country.place_id);
       
-      const data = await HostService.getHostsByCountry(country.place_id);
-      console.log('📋 נתונים גולמיים מהשרת:', data);
-      
-      const enriched = await resolveCityNames(data);
-      console.log('🏙️ נתונים מעובדים עם שמות ערים:', enriched);
-      
+      const data = await HostService.getHostsByCountry(country.place_id);      
+      const enriched = await resolveCityNames(data);     
       setHosts(enriched);
-      console.log('✅ מארחים נטענו בהצלחה:', enriched.length, 'מארחים');
     } catch (err) {
       console.error('❌ שגיאה בטעינת מארחים:', err);
       setError(err instanceof Error ? err.message : t("hosts.errorLoading"));
