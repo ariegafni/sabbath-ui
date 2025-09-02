@@ -140,14 +140,14 @@ export default function MyHostingRequestsAsHost({
       }
 
       // Start or find existing conversation using current user's ID as host
-      await ChatService.startConversation({
+      const conversation = await ChatService.startConversation({
         host_id: user.id, // Use current user's ID (the host)
         guest_id: guestUserId,
         accommodation_request_id: request.id
       });
 
-      // Navigate to messages page with conversation selected
-      router.push(`/messages`);
+      // Navigate directly to the specific conversation
+      router.push(`/messages?conversation=${conversation.id}`);
     } catch (error) {
       console.error("Error starting chat:", error);
       if (error instanceof Error) {

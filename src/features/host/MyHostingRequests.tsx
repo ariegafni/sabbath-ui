@@ -36,10 +36,25 @@ export default function MyHostingRequests({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedStatus, setSelectedStatus] = useState<string>("all");
+  const [conversationStates, setConversationStates] = useState<Map<string, 'unknown' | 'exists' | 'none'>>(new Map());
 
   useEffect(() => {
     fetchMyHostingRequests();
   }, [selectedStatus]);
+
+  const checkAndTryStartChat = async (request: HostingRequest) => {
+    try {
+      // Try to start/join the conversation
+      await handleStartChat(request);
+    } catch (error) {
+      // If it fails because no conversation exists and request isn't approved,
+      // show the appropriate message
+      console.error("Chat access denied:", error);
+      if (error instanceof Error && error.message.includes("Guests can only start chat after")) {
+        alert("אורחים יכולים לשלוח הודעות רק לאחר אישור הבקשה על ידי המארח");
+      }
+    }
+  };
 
   const fetchMyHostingRequests = async () => {
     try {
@@ -135,14 +150,14 @@ export default function MyHostingRequests({
       }
 
       // Start or find existing conversation
-      await ChatService.startConversation({
+      const conversation = await ChatService.startConversation({
         host_id: hostUserId,
         guest_id: user!.id, // Use current user's ID (the guest)
         accommodation_request_id: request.id
       });
 
-      // Navigate to messages page with conversation selected
-      router.push(`/messages`);
+      // Navigate directly to the specific conversation
+      router.push(`/messages?conversation=${conversation.id}`);
     } catch (error) {
       console.error("Error starting chat:", error);
       if (error instanceof Error) {
@@ -348,19 +363,16 @@ export default function MyHostingRequests({
             {/* Action Buttons */}
             {request.status === "pending" && (
               <div className="space-y-3 pt-4 border-t">
-                {/* Disabled Chat Button with Message for Guests */}
-                <div className="space-y-2">
+                {/* Chat Button that will try to access existing conversation */}
+                <div className="flex items-center">
                   <Button
-                    disabled
+                    onClick={() => checkAndTryStartChat(request)}
                     variant="outline"
-                    className="w-full border-gray-300 text-gray-500 cursor-not-allowed bg-gray-50"
+                    className="w-full border-blue-300 text-blue-600 hover:bg-blue-50"
                   >
                     <MessageSquare className="w-4 h-4 ml-2" />
                     שלח הודעה למארח
                   </Button>
-                  <p className="text-xs text-gray-600 text-center">
-                    תוכל לשלוח הודעות למארח לאחר אישור הבקשה
-                  </p>
                 </div>
                 
                 <div className="flex items-center">

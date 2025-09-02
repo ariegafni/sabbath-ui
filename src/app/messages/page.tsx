@@ -4,8 +4,8 @@ import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { MessageCircle } from "lucide-react";
 import { useAuth } from "@/Providers/AuthProvider";
-import { useRouter } from "next/navigation";
-import { Conversation, socketService } from "@/service";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Conversation, socketService, ChatService } from "@/service";
 import { AuthService } from "@/service/auth";
 import ConversationsList from "@/features/chat/ConversationsList";
 import ChatWindow from "@/features/chat/ChatWindow";
@@ -14,8 +14,10 @@ export default function MessagesPage() {
   const { t } = useTranslation();
   const { user } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
   const [isMobile, setIsMobile] = useState(false);
+  const [conversationsLoaded, setConversationsLoaded] = useState(false);
 
   useEffect(() => {
     // Check if user is authenticated
@@ -52,6 +54,26 @@ export default function MessagesPage() {
       socketService.disconnect();
     };
   }, [user, router]);
+
+  // Handle conversation parameter from URL
+  useEffect(() => {
+    const conversationId = searchParams.get('conversation');
+    if (conversationId && user && !selectedConversation) {
+      // Auto-select the conversation from URL parameter
+      loadAndSelectConversation(conversationId);
+    }
+  }, [searchParams, user, selectedConversation]);
+
+  const loadAndSelectConversation = async (conversationId: string) => {
+    try {
+      const conversation = await ChatService.getConversation(conversationId);
+      if (conversation) {
+        setSelectedConversation(conversation);
+      }
+    } catch (error) {
+      console.error("Failed to load conversation from URL:", error);
+    }
+  };
 
   const handleConversationSelect = (conversation: Conversation) => {
     setSelectedConversation(conversation);
