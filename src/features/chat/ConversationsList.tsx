@@ -23,13 +23,11 @@ export default function ConversationsList({
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    console.log("🚀 ConversationsList mounted");
     loadConversations();
   }, []);
 
   useEffect(() => {
     const handleNewMessage = (data: any) => {
-      console.log("📩 ConversationsList got new_message:", data);
 
       setConversations((prev) => {
         const updated = [...prev];
@@ -42,7 +40,6 @@ export default function ConversationsList({
             last_message_created_at: data.message.created_at,
             unread_count: (updated[idx].unread_count || 0) + 1,
           };
-          console.log("🔄 Updated conversation:", updated[idx].id);
         } else {
           const newConv = {
             id: data.conversation_id,
@@ -54,7 +51,6 @@ export default function ConversationsList({
             unread_count: 1,
           } as Conversation;
           updated.unshift(newConv);
-          console.log("➕ Added new conversation:", newConv.id);
         }
 
         return updated;
@@ -64,7 +60,6 @@ export default function ConversationsList({
     socketService.on("new_message", handleNewMessage);
     return () => {
       socketService.off("new_message", handleNewMessage);
-      console.log("❌ ConversationsList listener removed");
     };
   }, []);
 
@@ -87,7 +82,6 @@ export default function ConversationsList({
     try {
       setLoading(true);
       const data = await ChatService.getConversations();
-      console.log("📥 Loaded conversations:", data.length);
       setConversations(data);
       setFilteredConversations(data);
     } catch (err) {
@@ -196,7 +190,6 @@ export default function ConversationsList({
                     : ""
                 }`}
                 onClick={() => {
-                  console.log("🖱️ Conversation selected:", conversation.id);
                   onConversationSelect(conversation);
                 }}
               >

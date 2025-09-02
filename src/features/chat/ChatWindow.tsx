@@ -23,20 +23,16 @@ export default function ChatWindow({ conversation, onBack }: ChatWindowProps) {
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
-    console.log("🚀 ChatWindow mounted for conversation:", conversation.id);
     loadMessages();
     markAsRead();
 
     socketService.joinConversation(conversation.id);
-    console.log("🔗 Joined socket room:", conversation.id);
-
     socketService.on("new_message", handleNewMessage);
     socketService.on("user_typing", handleUserTyping);
     socketService.on("messages_read", handleMessagesRead);
 
     return () => {
       socketService.leaveConversation(conversation.id);
-      console.log("❌ Left socket room:", conversation.id);
 
       socketService.off("new_message", handleNewMessage);
       socketService.off("user_typing", handleUserTyping);
@@ -56,7 +52,6 @@ export default function ChatWindow({ conversation, onBack }: ChatWindowProps) {
         (message, index, self) =>
           index === self.findIndex((m) => m.id === message.id)
       );
-      console.log("📥 Loaded messages:", uniqueMessages.length);
       setMessages(uniqueMessages);
     } catch (error) {
       console.error("❌ Error loading messages:", error);
@@ -68,7 +63,6 @@ export default function ChatWindow({ conversation, onBack }: ChatWindowProps) {
   const markAsRead = async () => {
     try {
       await ChatService.markAsRead(conversation.id);
-      console.log("👁️ Marked conversation as read:", conversation.id);
     } catch (error) {
       console.error("❌ Error marking as read:", error);
     }
@@ -76,7 +70,6 @@ export default function ChatWindow({ conversation, onBack }: ChatWindowProps) {
 
   const handleNewMessage = useCallback(
     (data: any) => {
-      console.log("📩 socket new_message event:", data);
 
       if (data.conversation_id === conversation.id) {
         const msg = data.message;
@@ -86,7 +79,6 @@ export default function ChatWindow({ conversation, onBack }: ChatWindowProps) {
           if (idx !== -1) {
             const updated = [...prev];
             updated[idx] = msg;
-            console.log("🔄 Updated existing message:", msg.id);
             return updated;
           }
 
@@ -99,7 +91,6 @@ export default function ChatWindow({ conversation, onBack }: ChatWindowProps) {
               )
           );
           const updated = [...withoutTemp, msg];
-          console.log("➕ Added new message:", msg.id);
           return updated;
         });
 
@@ -117,7 +108,6 @@ export default function ChatWindow({ conversation, onBack }: ChatWindowProps) {
         data.conversation_id === conversation.id &&
         data.user_id !== user?.id
       ) {
-        console.log("⌨️ Typing event:", data);
 
         setTypingUsers((prev) => {
           const newSet = new Set(prev);
@@ -145,7 +135,6 @@ export default function ChatWindow({ conversation, onBack }: ChatWindowProps) {
 
   const handleMessagesRead = useCallback(
     (data: any) => {
-      console.log("📖 messages_read event:", data);
       if (data.conversation_id === conversation.id) {
         setMessages((prev) =>
           prev.map((msg) =>
@@ -177,8 +166,6 @@ export default function ChatWindow({ conversation, onBack }: ChatWindowProps) {
       message_type: "text",
     };
 
-    console.log("✉️ Sending tempMessage:", tempMessage);
-
     setMessages((prev) => [...prev, tempMessage]);
     setNewMessage("");
 
@@ -188,7 +175,6 @@ export default function ChatWindow({ conversation, onBack }: ChatWindowProps) {
         conversation_id: conversation.id,
         content: tempMessage.content,
       });
-      console.log("✅ Server response from sendMessage:", res);
       socketService.sendTyping(conversation.id, false);
     } catch (error) {
       console.error("❌ Error sending message:", error);
