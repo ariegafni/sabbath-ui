@@ -472,7 +472,7 @@ export default function HostsList({
                       <div className="space-y-2">
                         <h4 className="text-sm font-medium text-gray-700">זמין בשבתות:</h4>
                         <div className="flex flex-wrap gap-1">
-                          {host.available_dates.slice(0, 2).map((dateStr, index) => {
+                          {host.available_dates.map((dateStr, index) => {
                             const formattedDate = new Date(dateStr + 'T00:00:00').toLocaleDateString('he-IL', {
                               day: 'numeric',
                               month: 'short'
@@ -486,11 +486,6 @@ export default function HostsList({
                               </span>
                             );
                           })}
-                          {host.available_dates.length > 2 && (
-                            <span className="px-2 py-1 rounded-lg text-xs bg-gray-100 text-gray-600 border border-gray-200">
-                              +{host.available_dates.length - 2} עוד
-                            </span>
-                          )}
                         </div>
                       </div>
                     )}

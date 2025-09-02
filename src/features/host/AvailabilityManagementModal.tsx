@@ -32,7 +32,7 @@ export default function AvailabilityManagementModal({
   const [selectedDates, setSelectedDates] = useState<string[]>(
     currentAvailability?.available_dates ?? []
   );
-  const [hasConfirmedDates, setHasConfirmedDates] = useState<boolean>(false);
+
 
   // פונקציה לחישוב שבתות עד חודשיים קדימה (זהה לרכיב בקשת האירוח)
   const getSabbathDates = () => {
@@ -95,11 +95,6 @@ export default function AvailabilityManagementModal({
 
   const handleClearAll = () => {
     setSelectedDates([]);
-    setHasConfirmedDates(false);
-  };
-
-  const handleConfirmDates = () => {
-    setHasConfirmedDates(true);
   };
 
   const handleSave = async () => {
@@ -124,10 +119,10 @@ export default function AvailabilityManagementModal({
 
   return (
     <div
-      className="fixed inset-0 flex items-center justify-center z-50 p-4 bg-black/50"
+      className="fixed inset-0 flex items-center justify-center z-[9999] p-4 bg-black/50"
       dir="rtl"
     >
-      <div className="bg-white rounded-3xl shadow-2xl max-w-2xl w-full max-h-[85vh] overflow-hidden">
+      <div className="bg-white rounded-3xl shadow-2xl max-w-2xl w-full max-h-[85vh] overflow-hidden flex flex-col">
         {/* Header */}
         <div className="relative bg-gradient-to-br from-blue-600 to-indigo-700 text-white p-6">
           <button
@@ -144,7 +139,7 @@ export default function AvailabilityManagementModal({
         </div>
 
         {/* Content */}
-        <div className="p-6 max-h-[calc(85vh-120px)] overflow-y-auto">
+        <div className="p-6 flex-1 overflow-y-auto">
           {/* Always Available Option */}
           <div className="mb-6 p-4 border-2 rounded-xl transition-colors"
                style={{
@@ -258,38 +253,23 @@ export default function AvailabilityManagementModal({
                   })}
                 </div>
 
-                {/* Confirmation Button for Specific Dates */}
-                {selectedDates.length > 0 && !hasConfirmedDates && (
-                  <div className="text-center mt-4 p-4 bg-orange-50 rounded-lg border border-orange-200">
-                    <p className="text-sm text-orange-800 mb-3 font-medium">
-                      בחרת {selectedDates.length} שבתות. אנא אשר את הבחירה שלך לפני השמירה.
-                    </p>
-                    <Button
-                      type="button"
-                      onClick={handleConfirmDates}
-                      className="bg-orange-500 hover:bg-orange-600 text-white px-6 py-2"
-                    >
-                      <Check className="h-4 w-4 ml-2" />
-                      אשר בחירת תאריכים
-                    </Button>
-                  </div>
-                )}
 
-                {/* Confirmation Success Message */}
-                {hasConfirmedDates && selectedDates.length > 0 && (
-                  <div className="text-center mt-4 p-4 bg-green-50 rounded-lg border border-green-200">
-                    <p className="text-sm text-green-800 font-medium">
-                      ✓ אישרת {selectedDates.length} שבתות לאירוח
-                    </p>
-                  </div>
-                )}
               </div>
             )}
           </div>
         </div>
 
-        {/* Footer */}
-        <div className="border-t border-gray-200 p-6">
+                {/* Footer */}
+        <div className="border-t border-gray-200 p-6 bg-white">
+          {/* Error message when no dates selected */}
+          {!isAlwaysAvailable && selectedDates.length === 0 && (
+            <div className="mb-4 p-3 bg-red-50 rounded-lg border border-red-200">
+              <p className="text-sm text-red-800 text-center">
+                ❌ אנא בחר לפחות שבת אחת לאירוח
+              </p>
+            </div>
+          )}
+          
           <div className="flex gap-3">
             <Button
               onClick={onClose}
@@ -301,8 +281,8 @@ export default function AvailabilityManagementModal({
             </Button>
             <Button
               onClick={handleSave}
-              disabled={loading || (!isAlwaysAvailable && (selectedDates.length === 0 || !hasConfirmedDates))}
-              className="flex-1 bg-blue-600 hover:bg-blue-700"
+              disabled={loading || (!isAlwaysAvailable && selectedDates.length === 0)}
+              className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
             >
               {loading ? (
                 <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent ml-2"></div>
