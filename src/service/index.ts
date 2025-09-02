@@ -3,7 +3,6 @@ export * from "./chat";
 export * from "./host";
 export * from "./HostingRequest";
 export * from "./location";
-export * from "./message";
 export * from "./socket";
 export * from "./user";
 export * from "./general";

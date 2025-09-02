@@ -319,11 +319,11 @@ export default function HostsList({
                     onChange={(e) => setFilters(prev => ({ ...prev, max_guests: parseInt(e.target.value) || 0 }))}
                     className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-right"
                   >
-                    <option value="0">כל המספרים</option>
+                    <option value="0">כל מספר</option>
                     <option value="1">לפחות 1</option>
                     <option value="2">לפחות 2</option>
+                    <option value="3">לפחות 3</option>
                     <option value="4">לפחות 4</option>
-                    <option value="6">לפחות 6</option>
                   </select>
                 </div>
 
@@ -502,12 +502,6 @@ export default function HostsList({
                     >
                       בקש אירוח
                     </button>
-                    <button
-                      onClick={(e) => e.stopPropagation()}
-                      className="p-3 border border-gray-300 text-gray-600 rounded-xl hover:bg-gray-50 transition-colors"
-                    >
-                      <MessageCircle className="h-4 w-4" />
-                    </button>
                   </div>
                 </div>
               </div>
@@ -604,11 +598,11 @@ export default function HostsList({
                   onChange={(e) => setFilters(prev => ({ ...prev, max_guests: parseInt(e.target.value) || 0 }))}
                   className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-pink-500 focus:border-pink-500 text-right"
                 >
-                  <option value="0">כל המספרים</option>
+                  <option value="0">כל מספר</option>
                   <option value="1">לפחות 1</option>
                   <option value="2">לפחות 2</option>
+                  <option value="3">לפחות 3</option>
                   <option value="4">לפחות 4</option>
-                  <option value="6">לפחות 6</option>
                 </select>
               </div>
             </div>

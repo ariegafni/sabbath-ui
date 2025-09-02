@@ -57,9 +57,20 @@ export interface CreateHostRequest {
 }
 
 
-export interface UpdateHostRequest extends Partial<CreateHostRequest> {
+export type UpdateHostRequest = {
   id: string;
-}
+  kashrut_level: string;
+  hosting_type: string[];
+  languages: string[];
+  country_place_id: string;
+  city_place_id: string;
+  country_display_name: string;
+  city_display_name: string;
+  area: string;
+  max_guests: number;
+  bio: string;
+  photo?: File;
+};
 
 export class HostService {
   private static baseUrl = "http://127.0.0.1:3005/api/hosts";
