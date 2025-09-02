@@ -315,7 +315,9 @@ export default function HostsList({
                 <div className="p-5 sm:p-6 space-y-4 flex-1 flex flex-col">
                   <div>
                     <h3 className="font-bold text-lg sm:text-xl text-gray-900 mb-1 line-clamp-1">
-                      {host.name}
+                      {host.user?.first_name && host.user?.last_name 
+                        ? `${host.user.first_name} ${host.user.last_name}`
+                        : host.name || 'מארח'}
                     </h3>
                     <div className="flex items-center gap-2 text-gray-600">
                       <MapPin className="h-4 w-4 flex-shrink-0" />
@@ -508,8 +510,10 @@ export default function HostsList({
       {selectedHost && (
         <HostingRequestForm
           hostId={selectedHost.id?.toString() || ""}
-          hostName={selectedHost.name || ""}
-          hostProfileImage={selectedHost.photo_url}
+          hostName={selectedHost.user?.first_name && selectedHost.user?.last_name 
+            ? `${selectedHost.user.first_name} ${selectedHost.user.last_name}`
+            : selectedHost.name || "מארח"}
+          hostProfileImage={selectedHost.user?.profile_image || selectedHost.photo_url}
           onClose={() => setSelectedHost(null)}
           onSuccess={() => {
             setSelectedHost(null);

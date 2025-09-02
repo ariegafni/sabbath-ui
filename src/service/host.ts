@@ -20,6 +20,22 @@ export interface Host {
   is_always_available: boolean;
   available?: boolean;
   rating?: number;
+  user_id: string;
+  user?: {
+    id: string;
+    first_name: string;
+    last_name: string;
+    email: string;
+    phone?: string;
+    profile_image?: string;
+    bio?: string;
+    city?: string;
+    country?: string;
+    is_verified: boolean;
+    created_at: string;
+    updated_at: string;
+    social_links: string[];
+  };
 }
 
 export interface CreateHostRequest {
