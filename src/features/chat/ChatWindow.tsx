@@ -18,9 +18,7 @@ export default function ChatWindow({ conversation, onBack }: ChatWindowProps) {
   const [newMessage, setNewMessage] = useState("");
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
-  const [typingUsers, setTypingUsers] = useState<Set<string>>(new Set());
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     loadMessages();
@@ -28,14 +26,12 @@ export default function ChatWindow({ conversation, onBack }: ChatWindowProps) {
 
     socketService.joinConversation(conversation.id);
     socketService.on("new_message", handleNewMessage);
-    socketService.on("user_typing", handleUserTyping);
     socketService.on("messages_read", handleMessagesRead);
 
     return () => {
       socketService.leaveConversation(conversation.id);
 
       socketService.off("new_message", handleNewMessage);
-      socketService.off("user_typing", handleUserTyping);
       socketService.off("messages_read", handleMessagesRead);
     };
   }, [conversation.id]);
@@ -102,36 +98,6 @@ export default function ChatWindow({ conversation, onBack }: ChatWindowProps) {
     [conversation.id, user?.id]
   );
 
-  const handleUserTyping = useCallback(
-    (data: any) => {
-      if (
-        data.conversation_id === conversation.id &&
-        data.user_id !== user?.id
-      ) {
-
-        setTypingUsers((prev) => {
-          const newSet = new Set(prev);
-          if (data.is_typing) {
-            newSet.add(data.user_id);
-          } else {
-            newSet.delete(data.user_id);
-          }
-          return newSet;
-        });
-
-        if (data.is_typing) {
-          setTimeout(() => {
-            setTypingUsers((prev) => {
-              const newSet = new Set(prev);
-              newSet.delete(data.user_id);
-              return newSet;
-            });
-          }, 3000);
-        }
-      }
-    },
-    [conversation.id, user?.id]
-  );
 
   const handleMessagesRead = useCallback(
     (data: any) => {
@@ -171,11 +137,10 @@ export default function ChatWindow({ conversation, onBack }: ChatWindowProps) {
 
     try {
       setSending(true);
-      const res = await ChatService.sendMessage({
+      await ChatService.sendMessage({
         conversation_id: conversation.id,
         content: tempMessage.content,
       });
-      socketService.sendTyping(conversation.id, false);
     } catch (error) {
       console.error("❌ Error sending message:", error);
     } finally {
@@ -227,19 +192,6 @@ const shouldShowDateSeparator = (
 };
 const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
   setNewMessage(e.target.value);
-
-  // Send typing indicator
-  socketService.sendTyping(conversation.id, true);
-
-  // Clear previous timeout
-  if (typingTimeoutRef.current) {
-    clearTimeout(typingTimeoutRef.current);
-  }
-
-  // Stop typing after 1 second of no activity
-  typingTimeoutRef.current = setTimeout(() => {
-    socketService.sendTyping(conversation.id, false);
-  }, 1000);
 };
 
 
@@ -271,11 +223,6 @@ const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
                 {conversation.other_user_first_name}{" "}
                 {conversation.other_user_last_name}
               </h3>
-              {typingUsers.size > 0 && (
-                <p className="text-sm text-blue-600">
-                  {t("chat.typing", "מקליד...")}
-                </p>
-              )}
             </div>
           </div>
         </div>

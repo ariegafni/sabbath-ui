@@ -20,6 +20,7 @@ import {
 } from "@/service/HostingRequest";
 import { ChatService } from "@/service/chat";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/Providers/AuthProvider";
 
 interface MyHostingRequestsAsHostProps {
   className?: string;
@@ -30,6 +31,7 @@ export default function MyHostingRequestsAsHost({
 }: MyHostingRequestsAsHostProps) {
   const { t } = useTranslation();
   const router = useRouter();
+  const { user } = useAuth();
   const [requests, setRequests] = useState<HostingRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -117,36 +119,46 @@ export default function MyHostingRequestsAsHost({
 
   const handleStartChat = async (request: HostingRequest) => {
     try {
-      // Extract guest ID from the request
-      let guestId: string;
-      if (typeof request.guest_id === "object" && request.guest_id) {
-        // If guest_id is an object, we need to get the actual ID
-        guestId = (request.guest_id as any).id || "";
-      } else {
-        guestId = request.guest_id as string;
+      // Get current user (host) ID
+      if (!user?.id) {
+        alert("שגיאה: לא ניתן לזהות את המשתמש");
+        return;
       }
 
-      if (!guestId) {
+      // Extract guest ID from the request
+      let guestUserId: string;
+      if (typeof request.guest_id === "object" && request.guest_id) {
+        // If guest_id is an object, we need to get the actual user ID
+        guestUserId = (request.guest_id as any).id || (request.guest_id as any).user_id || "";
+      } else {
+        guestUserId = request.guest_id as string;
+      }
+
+      if (!guestUserId) {
         alert("שגיאה: לא ניתן לזהות את האורח");
         return;
       }
 
-      // Get the guest's user_id (guest_id should already be user_id)
-      const guestUserId = guestId;
-
-      // Start or find existing conversation
-      const conversation = await ChatService.startConversation({
-        host_id: request.host_id as string,
+      // Start or find existing conversation using current user's ID as host
+      await ChatService.startConversation({
+        host_id: user.id, // Use current user's ID (the host)
         guest_id: guestUserId,
-        accommodation_request_id: request.id,
-        initial_message: `שלום! הגעתי אליך בנוגע לבקשת האירוח שלך ל${formatDate(request.requested_date)}`
+        accommodation_request_id: request.id
       });
 
       // Navigate to messages page with conversation selected
       router.push(`/messages`);
     } catch (error) {
       console.error("Error starting chat:", error);
-      alert("שגיאה ביצירת השיחה");
+      if (error instanceof Error) {
+        if (error.message.includes("approval") || error.message.includes("accepted")) {
+          alert("לא ניתן להתחיל שיחה לפני אישור הבקשה");
+        } else {
+          alert(`שגיאה ביצירת השיחה: ${error.message}`);
+        }
+      } else {
+        alert("שגיאה ביצירת השיחה");
+      }
     }
   };
 
@@ -387,7 +399,8 @@ export default function MyHostingRequestsAsHost({
                       דחה בקשה
                     </Button>
                   </div>
-                  
+
+                  {/* Chat Button for Host (allowed even for pending requests) */}
                   <div className="flex items-center">
                     <Button
                       onClick={() => handleStartChat(request)}
@@ -399,6 +412,20 @@ export default function MyHostingRequestsAsHost({
                     </Button>
                   </div>
                 </div>
+              </div>
+            )}
+
+            {/* Chat Button for Approved Requests */}
+            {request.status === "accepted" && (
+              <div className="pt-4 border-t">
+                <Button
+                  onClick={() => handleStartChat(request)}
+                  variant="outline"
+                  className="w-full border-blue-300 text-blue-600 hover:bg-blue-50"
+                >
+                  <MessageSquare className="w-4 h-4 ml-2" />
+                  התחל שיחה עם האורח
+                </Button>
               </div>
             )}
 

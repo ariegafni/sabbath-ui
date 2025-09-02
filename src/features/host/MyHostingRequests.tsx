@@ -20,6 +20,7 @@ import {
 import { ChatService } from "@/service/chat";
 import { useRouter } from "next/navigation";
 import { AuthService } from "@/service/auth";
+import { useAuth } from "@/Providers/AuthProvider";
 
 interface MyHostingRequestsProps {
   className?: string;
@@ -30,6 +31,7 @@ export default function MyHostingRequests({
 }: MyHostingRequestsProps) {
   const { t } = useTranslation();
   const router = useRouter();
+  const { user } = useAuth();
   const [requests, setRequests] = useState<HostingRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -133,18 +135,27 @@ export default function MyHostingRequests({
       }
 
       // Start or find existing conversation
-      const conversation = await ChatService.startConversation({
+      await ChatService.startConversation({
         host_id: hostUserId,
-        guest_id: request.guest_id as string,
-        accommodation_request_id: request.id,
-        initial_message: `שלום! אני האורח ששלח את הבקשה לאירוח ב${formatDate(request.requested_date)}`
+        guest_id: user!.id, // Use current user's ID (the guest)
+        accommodation_request_id: request.id
       });
 
       // Navigate to messages page with conversation selected
       router.push(`/messages`);
     } catch (error) {
       console.error("Error starting chat:", error);
-      alert("שגיאה ביצירת השיחה");
+      if (error instanceof Error) {
+        if (error.message.includes("Guests can only start chat after")) {
+          alert("אורחים יכולים לשלוח הודעות רק לאחר אישור הבקשה על ידי המארח");
+        } else if (error.message.includes("approval") || error.message.includes("accepted")) {
+          alert("לא ניתן להתחיל שיחה לפני אישור הבקשה");
+        } else {
+          alert(`שגיאה ביצירת השיחה: ${error.message}`);
+        }
+      } else {
+        alert("שגיאה ביצירת השיחה");
+      }
     }
   };
 
@@ -337,15 +348,19 @@ export default function MyHostingRequests({
             {/* Action Buttons */}
             {request.status === "pending" && (
               <div className="space-y-3 pt-4 border-t">
-                <div className="flex items-center">
+                {/* Disabled Chat Button with Message for Guests */}
+                <div className="space-y-2">
                   <Button
-                    onClick={() => handleStartChat(request)}
+                    disabled
                     variant="outline"
-                    className="w-full border-blue-300 text-blue-600 hover:bg-blue-50"
+                    className="w-full border-gray-300 text-gray-500 cursor-not-allowed bg-gray-50"
                   >
                     <MessageSquare className="w-4 h-4 ml-2" />
                     שלח הודעה למארח
                   </Button>
+                  <p className="text-xs text-gray-600 text-center">
+                    תוכל לשלוח הודעות למארח לאחר אישור הבקשה
+                  </p>
                 </div>
                 
                 <div className="flex items-center">

@@ -6,11 +6,6 @@ export interface SocketMessage {
   message: any;
 }
 
-export interface SocketTyping {
-  user_id: string;
-  conversation_id: string;
-  is_typing: boolean;
-}
 
 export interface SocketMessagesRead {
   conversation_id: string;
@@ -20,7 +15,7 @@ export interface SocketMessagesRead {
 class SocketService {
   private socket: Socket | null = null;
   private token: string | null = null;
-  private listeners: Map<string, Set<Function>> = new Map();
+  private listeners: Map<string, Set<(...args: any[]) => void>> = new Map();
 
   connect(token: string) {
     if (this.socket?.connected) {
@@ -63,9 +58,6 @@ class SocketService {
       this.emit('new_message', data);
     });
 
-    this.socket.on('user_typing', (data: SocketTyping) => {
-      this.emit('user_typing', data);
-    });
 
     this.socket.on('messages_read', (data: SocketMessagesRead) => {
       this.emit('messages_read', data);
@@ -92,24 +84,16 @@ class SocketService {
     }
   }
 
-  sendTyping(conversationId: string, isTyping: boolean) {
-    if (this.socket?.connected) {
-      this.socket.emit('typing', { 
-        conversation_id: conversationId, 
-        is_typing: isTyping 
-      });
-    }
-  }
 
   // Event listener management
-  on(event: string, callback: Function) {
+  on(event: string, callback: (...args: any[]) => void) {
     if (!this.listeners.has(event)) {
       this.listeners.set(event, new Set());
     }
     this.listeners.get(event)!.add(callback);
   }
 
-  off(event: string, callback: Function) {
+  off(event: string, callback: (...args: any[]) => void) {
     const eventListeners = this.listeners.get(event);
     if (eventListeners) {
       eventListeners.delete(callback);

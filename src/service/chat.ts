@@ -68,7 +68,11 @@ export class ChatService {
       },
       body: JSON.stringify(request),
     });
-    if (!res.ok) throw new Error("Failed to start conversation");
+    if (!res.ok) {
+      const errorData = await res.json().catch(() => ({}));
+      const errorMessage = errorData.error || "Failed to start conversation";
+      throw new Error(errorMessage);
+    }
     return (await res.json()) as Conversation;
   }
 
