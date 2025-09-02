@@ -6,15 +6,14 @@ import { MessageCircle, Search, Clock, User, ChevronLeft } from "lucide-react";
 import { Conversation, ChatService } from "@/service";
 import { socketService } from "@/service";
 
-
 interface ConversationsListProps {
   onConversationSelect: (conversation: Conversation) => void;
   selectedConversationId?: string;
 }
 
-export default function ConversationsList({ 
-  onConversationSelect, 
-  selectedConversationId 
+export default function ConversationsList({
+  onConversationSelect,
+  selectedConversationId,
 }: ConversationsListProps) {
   const { t } = useTranslation();
   const [conversations, setConversations] = useState<Conversation[]>([]);
@@ -24,41 +23,50 @@ export default function ConversationsList({
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    console.log("🚀 ConversationsList mounted");
     loadConversations();
   }, []);
-  useEffect(() => {
-  const handleNewMessage = (data: any) => {
-    setConversations(prev => {
-      const updated = [...prev];
-      const idx = updated.findIndex(c => c.id === data.conversation_id);
-      if (idx !== -1) {
-        updated[idx] = {
-          ...updated[idx],
-          last_message_content: data.message.content,
-          last_message_created_at: data.message.created_at,
-          unread_count: updated[idx].unread_count + 1,
-        };
-      } else {
-        // אם זו שיחה חדשה לגמרי – תוכל להוסיף אותה כאן
-        updated.unshift({
-          id: data.conversation_id,
-          other_user_first_name: data.message.sender_first_name,
-          other_user_last_name: data.message.sender_last_name,
-          other_user_profile_image: data.message.sender_profile_image,
-          last_message_content: data.message.content,
-          last_message_created_at: data.message.created_at,
-          unread_count: 1,
-        } as Conversation);
-      }
-      return updated;
-    });
-  };
 
-  socketService.on("new_message", handleNewMessage);
-  return () => {
-    socketService.off("new_message", handleNewMessage);
-  };
-}, []);
+  useEffect(() => {
+    const handleNewMessage = (data: any) => {
+      console.log("📩 ConversationsList got new_message:", data);
+
+      setConversations((prev) => {
+        const updated = [...prev];
+        const idx = updated.findIndex((c) => c.id === data.conversation_id);
+
+        if (idx !== -1) {
+          updated[idx] = {
+            ...updated[idx],
+            last_message_content: data.message.content,
+            last_message_created_at: data.message.created_at,
+            unread_count: (updated[idx].unread_count || 0) + 1,
+          };
+          console.log("🔄 Updated conversation:", updated[idx].id);
+        } else {
+          const newConv = {
+            id: data.conversation_id,
+            other_user_first_name: data.message.sender_first_name,
+            other_user_last_name: data.message.sender_last_name,
+            other_user_profile_image: data.message.sender_profile_image,
+            last_message_content: data.message.content,
+            last_message_created_at: data.message.created_at,
+            unread_count: 1,
+          } as Conversation;
+          updated.unshift(newConv);
+          console.log("➕ Added new conversation:", newConv.id);
+        }
+
+        return updated;
+      });
+    };
+
+    socketService.on("new_message", handleNewMessage);
+    return () => {
+      socketService.off("new_message", handleNewMessage);
+      console.log("❌ ConversationsList listener removed");
+    };
+  }, []);
 
   useEffect(() => {
     if (searchTerm.trim() === "") {
@@ -79,10 +87,11 @@ export default function ConversationsList({
     try {
       setLoading(true);
       const data = await ChatService.getConversations();
+      console.log("📥 Loaded conversations:", data.length);
       setConversations(data);
       setFilteredConversations(data);
     } catch (err) {
-      console.error("Error loading conversations:", err);
+      console.error("❌ Error loading conversations:", err);
       const errorMessage = err instanceof Error ? err.message : "Unknown error";
       if (errorMessage.includes("fetch")) {
         setError("מערכת הצ'אט אינה זמינה כרגע. אנא נסה שוב מאוחר יותר.");
@@ -100,11 +109,11 @@ export default function ConversationsList({
     const diffInHours = (now.getTime() - date.getTime()) / (1000 * 60 * 60);
 
     if (diffInHours < 24) {
-      return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
     } else if (diffInHours < 24 * 7) {
-      return date.toLocaleDateString([], { weekday: 'short' });
+      return date.toLocaleDateString([], { weekday: "short" });
     } else {
-      return date.toLocaleDateString([], { month: 'short', day: 'numeric' });
+      return date.toLocaleDateString([], { month: "short", day: "numeric" });
     }
   };
 
@@ -166,10 +175,14 @@ export default function ConversationsList({
               <MessageCircle className="h-16 w-16 mx-auto" />
             </div>
             <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              {searchTerm ? t("chat.noSearchResults", "לא נמצאו תוצאות") : t("chat.noConversations", "אין שיחות")}
+              {searchTerm
+                ? t("chat.noSearchResults", "לא נמצאו תוצאות")
+                : t("chat.noConversations", "אין שיחות")}
             </h3>
             <p className="text-gray-600">
-              {searchTerm ? t("chat.tryDifferentSearch", "נסה חיפוש אחר") : t("chat.startChatting", "התחל לשוחח עם מארחים")}
+              {searchTerm
+                ? t("chat.tryDifferentSearch", "נסה חיפוש אחר")
+                : t("chat.startChatting", "התחל לשוחח עם מארחים")}
             </p>
           </div>
         ) : (
@@ -178,12 +191,17 @@ export default function ConversationsList({
               <div
                 key={conversation.id}
                 className={`p-4 hover:bg-gray-50 cursor-pointer transition-colors ${
-                  selectedConversationId === conversation.id ? "bg-blue-50 border-r-2 border-r-blue-600" : ""
+                  selectedConversationId === conversation.id
+                    ? "bg-blue-50 border-r-2 border-r-blue-600"
+                    : ""
                 }`}
-                onClick={() => onConversationSelect(conversation)}
+                onClick={() => {
+                  console.log("🖱️ Conversation selected:", conversation.id);
+                  onConversationSelect(conversation);
+                }}
               >
                 <div className="flex items-center gap-3">
-                  {/* User Avatar */}
+                  {/* Avatar */}
                   <div className="relative">
                     {conversation.other_user_profile_image ? (
                       <img
@@ -196,25 +214,26 @@ export default function ConversationsList({
                         <User className="h-6 w-6 text-gray-400" />
                       </div>
                     )}
-                    
-                    {/* Unread indicator */}
                     {conversation.unread_count > 0 && (
                       <div className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium">
-                        {conversation.unread_count > 9 ? "9+" : conversation.unread_count}
+                        {conversation.unread_count > 9
+                          ? "9+"
+                          : conversation.unread_count}
                       </div>
                     )}
                   </div>
 
-                  {/* Conversation Info */}
+                  {/* Info */}
                   <div className="flex-1 min-w-0">
                     <div className="flex justify-between items-start mb-1">
-                      <h4 className={`font-semibold text-gray-900 truncate ${
-                        conversation.unread_count > 0 ? "font-bold" : ""
-                      }`}>
-                        {conversation.other_user_first_name} {conversation.other_user_last_name}
+                      <h4
+                        className={`font-semibold text-gray-900 truncate ${
+                          conversation.unread_count > 0 ? "font-bold" : ""
+                        }`}
+                      >
+                        {conversation.other_user_first_name}{" "}
+                        {conversation.other_user_last_name}
                       </h4>
-                      
-                      {/* Time */}
                       {conversation.last_message_created_at && (
                         <div className="flex items-center gap-1 text-xs text-gray-500 flex-shrink-0">
                           <Clock className="h-3 w-3" />
@@ -222,16 +241,16 @@ export default function ConversationsList({
                         </div>
                       )}
                     </div>
-                    
-                    {/* Last Message */}
-                    <p className={`text-sm truncate ${
-                      conversation.unread_count > 0 ? "text-gray-900 font-medium" : "text-gray-600"
-                    }`}>
+                    <p
+                      className={`text-sm truncate ${
+                        conversation.unread_count > 0
+                          ? "text-gray-900 font-medium"
+                          : "text-gray-600"
+                      }`}
+                    >
                       {formatLastMessage(conversation.last_message_content)}
                     </p>
                   </div>
-
-                  {/* Arrow Icon */}
                   <ChevronLeft className="h-4 w-4 text-gray-400 flex-shrink-0" />
                 </div>
               </div>

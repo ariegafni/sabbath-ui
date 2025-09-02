@@ -20,28 +20,27 @@ export default function ChatWindow({ conversation, onBack }: ChatWindowProps) {
   const [sending, setSending] = useState(false);
   const [typingUsers, setTypingUsers] = useState<Set<string>>(new Set());
   const messagesEndRef = useRef<HTMLDivElement>(null);
-const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
+    console.log("🚀 ChatWindow mounted for conversation:", conversation.id);
     loadMessages();
     markAsRead();
-    
-    // Join conversation room
-    socketService.joinConversation(conversation.id);
 
-    // Setup socket listeners
-    socketService.on('new_message', handleNewMessage);
-    socketService.on('user_typing', handleUserTyping);
-    socketService.on('messages_read', handleMessagesRead);
+    socketService.joinConversation(conversation.id);
+    console.log("🔗 Joined socket room:", conversation.id);
+
+    socketService.on("new_message", handleNewMessage);
+    socketService.on("user_typing", handleUserTyping);
+    socketService.on("messages_read", handleMessagesRead);
 
     return () => {
-      // Leave conversation room
       socketService.leaveConversation(conversation.id);
-      
-      // Remove socket listeners
-      socketService.off('new_message', handleNewMessage);
-      socketService.off('user_typing', handleUserTyping);
-      socketService.off('messages_read', handleMessagesRead);
+      console.log("❌ Left socket room:", conversation.id);
+
+      socketService.off("new_message", handleNewMessage);
+      socketService.off("user_typing", handleUserTyping);
+      socketService.off("messages_read", handleMessagesRead);
     };
   }, [conversation.id]);
 
@@ -53,13 +52,14 @@ const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
     try {
       setLoading(true);
       const data = await ChatService.getMessages(conversation.id);
-      // Remove duplicates based on message ID
-      const uniqueMessages = data.filter((message, index, self) => 
-        index === self.findIndex(m => m.id === message.id)
+      const uniqueMessages = data.filter(
+        (message, index, self) =>
+          index === self.findIndex((m) => m.id === message.id)
       );
+      console.log("📥 Loaded messages:", uniqueMessages.length);
       setMessages(uniqueMessages);
     } catch (error) {
-      console.error("Error loading messages:", error);
+      console.error("❌ Error loading messages:", error);
     } finally {
       setLoading(false);
     }
@@ -68,155 +68,136 @@ const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const markAsRead = async () => {
     try {
       await ChatService.markAsRead(conversation.id);
+      console.log("👁️ Marked conversation as read:", conversation.id);
     } catch (error) {
-      console.error("Error marking as read:", error);
+      console.error("❌ Error marking as read:", error);
     }
   };
 
-  const handleNewMessage = useCallback((data: any) => {
-    if (data.conversation_id === conversation.id) {
-      setMessages(prev => {
-        // בדיקה פשוטה - לא להוסיף אם כבר קיימת
-        if (prev.some(msg => msg.id === data.message.id)) {
-          return prev;
+  const handleNewMessage = useCallback(
+    (data: any) => {
+      console.log("📩 socket new_message event:", data);
+
+      if (data.conversation_id === conversation.id) {
+        const msg = data.message;
+
+        setMessages((prev) => {
+          const idx = prev.findIndex((m) => m.id === msg.id);
+          if (idx !== -1) {
+            const updated = [...prev];
+            updated[idx] = msg;
+            console.log("🔄 Updated existing message:", msg.id);
+            return updated;
+          }
+
+          const withoutTemp = prev.filter(
+            (m) =>
+              !(
+                m.id.startsWith("temp-") &&
+                m.content === msg.content &&
+                m.sender_id === msg.sender_id
+              )
+          );
+          const updated = [...withoutTemp, msg];
+          console.log("➕ Added new message:", msg.id);
+          return updated;
+        });
+
+        if (msg.sender_id !== user?.id) {
+          setTimeout(() => markAsRead(), 100);
         }
-        return [...prev, data.message];
-      });
-      
-      // If message is from other user, mark as read
-      if (data.message.sender_id !== user?.id) {
-        setTimeout(() => markAsRead(), 100);
       }
-    }
-  }, [conversation.id, user?.id]);
+    },
+    [conversation.id, user?.id]
+  );
 
-  const handleUserTyping = useCallback((data: any) => {
-    if (data.conversation_id === conversation.id && data.user_id !== user?.id) {
-      setTypingUsers(prev => {
-        const newSet = new Set(prev);
-        if (data.is_typing) {
-          newSet.add(data.user_id);
-        } else {
-          newSet.delete(data.user_id);
-        }
-        return newSet;
-      });
+  const handleUserTyping = useCallback(
+    (data: any) => {
+      if (
+        data.conversation_id === conversation.id &&
+        data.user_id !== user?.id
+      ) {
+        console.log("⌨️ Typing event:", data);
 
-      // Clear typing after 3 seconds of no activity
-      if (data.is_typing) {
-        setTimeout(() => {
-          setTypingUsers(prev => {
-            const newSet = new Set(prev);
+        setTypingUsers((prev) => {
+          const newSet = new Set(prev);
+          if (data.is_typing) {
+            newSet.add(data.user_id);
+          } else {
             newSet.delete(data.user_id);
-            return newSet;
-          });
-        }, 3000);
-      }
-    }
-  }, [conversation.id, user?.id]);
+          }
+          return newSet;
+        });
 
-  const handleMessagesRead = useCallback((data: any) => {
-    if (data.conversation_id === conversation.id) {
-      setMessages(prev => 
-        prev.map(msg => 
-          msg.sender_id === user?.id ? { ...msg, is_read: true } : msg
-        )
-      );
-    }
-  }, [conversation.id, user?.id]);
+        if (data.is_typing) {
+          setTimeout(() => {
+            setTypingUsers((prev) => {
+              const newSet = new Set(prev);
+              newSet.delete(data.user_id);
+              return newSet;
+            });
+          }, 3000);
+        }
+      }
+    },
+    [conversation.id, user?.id]
+  );
+
+  const handleMessagesRead = useCallback(
+    (data: any) => {
+      console.log("📖 messages_read event:", data);
+      if (data.conversation_id === conversation.id) {
+        setMessages((prev) =>
+          prev.map((msg) =>
+            msg.sender_id === user?.id ? { ...msg, is_read: true } : msg
+          )
+        );
+      }
+    },
+    [conversation.id, user?.id]
+  );
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
-const sendMessage = async (e: React.FormEvent) => {
-  e.preventDefault();
-  if (!newMessage.trim() || sending) return;
+  const sendMessage = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newMessage.trim() || sending) return;
 
-const tempId = `temp-${Date.now()}`;
-const tempMessage: Message = {
-  id: tempId,
-  conversation_id: conversation.id,
-  sender_id: user!.id,
-  content: newMessage.trim(),
-  created_at: new Date().toISOString(),
-  updated_at: new Date().toISOString(),
-  is_read: false,
-  message_type: "text", // נניח שהטייפ ברירת מחדל הוא טקסט
-};
-
-
-  // מוסיפים מיד לסטייט
-  setMessages(prev => [...prev, tempMessage]);
-  setNewMessage("");
-
-  try {
-    setSending(true);
-    await ChatService.sendMessage({
+    const tempId = `temp-${Date.now()}`;
+    const tempMessage: Message = {
+      id: tempId,
       conversation_id: conversation.id,
-      content: tempMessage.content,
-    });
-    socketService.sendTyping(conversation.id, false);
-  } catch (error) {
-    console.error("Error sending message:", error);
-    // אפשר להוסיף טיפול בסטטוס "נכשל" כאן
-  } finally {
-    setSending(false);
-  }
-};
+      sender_id: user!.id,
+      content: newMessage.trim(),
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      is_read: false,
+      message_type: "text",
+    };
 
+    console.log("✉️ Sending tempMessage:", tempMessage);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setNewMessage(e.target.value);
-    
-    // Send typing indicator
-    socketService.sendTyping(conversation.id, true);
-    
-    // Clear previous timeout
-    if (typingTimeoutRef.current) {
-      clearTimeout(typingTimeoutRef.current);
-    }
-    
-    // Stop typing after 1 second of no activity
-    typingTimeoutRef.current = setTimeout(() => {
-      socketService.sendTyping(conversation.id, false);
-    }, 1000);
-  };
+    setMessages((prev) => [...prev, tempMessage]);
+    setNewMessage("");
 
-  const formatMessageTime = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  };
-
-  const formatDateSeparator = (dateString: string) => {
-    const date = new Date(dateString);
-    const today = new Date();
-    const yesterday = new Date(today);
-    yesterday.setDate(yesterday.getDate() - 1);
-
-    if (date.toDateString() === today.toDateString()) {
-      return t("chat.today", "היום");
-    } else if (date.toDateString() === yesterday.toDateString()) {
-      return t("chat.yesterday", "אתמול");
-    } else {
-      return date.toLocaleDateString([], { 
-        weekday: 'long', 
-        year: 'numeric', 
-        month: 'long', 
-        day: 'numeric' 
+    try {
+      setSending(true);
+      const res = await ChatService.sendMessage({
+        conversation_id: conversation.id,
+        content: tempMessage.content,
       });
+      console.log("✅ Server response from sendMessage:", res);
+      socketService.sendTyping(conversation.id, false);
+    } catch (error) {
+      console.error("❌ Error sending message:", error);
+    } finally {
+      setSending(false);
     }
   };
 
-  const shouldShowDateSeparator = (currentMessage: Message, previousMessage?: Message) => {
-    if (!previousMessage) return true;
-    
-    const currentDate = new Date(currentMessage.created_at).toDateString();
-    const previousDate = new Date(previousMessage.created_at).toDateString();
-    
-    return currentDate !== previousDate;
-  };
-
+  // --- UI ---
   if (loading) {
     return (
       <div className="h-full flex items-center justify-center">
@@ -224,6 +205,57 @@ const tempMessage: Message = {
       </div>
     );
   }
+  const formatMessageTime = (dateString: string) => {
+  const date = new Date(dateString);
+  return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+};
+
+const formatDateSeparator = (dateString: string) => {
+  const date = new Date(dateString);
+  const today = new Date();
+  const yesterday = new Date(today);
+  yesterday.setDate(yesterday.getDate() - 1);
+
+  if (date.toDateString() === today.toDateString()) {
+    return t("chat.today", "היום");
+  } else if (date.toDateString() === yesterday.toDateString()) {
+    return t("chat.yesterday", "אתמול");
+  } else {
+    return date.toLocaleDateString([], {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  }
+};
+
+const shouldShowDateSeparator = (
+  currentMessage: Message,
+  previousMessage?: Message
+) => {
+  if (!previousMessage) return true;
+  const currentDate = new Date(currentMessage.created_at).toDateString();
+  const previousDate = new Date(previousMessage.created_at).toDateString();
+  return currentDate !== previousDate;
+};
+const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+  setNewMessage(e.target.value);
+
+  // Send typing indicator
+  socketService.sendTyping(conversation.id, true);
+
+  // Clear previous timeout
+  if (typingTimeoutRef.current) {
+    clearTimeout(typingTimeoutRef.current);
+  }
+
+  // Stop typing after 1 second of no activity
+  typingTimeoutRef.current = setTimeout(() => {
+    socketService.sendTyping(conversation.id, false);
+  }, 1000);
+};
+
 
   return (
     <div className="h-full flex flex-col">
@@ -236,8 +268,6 @@ const tempMessage: Message = {
           >
             <ArrowRight className="h-5 w-5 text-gray-600" />
           </button>
-          
-          {/* User Info */}
           <div className="flex items-center gap-3">
             {conversation.other_user_profile_image ? (
               <img
@@ -250,13 +280,15 @@ const tempMessage: Message = {
                 <User className="h-5 w-5 text-gray-400" />
               </div>
             )}
-            
             <div>
               <h3 className="font-semibold text-gray-900">
-                {conversation.other_user_first_name} {conversation.other_user_last_name}
+                {conversation.other_user_first_name}{" "}
+                {conversation.other_user_last_name}
               </h3>
               {typingUsers.size > 0 && (
-                <p className="text-sm text-blue-600">{t("chat.typing", "מקליד...")}</p>
+                <p className="text-sm text-blue-600">
+                  {t("chat.typing", "מקליד...")}
+                </p>
               )}
             </div>
           </div>
@@ -269,11 +301,13 @@ const tempMessage: Message = {
           {messages.map((message, index) => {
             const isCurrentUser = message.sender_id === user?.id;
             const previousMessage = index > 0 ? messages[index - 1] : undefined;
-            const showDateSeparator = shouldShowDateSeparator(message, previousMessage);
+            const showDateSeparator = shouldShowDateSeparator(
+              message,
+              previousMessage
+            );
 
             return (
               <div key={`${message.id}-${index}`}>
-                {/* Date Separator */}
                 {showDateSeparator && (
                   <div className="flex justify-center my-4">
                     <div className="bg-white px-3 py-1 rounded-full text-xs text-gray-600 border border-gray-200">
@@ -282,8 +316,11 @@ const tempMessage: Message = {
                   </div>
                 )}
 
-                {/* Message */}
-                <div className={`flex ${isCurrentUser ? "justify-start" : "justify-end"}`}>
+                <div
+                  className={`flex ${
+                    isCurrentUser ? "justify-start" : "justify-end"
+                  }`}
+                >
                   <div
                     className={`max-w-xs lg:max-w-md px-4 py-2 rounded-2xl ${
                       isCurrentUser
@@ -291,10 +328,14 @@ const tempMessage: Message = {
                         : "bg-white text-gray-900 border border-gray-200"
                     }`}
                   >
-                    <p className="text-sm leading-relaxed">{message.content}</p>
-                    <div className={`flex items-center gap-1 mt-1 text-xs ${
-                      isCurrentUser ? "text-blue-100" : "text-gray-500"
-                    }`}>
+                    <p className="text-sm leading-relaxed">
+                      {message.content}
+                    </p>
+                    <div
+                      className={`flex items-center gap-1 mt-1 text-xs ${
+                        isCurrentUser ? "text-blue-100" : "text-gray-500"
+                      }`}
+                    >
                       <span>{formatMessageTime(message.created_at)}</span>
                       {isCurrentUser && message.is_read && (
                         <span className="text-blue-200">✓✓</span>
@@ -305,12 +346,11 @@ const tempMessage: Message = {
               </div>
             );
           })}
-          
           <div ref={messagesEndRef} />
         </div>
       </div>
 
-      {/* Message Input */}
+      {/* Input */}
       <div className="p-4 bg-white border-t border-gray-200">
         <form onSubmit={sendMessage} className="flex gap-3">
           <div className="flex-1">
@@ -322,14 +362,13 @@ const tempMessage: Message = {
               rows={1}
               dir="rtl"
               onKeyDown={(e) => {
-                if (e.key === 'Enter' && !e.shiftKey) {
+                if (e.key === "Enter" && !e.shiftKey) {
                   e.preventDefault();
                   sendMessage(e);
                 }
               }}
             />
           </div>
-          
           <button
             type="submit"
             disabled={!newMessage.trim() || sending}

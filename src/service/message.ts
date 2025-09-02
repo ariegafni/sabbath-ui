@@ -2,202 +2,138 @@ import { createApiUrl } from "../shared/lib/config";
 import { AuthService } from "./auth";
 
 export interface Message {
-  id: number;
-  sender_id: number;
-  receiver_id: number;
+  id: string;
+  conversation_id: string;
+  sender_id?: string;
   content: string;
+  message_type: string;
   is_read: boolean;
   created_at: string;
   updated_at: string;
+  sender_first_name?: string;
+  sender_last_name?: string;
+  sender_profile_image?: string;
 }
 
-export interface Thread {
-  id: number;
-  participant_ids: number[];
-  last_message: Message;
-  unread_count: number;
+export interface Conversation {
+  id: string;
+  host_id: string;
+  guest_id: string;
+  accommodation_request_id?: string;
+  last_message_at: string;
   created_at: string;
   updated_at: string;
+  other_user_id?: string;
+  other_user_first_name?: string;
+  other_user_last_name?: string;
+  other_user_profile_image?: string;
+  last_message_content?: string;
+  last_message_sender_id?: string;
+  last_message_created_at?: string;
+  unread_count?: number;
 }
 
 export interface SendMessageRequest {
-  receiver_id: number;
   content: string;
+  message_type?: string;
 }
 
-export interface CreateThreadRequest {
-  participant_ids: number[];
+export interface StartConversationRequest {
+  host_id: string;
+  guest_id: string;
+  accommodation_request_id?: string;
   initial_message?: string;
 }
 
-export class MessageService {
-  private static baseUrl = createApiUrl("/api/messages");
+export class ChatService {
+  private static baseUrl = createApiUrl("/api/chat");
 
   // קבלת כל השיחות של המשתמש
-  static async getThreads(): Promise<Thread[]> {
-    const response = await fetch(`${this.baseUrl}/threads`, {
-      headers: {
-        ...AuthService.getAuthHeaders(),
-      },
+  static async getConversations(): Promise<Conversation[]> {
+    const res = await fetch(`${this.baseUrl}/conversations`, {
+      headers: { ...AuthService.getAuthHeaders() },
     });
-    if (!response.ok) {
-      throw new Error("Failed to fetch threads");
-    }
-    return response.json();
-  }
-
-  // קבלת הודעות בשיחה ספציפית
-  static async getMessagesByThread(threadId: number): Promise<Message[]> {
-    const response = await fetch(
-      `${this.baseUrl}/threads/${threadId}/messages`,
-      {
-        headers: {
-          ...AuthService.getAuthHeaders(),
-        },
-      }
-    );
-    if (!response.ok) {
-      throw new Error("Failed to fetch messages");
-    }
-    return response.json();
-  }
-
-  // שליחת הודעה חדשה
-  static async sendMessage(messageData: SendMessageRequest): Promise<Message> {
-    const response = await fetch(`${this.baseUrl}/send`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        ...AuthService.getAuthHeaders(),
-      },
-      body: JSON.stringify(messageData),
-    });
-    if (!response.ok) {
-      throw new Error("Failed to send message");
-    }
-    return response.json();
+    if (!res.ok) throw new Error("Failed to fetch conversations");
+    return res.json();
   }
 
   // יצירת שיחה חדשה
-  static async createThread(threadData: CreateThreadRequest): Promise<Thread> {
-    const response = await fetch(`${this.baseUrl}/threads`, {
+  static async startConversation(
+    data: StartConversationRequest
+  ): Promise<Conversation> {
+    const res = await fetch(`${this.baseUrl}/conversations`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         ...AuthService.getAuthHeaders(),
       },
-      body: JSON.stringify(threadData),
+      body: JSON.stringify(data),
     });
-    if (!response.ok) {
-      throw new Error("Failed to create thread");
-    }
-    return response.json();
+    if (!res.ok) throw new Error("Failed to start conversation");
+    return res.json();
   }
 
-  // סימון הודעה כנקראה
-  static async markMessageAsRead(messageId: number): Promise<void> {
-    const response = await fetch(`${this.baseUrl}/messages/${messageId}/read`, {
-      method: "PUT",
-      headers: {
-        ...AuthService.getAuthHeaders(),
-      },
+  // קבלת פרטי שיחה
+  static async getConversation(id: string): Promise<Conversation> {
+    const res = await fetch(`${this.baseUrl}/conversations/${id}`, {
+      headers: { ...AuthService.getAuthHeaders() },
     });
-    if (!response.ok) {
-      throw new Error("Failed to mark message as read");
-    }
+    if (!res.ok) throw new Error("Failed to fetch conversation");
+    return res.json();
+  }
+
+  // קבלת הודעות בשיחה
+  static async getMessages(
+    conversationId: string,
+    limit = 50,
+    offset = 0
+  ): Promise<Message[]> {
+    const res = await fetch(
+      `${this.baseUrl}/conversations/${conversationId}/messages?limit=${limit}&offset=${offset}`,
+      { headers: { ...AuthService.getAuthHeaders() } }
+    );
+    if (!res.ok) throw new Error("Failed to fetch messages");
+    return res.json();
+  }
+
+  // שליחת הודעה בשיחה
+  static async sendMessage(
+    conversationId: string,
+    data: SendMessageRequest
+  ): Promise<Message> {
+    const res = await fetch(
+      `${this.baseUrl}/conversations/${conversationId}/messages`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...AuthService.getAuthHeaders(),
+        },
+        body: JSON.stringify(data),
+      }
+    );
+    if (!res.ok) throw new Error("Failed to send message");
+    return res.json();
   }
 
   // סימון כל ההודעות בשיחה כנקראו
-  static async markThreadAsRead(threadId: number): Promise<void> {
-    const response = await fetch(`${this.baseUrl}/threads/${threadId}/read`, {
-      method: "PUT",
-      headers: {
-        ...AuthService.getAuthHeaders(),
-      },
-    });
-    if (!response.ok) {
-      throw new Error("Failed to mark thread as read");
-    }
-  }
-
-  // מחיקת הודעה
-  static async deleteMessage(messageId: number): Promise<void> {
-    const response = await fetch(`${this.baseUrl}/messages/${messageId}`, {
-      method: "DELETE",
-      headers: {
-        ...AuthService.getAuthHeaders(),
-      },
-    });
-    if (!response.ok) {
-      throw new Error("Failed to delete message");
-    }
-  }
-
-  // מחיקת שיחה
-  static async deleteThread(threadId: number): Promise<void> {
-    const response = await fetch(`${this.baseUrl}/threads/${threadId}`, {
-      method: "DELETE",
-      headers: {
-        ...AuthService.getAuthHeaders(),
-      },
-    });
-    if (!response.ok) {
-      throw new Error("Failed to delete thread");
-    }
+  static async markConversationAsRead(conversationId: string): Promise<void> {
+    const res = await fetch(
+      `${this.baseUrl}/conversations/${conversationId}/read`,
+      {
+        method: "POST",
+        headers: { ...AuthService.getAuthHeaders() },
+      }
+    );
+    if (!res.ok) throw new Error("Failed to mark messages as read");
   }
 
   // קבלת מספר ההודעות שלא נקראו
-  static async getUnreadCount(): Promise<{ count: number }> {
-    const response = await fetch(`${this.baseUrl}/unread-count`, {
-      headers: {
-        ...AuthService.getAuthHeaders(),
-      },
+  static async getUnreadCount(): Promise<{ unread_count: number }> {
+    const res = await fetch(`${this.baseUrl}/unread-count`, {
+      headers: { ...AuthService.getAuthHeaders() },
     });
-    if (!response.ok) {
-      throw new Error("Failed to fetch unread count");
-    }
-    return response.json();
-  }
-
-  // חיפוש הודעות
-  static async searchMessages(query: string): Promise<Message[]> {
-    const response = await fetch(
-      `${this.baseUrl}/search?query=${encodeURIComponent(query)}`,
-      {
-        headers: {
-          ...AuthService.getAuthHeaders(),
-        },
-      }
-    );
-    if (!response.ok) {
-      throw new Error("Failed to search messages");
-    }
-    return response.json();
-  }
-
-  // קבלת הודעות לפי תאריך
-  static async getMessagesByDate(date: string): Promise<Message[]> {
-    const response = await fetch(`${this.baseUrl}/by-date?date=${date}`, {
-      headers: {
-        ...AuthService.getAuthHeaders(),
-      },
-    });
-    if (!response.ok) {
-      throw new Error("Failed to fetch messages by date");
-    }
-    return response.json();
-  }
-
-  // קבלת הודעות לפי משתמש
-  static async getMessagesByUser(userId: number): Promise<Message[]> {
-    const response = await fetch(`${this.baseUrl}/by-user/${userId}`, {
-      headers: {
-        ...AuthService.getAuthHeaders(),
-      },
-    });
-    if (!response.ok) {
-      throw new Error("Failed to fetch messages by user");
-    }
-    return response.json();
+    if (!res.ok) throw new Error("Failed to fetch unread count");
+    return res.json();
   }
 }
