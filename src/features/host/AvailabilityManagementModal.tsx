@@ -33,6 +33,13 @@ export default function AvailabilityManagementModal({
     currentAvailability?.available_dates ?? []
   );
 
+  // עדכון מצב המרכיב כאשר נתוני הזמינות משתנים
+  useEffect(() => {
+    if (currentAvailability) {
+      setIsAlwaysAvailable(currentAvailability.is_always_available);
+      setSelectedDates(currentAvailability.available_dates);
+    }
+  }, [currentAvailability]);
 
   // פונקציה לחישוב שבתות עד חודשיים קדימה (זהה לרכיב בקשת האירוח)
   const getSabbathDates = () => {

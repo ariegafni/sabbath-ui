@@ -635,6 +635,10 @@ export default function HostsList({
             ? `${selectedHost.user.first_name} ${selectedHost.user.last_name}`
             : selectedHost.name || "מארח"}
           hostProfileImage={selectedHost.user?.profile_image || selectedHost.photo_url}
+          hostAvailability={{
+            is_always_available: selectedHost.is_always_available,
+            available_dates: selectedHost.available_dates
+          }}
           onClose={() => setSelectedHost(null)}
           onSuccess={() => {
             setSelectedHost(null);

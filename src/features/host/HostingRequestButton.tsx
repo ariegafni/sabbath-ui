@@ -10,6 +10,10 @@ interface HostingRequestButtonProps {
   hostId: string;
   hostName: string;
   hostProfileImage?: string;
+  hostAvailability?: {
+    is_always_available: boolean;
+    available_dates: string[];
+  };
   className?: string;
   variant?: "primary" | "outline" | "secondary";
   size?: "sm" | "md" | "lg";
@@ -19,6 +23,7 @@ export default function HostingRequestButton({
   hostId,
   hostName,
   hostProfileImage,
+  hostAvailability,
   className = "",
   variant = "primary",
   size = "md",
@@ -56,6 +61,7 @@ export default function HostingRequestButton({
           hostId={hostId}
           hostName={hostName}
           hostProfileImage={hostProfileImage}
+          hostAvailability={hostAvailability}
           onClose={handleCloseForm}
           onSuccess={handleSuccess}
         />

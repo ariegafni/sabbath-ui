@@ -14,6 +14,10 @@ interface HostingRequestFormProps {
   hostId: string;
   hostName: string;
   hostProfileImage?: string;
+  hostAvailability?: {
+    is_always_available: boolean;
+    available_dates: string[];
+  };
   onClose: () => void;
   onSuccess?: () => void;
 }
@@ -22,6 +26,7 @@ export default function HostingRequestForm({
   hostId,
   hostName,
   hostProfileImage,
+  hostAvailability,
   onClose,
   onSuccess,
 }: HostingRequestFormProps) {
@@ -56,17 +61,24 @@ export default function HostingRequestForm({
       const d = String(currentDate.getDate()).padStart(2, "0");
       const dateStr = `${y}-${m}-${d}`; // YYYY-MM-DD מקומי
 
-      const formatted = currentDate.toLocaleDateString("he-IL", {
-        weekday: "long",
-        day: "numeric",
-        month: "long",
-        year: "numeric",
-      });
+      // בדיקה אם התאריך זמין לפי הגדרות המארח
+      const isAvailable = !hostAvailability || 
+        hostAvailability.is_always_available || 
+        hostAvailability.available_dates.includes(dateStr);
 
-      dates.push({
-        value: dateStr,
-        label: formatted,
-      });
+      if (isAvailable) {
+        const formatted = currentDate.toLocaleDateString("he-IL", {
+          weekday: "long",
+          day: "numeric",
+          month: "long",
+          year: "numeric",
+        });
+
+        dates.push({
+          value: dateStr,
+          label: formatted,
+        });
+      }
 
       currentDate.setDate(currentDate.getDate() + 7); // לשבת הבאה
     }
