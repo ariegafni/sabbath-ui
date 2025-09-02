@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import Button from "@/ui/Button";
 import EditHostProfileForm from "@/features/host/EditHostProfileForm";
+import AvailabilityManagementModal from "@/features/host/AvailabilityManagementModal";
 import { HostService } from "@/service/host";
 
 export default function ManageHostingPage() {
@@ -21,6 +22,7 @@ export default function ManageHostingPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
+  const [showAvailabilityModal, setShowAvailabilityModal] = useState(false);
   const [hostProfile, setHostProfile] = useState<any>(null);
 
   useEffect(() => {
@@ -117,12 +119,12 @@ export default function ManageHostingPage() {
               {t("manageHosting.availability.description")}
             </p>
             <Button
-              onClick={() => alert(t("common.comingSoon"))}
+              onClick={() => setShowAvailabilityModal(true)}
               variant="outline"
               className="w-full"
             >
               <Clock className="h-4 w-4 mr-2" />
-              {t("manageHosting.availability.cta")}
+              ניהול זמינות
             </Button>
           </div>
 
@@ -193,6 +195,21 @@ export default function ManageHostingPage() {
             />
           </div>
         )}
+
+        {/* Availability Management Modal */}
+        <AvailabilityManagementModal
+          isOpen={showAvailabilityModal}
+          onClose={() => setShowAvailabilityModal(false)}
+          onSuccess={() => {
+            setShowAvailabilityModal(false);
+            loadHostProfile(); // רענון הנתונים אחרי עדכון מוצלח
+          }}
+          hostId={hostProfile?.id || ''}
+          currentAvailability={{
+            is_always_available: hostProfile?.is_always_available ?? true,
+            available_dates: hostProfile?.available_dates ?? []
+          }}
+        />
       </div>
     </div>
   );

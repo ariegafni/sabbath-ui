@@ -19,6 +19,7 @@ export interface Host {
   total_hostings: number;
   is_always_available: boolean;
   available?: boolean;
+  available_dates: string[];
   rating?: number;
   user_id: string;
   user?: {
@@ -61,7 +62,7 @@ export interface UpdateHostRequest extends Partial<CreateHostRequest> {
 }
 
 export class HostService {
-  private static baseUrl = createApiUrl("/api/hosts");
+  private static baseUrl = "http://127.0.0.1:3005/api/hosts";
   // יצירת מארח חדש
 static async createHost(hostData: CreateHostRequest): Promise<Host> {
   // בדיקה אם יש תמונה
@@ -197,11 +198,20 @@ static async updateHost(hostData: UpdateHostRequest): Promise<Host> {
 // קבלת פרופיל המארח של המשתמש הנוכחי
   static async getCurrentUserHostProfile(): Promise<Host | null> {
     try {
+      const headers = AuthService.getAuthHeaders();
+      console.log('Auth headers:', headers);
+      console.log('Fetching from URL:', `${this.baseUrl}/me`);
+      
       const res = await fetch(`${this.baseUrl}/me`, {
-        headers: { ...AuthService.getAuthHeaders() },
+        headers: { ...headers },
       });
+      
+      console.log('Response status:', res.status);
+      
       if (!res.ok) {
         if (res.status === 404) return null;
+        const errorText = await res.text();
+        console.error('API Error:', errorText);
         throw new Error("Failed to fetch current user host profile");
       }
       return (await res.json()) as Host;
@@ -209,6 +219,29 @@ static async updateHost(hostData: UpdateHostRequest): Promise<Host> {
       console.error("Error fetching host profile:", e);
       return null;
     }
+  }
+
+  // עדכון זמינות מארח
+  static async updateAvailability(hostId: string, availabilityData: {
+    is_always_available: boolean;
+    available_dates: string[];
+  }): Promise<Host> {
+    const res = await fetch(`${this.baseUrl}/${hostId}/availability`, {
+      method: "PUT",
+      headers: {
+        ...AuthService.getAuthHeaders(),
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(availabilityData),
+    });
+    
+    if (!res.ok) {
+      const errorText = await res.text();
+      console.error('Availability update error:', errorText);
+      throw new Error("Failed to update availability");
+    }
+    
+    return (await res.json()) as Host;
   }
 
 }

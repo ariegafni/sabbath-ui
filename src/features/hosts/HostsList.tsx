@@ -29,6 +29,7 @@ export default function HostsList({
     hosting_type: [] as string[],
     kashrut_level: "",
     max_guests: 0,
+    date: "",
   });
 
   const loadGoogle = () =>
@@ -90,13 +91,66 @@ export default function HostsList({
   useEffect(() => {
     fetchHosts();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [country]);
+  }, [country, filters.date]);
+
+  const getSabbathDates = () => {
+    const dates = [];
+    const today = new Date();
+    const twoMonthsFromNow = new Date(
+      today.getFullYear(),
+      today.getMonth() + 2,
+      today.getDate()
+    );
+
+    // מוצא את השבת הקרובה
+    const currentDate = new Date(today);
+    while (currentDate.getDay() !== 6) {
+      // 6 = שבת
+      currentDate.setDate(currentDate.getDate() + 1);
+    }
+
+    // אוסף את כל השבתות עד חודשיים קדימה
+    while (currentDate <= twoMonthsFromNow) {
+      const y = currentDate.getFullYear();
+      const m = String(currentDate.getMonth() + 1).padStart(2, "0");
+      const d = String(currentDate.getDate()).padStart(2, "0");
+      const dateStr = `${y}-${m}-${d}`; // YYYY-MM-DD מקומי
+
+      const formatted = currentDate.toLocaleDateString("he-IL", {
+        weekday: "long",
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      });
+
+      dates.push({
+        value: dateStr,
+        label: formatted,
+      });
+
+      currentDate.setDate(currentDate.getDate() + 7); // לשבת הבאה
+    }
+
+    return dates;
+  };
 
   const fetchHosts = async () => {
     try {
       setLoading(true);
       
-      const data = await HostService.getHostsByCountry(country.place_id);      
+      let data;
+      if (filters.date) {
+        // אם נבחר תאריך, השתמש ב-endpoint החדש לזמינות
+        const response = await fetch(`http://127.0.0.1:3005/api/hosts/available/${country.place_id}?date=${filters.date}`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch hosts');
+        }
+        data = await response.json();
+      } else {
+        // אחרת השתמש ב-endpoint הרגיל
+        data = await HostService.getHostsByCountry(country.place_id);
+      }
+      
       const enriched = await resolveCityNames(data);     
       setHosts(enriched);
     } catch (err) {
@@ -141,10 +195,11 @@ export default function HostsList({
       hosting_type: [],
       kashrut_level: "",
       max_guests: 0,
+      date: "",
     });
   };
 
-  const hasActiveFilters = filters.city || filters.kashrut_level || filters.max_guests > 0 || filters.hosting_type.length > 0;
+  const hasActiveFilters = filters.city || filters.kashrut_level || filters.max_guests > 0 || filters.hosting_type.length > 0 || filters.date;
 
   if (loading) {
     return (
@@ -216,7 +271,23 @@ export default function HostsList({
           {/* Filters Panel */}
           {showFilters && (
             <div className="border-t border-gray-200 py-6">
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-gray-700">תאריך שבת</label>
+                  <select
+                    value={filters.date}
+                    onChange={(e) => setFilters(prev => ({ ...prev, date: e.target.value }))}
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-right"
+                  >
+                    <option value="">כל התאריכים</option>
+                    {getSabbathDates().map((date) => (
+                      <option key={date.value} value={date.value}>
+                        {date.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-gray-700">עיר</label>
                   <input
@@ -294,9 +365,26 @@ export default function HostsList({
                     className="object-cover group-hover:scale-105 transition-transform"
                   />
                   
+                  {/* Availability Badge */}
+                  <div className="absolute top-4 left-4">
+                    {host.is_always_available ? (
+                      <div className="bg-green-500/95 backdrop-blur-sm text-white px-3 py-1 rounded-full text-xs font-medium shadow-sm mb-2">
+                        זמין תמיד
+                      </div>
+                    ) : host.available_dates && host.available_dates.length > 0 ? (
+                      <div className="bg-blue-500/95 backdrop-blur-sm text-white px-3 py-1 rounded-full text-xs font-medium shadow-sm mb-2">
+                        זמין לתאריכים מסוימים
+                      </div>
+                    ) : (
+                      <div className="bg-gray-500/95 backdrop-blur-sm text-white px-3 py-1 rounded-full text-xs font-medium shadow-sm mb-2">
+                        לא זמין
+                      </div>
+                    )}
+                  </div>
+
                   {/* Rating Badge */}
                   {host.rating && (
-                    <div className="absolute top-4 left-4 bg-white/95 backdrop-blur-sm px-3 py-1 rounded-full flex items-center gap-1 shadow-sm">
+                    <div className="absolute top-4 left-4 mt-8 bg-white/95 backdrop-blur-sm px-3 py-1 rounded-full flex items-center gap-1 shadow-sm">
                       <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
                       <span className="text-sm font-semibold text-gray-900">{host.rating}</span>
                     </div>
@@ -378,6 +466,34 @@ export default function HostsList({
                         </span>
                       )}
                     </div>
+
+                    {/* Available Dates Display */}
+                    {!host.is_always_available && host.available_dates && host.available_dates.length > 0 && (
+                      <div className="space-y-2">
+                        <h4 className="text-sm font-medium text-gray-700">זמין בשבתות:</h4>
+                        <div className="flex flex-wrap gap-1">
+                          {host.available_dates.slice(0, 2).map((dateStr, index) => {
+                            const formattedDate = new Date(dateStr + 'T00:00:00').toLocaleDateString('he-IL', {
+                              day: 'numeric',
+                              month: 'short'
+                            });
+                            return (
+                              <span
+                                key={index}
+                                className="px-2 py-1 rounded-lg text-xs bg-blue-100 text-blue-700 border border-blue-200"
+                              >
+                                {formattedDate}
+                              </span>
+                            );
+                          })}
+                          {host.available_dates.length > 2 && (
+                            <span className="px-2 py-1 rounded-lg text-xs bg-gray-100 text-gray-600 border border-gray-200">
+                              +{host.available_dates.length - 2} עוד
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   {/* Action Buttons */}
@@ -446,6 +562,22 @@ export default function HostsList({
             </div>
             
             <div className="space-y-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-3">תאריך שבת</label>
+                <select
+                  value={filters.date}
+                  onChange={(e) => setFilters(prev => ({ ...prev, date: e.target.value }))}
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-pink-500 focus:border-pink-500 text-right"
+                >
+                  <option value="">כל התאריכים</option>
+                  {getSabbathDates().map((date) => (
+                    <option key={date.value} value={date.value}>
+                      {date.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-3">עיר</label>
                 <input
