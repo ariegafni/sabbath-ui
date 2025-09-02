@@ -1,0 +1,154 @@
+import { createApiUrl } from "../shared/lib/config";
+import { AuthService } from "./auth";
+
+export interface AdminStats {
+  totalUsers: number;
+  totalHosts: number;
+  totalHostingRequests: number;
+  approvedHostings: number;
+  pendingRequests: number;
+  totalConversations: number;
+  recentActivity: ActivityItem[];
+}
+
+export interface ActivityItem {
+  id: string;
+  type: 'user_registration' | 'host_creation' | 'hosting_request' | 'hosting_approved';
+  description: string;
+  timestamp: string;
+  user?: {
+    id: string;
+    name: string;
+    email: string;
+  };
+}
+
+export interface UserReport {
+  id: string;
+  user_id: string;
+  user_name: string;
+  user_email: string;
+  subject: string;
+  message: string;
+  status: 'pending' | 'in_progress' | 'resolved';
+  created_at: string;
+  resolved_at?: string;
+  admin_notes?: string;
+}
+
+export interface AdminUser {
+  email: string;
+  role: 'super_admin' | 'admin';
+  added_at: string;
+}
+
+export class AdminService {
+  private static baseUrl = "http://127.0.0.1:3005/api/admin";
+
+  // Check if current user is admin
+  static async isCurrentUserAdmin(): Promise<boolean> {
+    try {
+      const res = await fetch(`${this.baseUrl}/check-admin`, {
+        headers: { ...AuthService.getAuthHeaders() },
+      });
+      if (!res.ok) return false;
+      const data = await res.json();
+      return data.isAdmin;
+    } catch (error) {
+      console.error('Error checking admin status:', error);
+      return false;
+    }
+  }
+
+  // Get admin statistics
+  static async getStatistics(): Promise<AdminStats> {
+    const res = await fetch(`${this.baseUrl}/statistics`, {
+      headers: { ...AuthService.getAuthHeaders() },
+    });
+    if (!res.ok) throw new Error("Failed to fetch admin statistics");
+    return (await res.json()) as AdminStats;
+  }
+
+  // Get all user reports
+  static async getUserReports(): Promise<UserReport[]> {
+    const res = await fetch(`${this.baseUrl}/user-reports`, {
+      headers: { ...AuthService.getAuthHeaders() },
+    });
+    if (!res.ok) throw new Error("Failed to fetch user reports");
+    return (await res.json()) as UserReport[];
+  }
+
+  // Update user report status
+  static async updateReportStatus(
+    reportId: string, 
+    status: 'pending' | 'in_progress' | 'resolved',
+    adminNotes?: string
+  ): Promise<void> {
+    const res = await fetch(`${this.baseUrl}/user-reports/${reportId}`, {
+      method: "PUT",
+      headers: {
+        ...AuthService.getAuthHeaders(),
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ status, admin_notes: adminNotes }),
+    });
+    if (!res.ok) throw new Error("Failed to update report status");
+  }
+
+  // Remove user (delete account)
+  static async removeUser(userId: string, reason: string): Promise<void> {
+    const res = await fetch(`${this.baseUrl}/users/${userId}`, {
+      method: "DELETE",
+      headers: {
+        ...AuthService.getAuthHeaders(),
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ reason }),
+    });
+    if (!res.ok) throw new Error("Failed to remove user");
+  }
+
+  // Remove host (delete host profile)
+  static async removeHost(hostId: string, reason: string): Promise<void> {
+    const res = await fetch(`${this.baseUrl}/hosts/${hostId}`, {
+      method: "DELETE",
+      headers: {
+        ...AuthService.getAuthHeaders(),
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ reason }),
+    });
+    if (!res.ok) throw new Error("Failed to remove host");
+  }
+
+  // Get all users for management
+  static async getAllUsers(): Promise<any[]> {
+    const res = await fetch(`${this.baseUrl}/users`, {
+      headers: { ...AuthService.getAuthHeaders() },
+    });
+    if (!res.ok) throw new Error("Failed to fetch users");
+    return (await res.json());
+  }
+
+  // Get all hosts for management
+  static async getAllHosts(): Promise<any[]> {
+    const res = await fetch(`${this.baseUrl}/hosts`, {
+      headers: { ...AuthService.getAuthHeaders() },
+    });
+    if (!res.ok) throw new Error("Failed to fetch hosts");
+    return (await res.json());
+  }
+
+  // Send message as system account
+  static async sendSystemMessage(userId: string, message: string): Promise<void> {
+    const res = await fetch(`${this.baseUrl}/send-system-message`, {
+      method: "POST",
+      headers: {
+        ...AuthService.getAuthHeaders(),
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ user_id: userId, message }),
+    });
+    if (!res.ok) throw new Error("Failed to send system message");
+  }
+}

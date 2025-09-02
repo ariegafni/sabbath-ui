@@ -8,6 +8,7 @@ import Button from "@/ui/Button";
 import { User } from "lucide-react";
 import { useAuth } from "@/Providers/AuthProvider";
 import { useRouter } from "next/navigation";
+import AdminButton from "@/features/admin/AdminButton";
 
 type ViewMode = "countries" | "hosts";
 
@@ -59,6 +60,7 @@ const handleCountrySelect = (country: { place_id: string; display_name: string }
             </div>
 
             <div className="flex items-center gap-3">
+              {user && <AdminButton />}
               {!user ? (
                 <>
                   <Button

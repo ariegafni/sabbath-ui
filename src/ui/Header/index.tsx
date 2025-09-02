@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 
 import SettingsSidebar from "@/settings/page";
 import { useAuth } from "@/Providers/AuthProvider";
+import AdminButton from "@/features/admin/AdminButton";
 
 export default function Header() {
   const { t } = useTranslation();
@@ -23,8 +24,9 @@ export default function Header() {
         dir="rtl"
       >
         <nav className="mx-auto max-w-7xl h-16 px-4 sm:px-6 lg:px-8 flex items-center justify-between">
-          {/* Left side - Settings */}
+          {/* Left side - Settings & Admin */}
           <div className="flex items-center gap-4">
+            <AdminButton />
             <button
               onClick={() => setIsSettingsOpen(true)}
               className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-all duration-200 group"

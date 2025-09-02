@@ -172,15 +172,16 @@ export default function ProfilePage() {
       <div className="max-w-4xl mx-auto px-4 py-6 space-y-6">
         {/* Profile Card */}
         <div className="bg-white rounded-2xl shadow-sm border p-6 flex gap-6">
-          <div className="relative w-24 h-24 rounded-full overflow-hidden">
-            <label htmlFor="profileImageInput" className="cursor-pointer">
-              <img
-                src={preview || profile.photo_url || ""}
-                alt={profile.name}
-                className="w-full h-full object-cover"
-              />
-              {!profile.photo_url && !preview && (
-                <User className="absolute inset-0 m-auto h-12 w-12 text-gray-600" />
+          <div className="relative w-24 h-24 rounded-full overflow-hidden bg-gray-100 flex items-center justify-center">
+            <label htmlFor="profileImageInput" className="cursor-pointer w-full h-full flex items-center justify-center">
+              {(preview || profile.photo_url) ? (
+                <img
+                  src={preview || profile.photo_url}
+                  alt={profile.name || 'Profile'}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <User className="h-12 w-12 text-gray-400" />
               )}
             </label>
             <input
