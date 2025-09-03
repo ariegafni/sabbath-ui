@@ -35,6 +35,7 @@ export interface UserReport {
   created_at: string;
   resolved_at?: string;
   admin_notes?: string;
+  admin_unread_count: number;
 }
 
 export interface AdminUser {

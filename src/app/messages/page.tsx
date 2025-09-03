@@ -167,7 +167,7 @@ export default function MessagesPage() {
               </div>
               <ConversationsList
                 onConversationSelect={handleConversationSelect}
-                selectedConversationId={selectedConversation?.id ?? undefined}
+                selectedConversationId={undefined}
               />
             </div>
           )}
