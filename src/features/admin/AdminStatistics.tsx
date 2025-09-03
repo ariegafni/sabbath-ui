@@ -8,7 +8,6 @@ import {
   CheckCircle, 
   Clock, 
   TrendingUp,
-  Calendar,
   Activity,
   RefreshCw
 } from "lucide-react";
@@ -91,7 +90,7 @@ export default function AdminStatistics({ stats, onRefresh }: AdminStatisticsPro
         <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600 mb-1">סה"כ משתמשים רשומים</p>
+              <p className="text-sm text-gray-600 mb-1">סה&quot;כ משתמשים רשומים</p>
               <p className="text-3xl font-bold text-gray-900">{stats.totalUsers}</p>
               <p className="text-xs text-green-600 mt-1">פעילים באפליקציה</p>
             </div>
@@ -119,7 +118,7 @@ export default function AdminStatistics({ stats, onRefresh }: AdminStatisticsPro
             <div>
               <p className="text-sm text-gray-600 mb-1">בקשות אירוח</p>
               <p className="text-3xl font-bold text-gray-900">{stats.totalHostingRequests}</p>
-              <p className="text-xs text-orange-600 mt-1">סה"כ נשלחו</p>
+              <p className="text-xs text-orange-600 mt-1">סה&quot;כ נשלחו</p>
             </div>
             <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
               <MessageSquare className="h-6 w-6 text-orange-600" />

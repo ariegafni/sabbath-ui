@@ -2,10 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { 
-  AlertTriangle, 
   MessageSquare, 
-  MessageCircle,
-  Clock, 
+  MessageCircle, 
   CheckCircle, 
   User,
   Calendar,

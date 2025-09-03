@@ -18,7 +18,6 @@ export default function MessagesPage() {
   const searchParams = useSearchParams();
   const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
   const [isMobile, setIsMobile] = useState(false);
-  const [conversationsLoaded, setConversationsLoaded] = useState(false);
 
   useEffect(() => {
     // Check if user is authenticated

@@ -1,5 +1,5 @@
-import { createApiUrl } from "../shared/lib/config";
 import { AuthService } from "./auth";
+import { createApiUrl } from "../shared/lib/config";
 
 export interface Host {
   id: string;
@@ -73,7 +73,7 @@ export type UpdateHostRequest = {
 };
 
 export class HostService {
-  private static baseUrl = "http://127.0.0.1:3005/api/hosts";
+  private static baseUrl = createApiUrl("/api/hosts");
   // יצירת מארח חדש
 static async createHost(hostData: CreateHostRequest): Promise<Host> {
   // בדיקה אם יש תמונה

@@ -1,16 +1,13 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useTranslation } from "react-i18next";
 import { 
   Users, 
   Home, 
   MessageSquare, 
   CheckCircle, 
-  Clock, 
   TrendingUp,
   Settings,
-  FileText,
   AlertTriangle,
   Shield
 } from "lucide-react";
@@ -23,7 +20,6 @@ import AdminUserManagement from "./AdminUserManagement";
 type AdminView = 'dashboard' | 'statistics' | 'reports' | 'users' | 'hosts';
 
 export default function AdminDashboard() {
-  const { t } = useTranslation();
   const [loading, setLoading] = useState(true);
   const [currentView, setCurrentView] = useState<AdminView>('dashboard');
   const [stats, setStats] = useState<AdminStats | null>(null);

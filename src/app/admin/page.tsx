@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/Providers/AuthProvider";
 import { AdminService } from "@/service/admin";
@@ -12,11 +12,7 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(true);
   const [isAuthorized, setIsAuthorized] = useState(false);
 
-  useEffect(() => {
-    checkAuthorization();
-  }, [user, router]);
-
-  const checkAuthorization = async () => {
+  const checkAuthorization = useCallback(async () => {
     if (!user) {
       router.replace("/login");
       return;
@@ -35,7 +31,11 @@ export default function AdminPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user, router]);
+
+  useEffect(() => {
+    checkAuthorization();
+  }, [checkAuthorization]);
 
   if (loading) {
     return (

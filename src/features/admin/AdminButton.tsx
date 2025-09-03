@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { Settings, Shield } from "lucide-react";
+import { Shield } from "lucide-react";
 import Button from "@/ui/Button";
 import { AdminService } from "@/service/admin";
 import { useAuth } from "@/Providers/AuthProvider";
@@ -13,11 +13,7 @@ export default function AdminButton() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    checkAdminStatus();
-  }, [user]);
-
-  const checkAdminStatus = async () => {
+  const checkAdminStatus = useCallback(async () => {
     if (!user) {
       setIsAdmin(false);
       setLoading(false);
@@ -33,7 +29,11 @@ export default function AdminButton() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user]);
+
+  useEffect(() => {
+    checkAdminStatus();
+  }, [checkAdminStatus]);
 
   const handleAdminClick = () => {
     router.push('/admin');

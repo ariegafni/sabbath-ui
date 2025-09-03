@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import { MapPin, Users, Star, MessageCircle, ArrowRight, Filter, X } from "lucide-react";
 import Image from "next/image";
 import { Host, HostService } from "../../service";
+import { createApiUrl } from "../../shared/lib/config";
 import HostingRequestForm from "../host/HostingRequestForm";
 
 type HostsListProps = {
@@ -141,7 +142,7 @@ export default function HostsList({
       let data;
       if (filters.date) {
         // אם נבחר תאריך, השתמש ב-endpoint החדש לזמינות
-        const response = await fetch(`http://127.0.0.1:3005/api/hosts/available/${country.place_id}?date=${filters.date}`);
+        const response = await fetch(`${createApiUrl(`/api/hosts/available/${country.place_id}`)}?date=${filters.date}`);
         if (!response.ok) {
           throw new Error('Failed to fetch hosts');
         }
