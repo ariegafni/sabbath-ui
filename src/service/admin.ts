@@ -8,6 +8,7 @@ export interface AdminStats {
   approvedHostings: number;
   pendingRequests: number;
   totalConversations: number;
+  totalBlockedUsers: number;
   recentActivity: ActivityItem[];
 }
 
@@ -150,5 +151,65 @@ export class AdminService {
       body: JSON.stringify({ user_id: userId, message }),
     });
     if (!res.ok) throw new Error("Failed to send system message");
+  }
+
+  // Report a guest (host only, after confirmed hosting)
+  static async reportGuest(guestId: string, subject: string, message: string, requestId?: string): Promise<void> {
+    const res = await fetch(`${this.baseUrl}/report-guest`, {
+      method: "POST",
+      headers: {
+        ...AuthService.getAuthHeaders(),
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        guest_id: guestId,
+        subject,
+        message,
+        request_id: requestId
+      }),
+    });
+    if (!res.ok) throw new Error("Failed to report guest");
+  }
+
+  // Block a user (replaces removeUser)
+  static async blockUser(userId: string, reason: string): Promise<void> {
+    const res = await fetch(`${this.baseUrl}/users/${userId}/block`, {
+      method: "POST",
+      headers: {
+        ...AuthService.getAuthHeaders(),
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ reason }),
+    });
+    if (!res.ok) throw new Error("Failed to block user");
+  }
+
+  // Get all blocked users
+  static async getBlockedUsers(): Promise<any[]> {
+    const res = await fetch(`${this.baseUrl}/blocked-users`, {
+      headers: { ...AuthService.getAuthHeaders() },
+    });
+    if (!res.ok) throw new Error("Failed to fetch blocked users");
+    return (await res.json());
+  }
+
+  // Unblock a user
+  static async unblockUser(email: string, reason?: string): Promise<void> {
+    const res = await fetch(`${this.baseUrl}/blocked-users/${encodeURIComponent(email)}/unblock`, {
+      method: "POST",
+      headers: {
+        ...AuthService.getAuthHeaders(),
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ reason: reason || 'Unblocked by admin' }),
+    });
+    if (!res.ok) throw new Error("Failed to unblock user");
+  }
+
+  // Check if user is blocked
+  static async checkUserBlocked(email: string): Promise<{is_blocked: boolean, message?: string}> {
+    const res = await fetch(`${this.baseUrl}/check-blocked/${encodeURIComponent(email)}`);
+    if (!res.ok) throw new Error("Failed to check user status");
+    return (await res.json());
   }
 }

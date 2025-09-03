@@ -53,12 +53,12 @@ export default function AdminUserManagement({ type }: AdminUserManagementProps) 
     try {
       setRemoving(true);
       if (type === 'users') {
-        await AdminService.removeUser(selectedItem.id, removeReason.trim());
+        await AdminService.blockUser(selectedItem.id, removeReason.trim());
       } else {
         await AdminService.removeHost(selectedItem.id, removeReason.trim());
       }
       
-      alert(`${type === 'users' ? 'המשתמש' : 'המארח'} הוסר בהצלחה`);
+      alert(`${type === 'users' ? 'המשתמש נחסם' : 'המארח הוסר'} בהצלחה`);
       setShowRemoveModal(false);
       setSelectedItem(null);
       setRemoveReason("");
@@ -448,10 +448,13 @@ export default function AdminUserManagement({ type }: AdminUserManagementProps) 
                 </div>
                 <div>
                   <h3 className="text-lg font-bold text-gray-900">
-                    אישור הסרה
+                    {type === 'users' ? 'אישור חסימת משתמש' : 'אישור הסרה'}
                   </h3>
                   <p className="text-sm text-gray-600">
-                    פעולה זו אינה הפיכה
+                    {type === 'users' 
+                      ? 'המשתמש יחסם מהמערכת ולא יוכל להתחבר. ניתן לבטל חסימה בהמשך.'
+                      : 'פעולה זו אינה הפיכה'
+                    }
                   </p>
                 </div>
               </div>
@@ -459,7 +462,7 @@ export default function AdminUserManagement({ type }: AdminUserManagementProps) 
 
             <div className="p-6">
               <p className="text-gray-700 mb-4">
-                האם אתה בטוח שברצונך להסיר את {type === 'users' ? 'המשתמש' : 'המארח'}:{' '}
+                האם אתה בטוח שברצונך {type === 'users' ? 'לחסום את המשתמש' : 'להסיר את המארח'}:{' '}
                 <strong>
                   {type === 'users' 
                     ? `${selectedItem.first_name} ${selectedItem.last_name}` 
@@ -502,7 +505,7 @@ export default function AdminUserManagement({ type }: AdminUserManagementProps) 
                   ) : (
                     <Trash2 className="h-4 w-4 ml-2" />
                   )}
-                  הסר {type === 'users' ? 'משתמש' : 'מארח'}
+                  {type === 'users' ? 'חסום משתמש' : 'הסר מארח'}
                 </Button>
               </div>
             </div>

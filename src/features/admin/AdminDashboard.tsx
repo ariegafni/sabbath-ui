@@ -11,7 +11,8 @@ import {
   TrendingUp,
   Settings,
   FileText,
-  AlertTriangle
+  AlertTriangle,
+  Shield
 } from "lucide-react";
 import Button from "@/ui/Button";
 import { AdminService, AdminStats } from "@/service/admin";
@@ -69,7 +70,7 @@ export default function AdminDashboard() {
   const renderDashboardOverview = () => (
     <div className="space-y-6">
       {/* Quick Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
         <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
@@ -114,6 +115,18 @@ export default function AdminDashboard() {
             <div>
               <p className="text-sm text-gray-600">אירוחים מאושרים</p>
               <p className="text-2xl font-bold text-gray-900">{stats?.approvedHostings || 0}</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
+              <Shield className="h-6 w-6 text-red-600" />
+            </div>
+            <div>
+              <p className="text-sm text-gray-600">משתמשים חסומים</p>
+              <p className="text-2xl font-bold text-gray-900">{stats?.totalBlockedUsers || 0}</p>
             </div>
           </div>
         </div>
