@@ -11,7 +11,8 @@ import {
   Send,
   Eye,
   X,
-  FileText
+  FileText,
+  Trash2
 } from "lucide-react";
 import Button from "@/ui/Button";
 import { AdminService, UserReport } from "@/service/admin";
@@ -26,6 +27,7 @@ export default function AdminUserReports() {
   const [updatingStatus, setUpdatingStatus] = useState(false);
   const [adminNotes, setAdminNotes] = useState("");
   const [filter, setFilter] = useState<'all' | 'pending' | 'in_progress' | 'resolved'>('all');
+  const [deletingReport, setDeletingReport] = useState<string | null>(null);
 
   useEffect(() => {
     loadReports();
@@ -64,15 +66,41 @@ export default function AdminUserReports() {
     
     try {
       setSendingReply(true);
-      await AdminService.sendSystemMessage(selectedReport.user_id, replyMessage.trim());
-      alert('הההודעה נשלחה בהצלחה למשתמש');
+      await AdminService.addReportMessage(selectedReport.id, replyMessage.trim());
+      alert('התגובה נשלחה בהצלחה למשתמש והתווספה לשיחה');
       setShowReplyModal(false);
       setReplyMessage("");
+      
+      // Also update the report status to in_progress if it's still pending
+      if (selectedReport.status === 'pending') {
+        await handleStatusUpdate(selectedReport.id, 'in_progress');
+      }
     } catch (error) {
       console.error('Error sending reply:', error);
-      alert('שגיאה בשליחת ההודעה. אנא נסה שוב.');
+      alert('שגיאה בשליחת התגובה. אנא נסה שוב.');
     } finally {
       setSendingReply(false);
+    }
+  };
+
+  const handleDeleteReport = async (reportId: string) => {
+    if (!confirm('האם אתה בטוח שאתה רוצה למחוק את הדיווח הזה? פעולה זו לא ניתנת לביטול.')) {
+      return;
+    }
+    
+    try {
+      setDeletingReport(reportId);
+      await AdminService.deleteReport(reportId);
+      await loadReports();
+      if (selectedReport && selectedReport.id === reportId) {
+        setSelectedReport(null);
+      }
+      alert('הדיווח נמחק בהצלחה');
+    } catch (error) {
+      console.error('Error deleting report:', error);
+      alert('שגיאה במחיקת הדיווח. אנא נסה שוב.');
+    } finally {
+      setDeletingReport(null);
     }
   };
 
@@ -249,6 +277,21 @@ export default function AdminUserReports() {
                     סמן כנפתר
                   </Button>
                 )}
+
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => handleDeleteReport(report.id)}
+                  disabled={deletingReport === report.id}
+                  className="text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
+                >
+                  {deletingReport === report.id ? (
+                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-red-600 border-t-transparent ml-1"></div>
+                  ) : (
+                    <Trash2 className="h-4 w-4 ml-1" />
+                  )}
+                  מחק דיווח
+                </Button>
               </div>
             </div>
           ))}

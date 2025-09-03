@@ -96,6 +96,17 @@ export class AdminService {
     if (!res.ok) throw new Error("Failed to update report status");
   }
 
+  // Delete user report
+  static async deleteReport(reportId: string): Promise<void> {
+    const res = await fetch(`${this.baseUrl}/user-reports/${reportId}`, {
+      method: "DELETE",
+      headers: {
+        ...AuthService.getAuthHeaders(),
+      },
+    });
+    if (!res.ok) throw new Error("Failed to delete report");
+  }
+
   // Remove user (delete account)
   static async removeUser(userId: string, reason: string): Promise<void> {
     const res = await fetch(`${this.baseUrl}/users/${userId}`, {
@@ -211,5 +222,60 @@ export class AdminService {
     const res = await fetch(`${this.baseUrl}/check-blocked/${encodeURIComponent(email)}`);
     if (!res.ok) throw new Error("Failed to check user status");
     return (await res.json());
+  }
+
+  // Report conversations - get messages for a report
+  static async getReportConversations(reportId: string): Promise<any[]> {
+    const res = await fetch(`${this.baseUrl}/user-reports/${reportId}/conversations`, {
+      headers: { ...AuthService.getAuthHeaders() },
+    });
+    if (!res.ok) throw new Error("Failed to fetch report conversations");
+    return (await res.json());
+  }
+
+  // Add message to report conversation
+  static async addReportMessage(reportId: string, message: string): Promise<void> {
+    const res = await fetch(`${this.baseUrl}/user-reports/${reportId}/conversations`, {
+      method: "POST",
+      headers: {
+        ...AuthService.getAuthHeaders(),
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ message }),
+    });
+    if (!res.ok) throw new Error("Failed to add message to report");
+  }
+
+  // Mark report conversations as read
+  static async markReportAsRead(reportId: string): Promise<void> {
+    const res = await fetch(`${this.baseUrl}/user-reports/${reportId}/mark-read`, {
+      method: "POST",
+      headers: { ...AuthService.getAuthHeaders() },
+    });
+    if (!res.ok) throw new Error("Failed to mark report as read");
+  }
+
+  // Get current user's reports with unread counts
+  static async getMyReports(): Promise<any[]> {
+    const res = await fetch(`${this.baseUrl}/my-reports`, {
+      headers: { ...AuthService.getAuthHeaders() },
+    });
+    if (!res.ok) throw new Error("Failed to fetch user reports");
+    return (await res.json());
+  }
+
+  // Create a new user report
+  static async createUserReport(subject: string, message: string): Promise<string> {
+    const res = await fetch(`${this.baseUrl}/user-reports`, {
+      method: "POST",
+      headers: {
+        ...AuthService.getAuthHeaders(),
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ subject, message }),
+    });
+    if (!res.ok) throw new Error("Failed to create user report");
+    const data = await res.json();
+    return data.report_id;
   }
 }

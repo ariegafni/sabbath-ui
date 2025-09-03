@@ -3,10 +3,11 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/Providers/AuthProvider";
-import { User, Settings, LogOut, Bell, Edit3 } from "lucide-react";
+import { User, Settings, LogOut, Bell, Edit3, MessageSquare } from "lucide-react";
 import Button from "@/ui/Button";
 import { HostService, UserService, GeneralService } from "@/service";
 import LanguageSwitcher from "@/ui/LanguageSwitcher";
+import UserReportsModal from "@/features/support/UserReportsModal";
 
 type UserProfile = {
   id: string;
@@ -45,6 +46,7 @@ export default function ProfilePage() {
   const [preview, setPreview] = useState<string | null>(null);
   const [languageOpen, setLanguageOpen] = useState(false);
   const [showEditForm, setShowEditForm] = useState(false);
+  const [showReportsModal, setShowReportsModal] = useState(false);
 
   useEffect(() => {
     if (!user) return;
@@ -272,11 +274,15 @@ export default function ProfilePage() {
         {/* Account Actions */}
         <div className="bg-white rounded-2xl shadow-sm border p-6 space-y-3">
           <button
-            onClick={handleReportProblem}
+            onClick={() => setShowReportsModal(true)}
             disabled={isSubmitting}
-            className="w-full flex justify-between p-3 rounded-lg hover:bg-gray-50 text-red-600"
+            className="w-full flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 text-blue-600"
           >
-            {t("common.reportProblem")} →
+            <div className="flex items-center gap-2">
+              <MessageSquare className="h-5 w-5" />
+              <span>דיווח על בעיה</span>
+            </div>
+            →
           </button>
           <button
             onClick={handleDeleteAccount}
@@ -294,6 +300,12 @@ export default function ProfilePage() {
           </Button>
         </div>
       </div>
+
+      {/* User Reports Modal */}
+      <UserReportsModal 
+        isOpen={showReportsModal} 
+        onClose={() => setShowReportsModal(false)} 
+      />
     </div>
   );
 }

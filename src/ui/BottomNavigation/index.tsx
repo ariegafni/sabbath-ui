@@ -45,6 +45,7 @@ export default function BottomNavigation() {
             return 0;
           })
         ]);
+        
         setIsHost(!!hostProfile);
         setUnreadCount(unreadMessages);
       } catch (error) {
@@ -59,8 +60,8 @@ export default function BottomNavigation() {
     const interval = setInterval(async () => {
       if (user) {
         try {
-          const count = await ChatService.getUnreadCount();
-          setUnreadCount(count);
+          const chatCount = await ChatService.getUnreadCount();
+          setUnreadCount(chatCount);
         } catch (error) {
           console.warn("Chat service not available for unread count update:", (error as Error).message);
           setUnreadCount(0);
