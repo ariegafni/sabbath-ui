@@ -20,6 +20,8 @@ export interface Host {
   is_always_available: boolean;
   available?: boolean;
   available_dates: string[];
+  is_occupied_for_shabbat?: boolean;
+  occupied_shabbat_date?: string;
   rating?: number;
   user_id: string;
   user?: {
@@ -253,6 +255,73 @@ static async updateHost(hostData: UpdateHostRequest): Promise<Host> {
     }
     
     return (await res.json()) as Host;
+  }
+
+  // סימון מארח כתפוס לשבת הקרובה
+  static async markOccupiedForUpcomingShabbat(): Promise<Host> {
+    const res = await fetch(`${this.baseUrl}/mark-occupied`, {
+      method: "POST",
+      headers: {
+        ...AuthService.getAuthHeaders(),
+        'Content-Type': 'application/json'
+      }
+    });
+    
+    if (!res.ok) {
+      const errorText = await res.text();
+      console.error('Mark occupied error:', errorText);
+      throw new Error("Failed to mark host as occupied");
+    }
+    
+    return (await res.json()) as Host;
+  }
+
+  // סימון מארח כתפוס לתאריך מסוים
+  static async markOccupiedForDate(date: string): Promise<Host> {
+    const res = await fetch(`${this.baseUrl}/mark-occupied`, {
+      method: "POST",
+      headers: {
+        ...AuthService.getAuthHeaders(),
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ shabbat_date: date })
+    });
+    
+    if (!res.ok) {
+      const errorText = await res.text();
+      console.error('Mark occupied for date error:', errorText);
+      throw new Error("Failed to mark host as occupied for date");
+    }
+    
+    return (await res.json()) as Host;
+  }
+
+  // ביטול סימון תפוס
+  static async unmarkOccupied(): Promise<Host> {
+    const res = await fetch(`${this.baseUrl}/unmark-occupied`, {
+      method: "POST",
+      headers: {
+        ...AuthService.getAuthHeaders(),
+        'Content-Type': 'application/json'
+      }
+    });
+    
+    if (!res.ok) {
+      const errorText = await res.text();
+      console.error('Unmark occupied error:', errorText);
+      throw new Error("Failed to unmark host as occupied");
+    }
+    
+    return (await res.json()) as Host;
+  }
+
+  // קבלת השבת הקרובה
+  static getUpcomingShabbatDate(): string {
+    const now = new Date();
+    const daysUntilFriday = (5 - now.getDay() + 7) % 7 || 7;
+    const upcomingFriday = new Date(now);
+    upcomingFriday.setDate(now.getDate() + daysUntilFriday);
+    return upcomingFriday.toISOString().split('T')[0];
   }
 
 }

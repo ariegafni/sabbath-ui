@@ -368,7 +368,11 @@ export default function HostsList({
                   
                   {/* Availability Badge */}
                   <div className="absolute top-4 left-4">
-                    {host.is_always_available ? (
+                    {host.is_occupied_for_shabbat ? (
+                      <div className="bg-red-500/95 backdrop-blur-sm text-white px-3 py-1 rounded-full text-xs font-medium shadow-sm mb-2">
+                        תפוס
+                      </div>
+                    ) : host.is_always_available ? (
                       <div className="bg-green-500/95 backdrop-blur-sm text-white px-3 py-1 rounded-full text-xs font-medium shadow-sm mb-2">
                         זמין תמיד
                       </div>

@@ -19,6 +19,7 @@ import {
   HostingRequest,
 } from "@/service/HostingRequest";
 import { ChatService } from "@/service/chat";
+import { HostService } from "@/service/host";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/Providers/AuthProvider";
 
@@ -39,6 +40,8 @@ export default function MyHostingRequestsAsHost({
   const [responseMessage, setResponseMessage] = useState<{
     [key: string]: string;
   }>({});
+  const [showOccupiedModal, setShowOccupiedModal] = useState(false);
+  const [approvedRequestDate, setApprovedRequestDate] = useState<string>("");
 
   useEffect(() => {
     fetchMyHostingRequests();
@@ -88,11 +91,40 @@ export default function MyHostingRequestsAsHost({
       setResponseMessage((prev) => ({ ...prev, [requestId]: "" }));
 
       const statusText = status === "accepted" ? "אושרה" : "נדחתה";
-      alert(`בקשת האירוח ${statusText} בהצלחה`);
+      
+      if (status === "accepted") {
+        // מצא את הבקשה שאושרה כדי לקבל את התאריך
+        const approvedRequest = requests.find(r => r.id === requestId);
+        if (approvedRequest?.preferred_date) {
+          setApprovedRequestDate(approvedRequest.preferred_date);
+          setShowOccupiedModal(true);
+        } else {
+          alert(`בקשת האירוח ${statusText} בהצלחה`);
+        }
+      } else {
+        alert(`בקשת האירוח ${statusText} בהצלחה`);
+      }
     } catch (error) {
       console.error("Error responding to request:", error);
       alert("שגיאה בתגובה לבקשת האירוח");
     }
+  };
+
+  const handleMarkOccupied = async () => {
+    try {
+      await HostService.markOccupiedForDate(approvedRequestDate);
+      setShowOccupiedModal(false);
+      alert("נסמנת כתפוס לתאריך הבקשה שאישרת! בקשת האירוח אושרה בהצלחה.");
+    } catch (error) {
+      console.error("Error marking as occupied:", error);
+      setShowOccupiedModal(false);
+      alert("בקשת האירוח אושרה בהצלחה, אך הייתה שגיאה בסימון כתפוס.");
+    }
+  };
+
+  const handleSkipMarkOccupied = () => {
+    setShowOccupiedModal(false);
+    alert("בקשת האירוח אושרה בהצלחה!");
   };
 
   const handleDeleteRequest = async (requestId: string) => {
@@ -486,6 +518,49 @@ export default function MyHostingRequestsAsHost({
           </div>
         ))}
       </div>
+
+      {/* Modal for marking as occupied */}
+      {showOccupiedModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-xl max-w-md w-full p-6 shadow-xl">
+            <div className="text-center">
+              <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Calendar className="h-8 w-8 text-orange-600" />
+              </div>
+              
+              <h3 className="text-xl font-semibold text-gray-900 mb-4">
+                האם לסמן כתפוס?
+              </h3>
+              
+              <p className="text-gray-600 mb-6">
+                אישרת בקשת אירוח לתאריך{" "}
+                <span className="font-semibold">
+                  {approvedRequestDate ? new Date(approvedRequestDate).toLocaleDateString('he-IL') : ''}
+                </span>
+                . האם תרצה לסמן את עצמך כתפוס לתאריך זה?
+              </p>
+              
+              <div className="flex gap-3">
+                <Button
+                  onClick={handleMarkOccupied}
+                  variant="primary"
+                  className="flex-1 bg-orange-600 hover:bg-orange-700"
+                >
+                  כן, סמן כתפוס
+                </Button>
+                
+                <Button
+                  onClick={handleSkipMarkOccupied}
+                  variant="outline"
+                  className="flex-1"
+                >
+                  לא, תודה
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
