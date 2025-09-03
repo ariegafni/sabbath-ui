@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useTranslation } from "react-i18next";
 import { MessageCircle } from "lucide-react";
 import { useAuth } from "@/Providers/AuthProvider";
@@ -11,7 +11,7 @@ import { AuthService } from "@/service/auth";
 import ConversationsList from "@/features/chat/ConversationsList";
 import ChatWindow from "@/features/chat/ChatWindow";
 
-export default function MessagesPage() {
+function MessagesPageContent() {
   const { t } = useTranslation();
   const { user } = useAuth();
   const router = useRouter();
@@ -173,5 +173,23 @@ export default function MessagesPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function MessagesPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center pb-20">
+        <div className="text-center">
+          <div className="text-gray-400 mb-4">
+            <MessageCircle className="h-16 w-16 mx-auto" />
+          </div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">טוען הודעות...</p>
+        </div>
+      </div>
+    }>
+      <MessagesPageContent />
+    </Suspense>
   );
 }
