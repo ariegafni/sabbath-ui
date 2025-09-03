@@ -77,7 +77,7 @@ export default function AdminDashboard() {
               <Users className="h-6 w-6 text-blue-600" />
             </div>
             <div>
-              <p className="text-sm text-gray-600">סה"כ משתמשים</p>
+              <p className="text-sm text-gray-600">סה&quot;כ משתמשים</p>
               <p className="text-2xl font-bold text-gray-900">{stats?.totalUsers || 0}</p>
             </div>
           </div>
@@ -89,7 +89,7 @@ export default function AdminDashboard() {
               <Home className="h-6 w-6 text-green-600" />
             </div>
             <div>
-              <p className="text-sm text-gray-600">סה"כ מארחים</p>
+              <p className="text-sm text-gray-600">סה&quot;כ מארחים</p>
               <p className="text-2xl font-bold text-gray-900">{stats?.totalHosts || 0}</p>
             </div>
           </div>

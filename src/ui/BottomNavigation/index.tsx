@@ -62,7 +62,7 @@ export default function BottomNavigation() {
           const count = await ChatService.getUnreadCount();
           setUnreadCount(count);
         } catch (error) {
-          console.warn("Chat service not available for unread count update:", error.message);
+          console.warn("Chat service not available for unread count update:", (error as Error).message);
           setUnreadCount(0);
         }
       }

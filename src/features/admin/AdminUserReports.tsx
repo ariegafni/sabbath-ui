@@ -311,7 +311,7 @@ export default function AdminUserReports() {
                   <Button
                     onClick={() => handleStatusUpdate(selectedReport.id, 'in_progress')}
                     disabled={updatingStatus}
-                    variant={selectedReport.status === 'in_progress' ? 'default' : 'outline'}
+                    variant={selectedReport.status === 'in_progress' ? 'primary' : 'outline'}
                     size="sm"
                   >
                     סמן בטיפול
@@ -319,7 +319,7 @@ export default function AdminUserReports() {
                   <Button
                     onClick={() => handleStatusUpdate(selectedReport.id, 'resolved')}
                     disabled={updatingStatus}
-                    variant={selectedReport.status === 'resolved' ? 'default' : 'outline'}
+                    variant={selectedReport.status === 'resolved' ? 'primary' : 'outline'}
                     size="sm"
                   >
                     סמן כנפתר

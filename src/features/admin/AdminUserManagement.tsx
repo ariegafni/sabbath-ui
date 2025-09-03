@@ -232,7 +232,7 @@ export default function AdminUserManagement({ type }: AdminUserManagementProps) 
                       )}
                       <div className="flex items-center gap-4 mt-2 text-xs text-gray-500">
                         <span>אירחו מקסימום: {item.max_guests} אורחים</span>
-                        <span>סה"כ אירוחים: {item.total_hostings}</span>
+                        <span>סה&quot;כ אירוחים: {item.total_hostings}</span>
                         <span className={`px-2 py-1 rounded-full text-xs ${
                           item.is_always_available 
                             ? 'bg-green-100 text-green-700' 
@@ -393,7 +393,7 @@ export default function AdminUserManagement({ type }: AdminUserManagementProps) 
                       <p className="text-gray-600">{selectedItem.max_guests}</p>
                     </div>
                     <div>
-                      <label className="text-sm font-medium text-gray-700">סה"כ אירוחים</label>
+                      <label className="text-sm font-medium text-gray-700">סה&quot;כ אירוחים</label>
                       <p className="text-gray-600">{selectedItem.total_hostings}</p>
                     </div>
                     <div>

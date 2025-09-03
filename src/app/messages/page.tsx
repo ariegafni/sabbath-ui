@@ -5,7 +5,8 @@ import { useTranslation } from "react-i18next";
 import { MessageCircle } from "lucide-react";
 import { useAuth } from "@/Providers/AuthProvider";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Conversation, socketService, ChatService } from "@/service";
+import { socketService, ChatService } from "@/service";
+import type { Conversation } from "@/service/chat";
 import { AuthService } from "@/service/auth";
 import ConversationsList from "@/features/chat/ConversationsList";
 import ChatWindow from "@/features/chat/ChatWindow";
@@ -166,7 +167,7 @@ export default function MessagesPage() {
               </div>
               <ConversationsList
                 onConversationSelect={handleConversationSelect}
-                selectedConversationId={selectedConversation?.id}
+                selectedConversationId={selectedConversation?.id ?? undefined}
               />
             </div>
           )}
