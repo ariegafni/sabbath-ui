@@ -145,8 +145,8 @@ export default function BottomNavigation() {
                     }`}
                   />
                   {item.badge && item.badge > 0 && (
-                    <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium">
-                      {item.badge > 99 ? "99+" : item.badge}
+                    <span className="absolute -top-1 -right-1 bg-red-500 rounded-full h-3 w-3 flex items-center justify-center">
+                      <Plus className="h-2 w-2 text-white stroke-[3]" />
                     </span>
                   )}
                 </div>
