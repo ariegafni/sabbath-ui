@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { 
   AlertTriangle, 
   MessageSquare, 
+  MessageCircle,
   Clock, 
   CheckCircle, 
   User,
@@ -28,6 +29,8 @@ export default function AdminUserReports() {
   const [adminNotes, setAdminNotes] = useState("");
   const [filter, setFilter] = useState<'all' | 'pending' | 'in_progress' | 'resolved'>('all');
   const [deletingReport, setDeletingReport] = useState<string | null>(null);
+  const [showConversationModal, setShowConversationModal] = useState(false);
+  const [conversations, setConversations] = useState<any[]>([]);
 
   useEffect(() => {
     loadReports();
@@ -75,11 +78,40 @@ export default function AdminUserReports() {
       if (selectedReport.status === 'pending') {
         await handleStatusUpdate(selectedReport.id, 'in_progress');
       }
+
+      // If conversation modal is open, refresh conversations
+      if (showConversationModal) {
+        loadConversations(selectedReport.id);
+      }
     } catch (error) {
       console.error('Error sending reply:', error);
       alert('שגיאה בשליחת התגובה. אנא נסה שוב.');
     } finally {
       setSendingReply(false);
+    }
+  };
+
+  const loadConversations = async (reportId: string) => {
+    try {
+      const data = await AdminService.getReportConversations(reportId);
+      setConversations(data);
+    } catch (error) {
+      console.error('Error loading conversations:', error);
+    }
+  };
+
+  const handleViewConversation = async (report: UserReport) => {
+    setSelectedReport(report);
+    setShowConversationModal(true);
+    await loadConversations(report.id);
+    
+    // Mark as read for admin
+    try {
+      await AdminService.markReportAsRead(report.id);
+      // Refresh reports to update unread count
+      loadReports();
+    } catch (error) {
+      console.error('Error marking as read:', error);
     }
   };
 
@@ -223,6 +255,11 @@ export default function AdminUserReports() {
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
+                  {report.admin_unread_count > 0 && (
+                    <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full font-medium">
+                      +{report.admin_unread_count}
+                    </span>
+                  )}
                   <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(report.status)}`}>
                     {getStatusLabel(report.status)}
                   </span>
@@ -245,13 +282,10 @@ export default function AdminUserReports() {
                 <Button
                   size="sm"
                   variant="outline"
-                  onClick={() => {
-                    setSelectedReport(report);
-                    setAdminNotes(report.admin_notes || '');
-                  }}
+                  onClick={() => handleViewConversation(report)}
                 >
-                  <Eye className="h-4 w-4 ml-1" />
-                  צפה בפרטים
+                  <MessageCircle className="h-4 w-4 ml-1" />
+                  צפה בשיחה
                 </Button>
                 
                 <Button
@@ -432,6 +466,106 @@ export default function AdminUserReports() {
                 </Button>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Conversation Modal */}
+      {showConversationModal && selectedReport && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-3xl w-full max-h-[90vh] overflow-hidden">
+            {/* Header */}
+            <div className="flex items-center justify-between p-4 border-b">
+              <h2 className="text-xl font-semibold">
+                שיחה: {selectedReport.subject}
+              </h2>
+              <button
+                onClick={() => setShowConversationModal(false)}
+                className="p-1 hover:bg-gray-100 rounded"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            {/* Report Details */}
+            <div className="p-4 bg-gray-50 border-b">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                  <User className="h-4 w-4 text-blue-600" />
+                </div>
+                <div>
+                  <h3 className="font-medium">{selectedReport.user_name}</h3>
+                  <p className="text-sm text-gray-600">{selectedReport.user_email}</p>
+                </div>
+              </div>
+              <p className="text-gray-700 text-sm">{selectedReport.message}</p>
+              <p className="text-xs text-gray-500 mt-2">
+                דווח ב-{new Date(selectedReport.created_at).toLocaleDateString('he-IL')}
+              </p>
+            </div>
+
+            {/* Conversations */}
+            <div className="overflow-y-auto max-h-[50vh] p-4">
+              {conversations.length > 0 ? (
+                <div className="space-y-3">
+                  {conversations.map((conv, index) => (
+                    <div
+                      key={index}
+                      className={`p-3 rounded-lg ${
+                        conv.sender_type === 'admin' 
+                          ? 'bg-blue-50 border-l-4 border-l-blue-500 mr-8'
+                          : 'bg-gray-100 border-l-4 border-l-gray-400 ml-8'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="font-medium text-sm">
+                          {conv.sender_type === 'admin' ? 'אדמין' : selectedReport.user_name}
+                        </span>
+                        <span className="text-xs text-gray-500">
+                          {new Date(conv.created_at).toLocaleDateString('he-IL')} {' '}
+                          {new Date(conv.created_at).toLocaleTimeString('he-IL', { 
+                            hour: '2-digit', 
+                            minute: '2-digit' 
+                          })}
+                        </span>
+                      </div>
+                      <p className="text-sm">{conv.message}</p>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8 text-gray-500">
+                  <p>עדיין אין הודעות בשיחה</p>
+                </div>
+              )}
+            </div>
+
+            {/* Quick Reply */}
+            {selectedReport.status !== 'resolved' && (
+              <div className="border-t p-4">
+                <textarea
+                  value={replyMessage}
+                  onChange={(e) => setReplyMessage(e.target.value)}
+                  placeholder="הכנס תגובה מהירה..."
+                  className="w-full p-3 border rounded-lg resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  rows={3}
+                />
+                <div className="flex justify-end mt-2">
+                  <Button
+                    onClick={handleSendReply}
+                    disabled={!replyMessage.trim() || sendingReply}
+                    className="bg-blue-600 hover:bg-blue-700 text-white"
+                  >
+                    {sendingReply ? (
+                      <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent ml-2"></div>
+                    ) : (
+                      <Send className="h-4 w-4 ml-2" />
+                    )}
+                    שלח תגובה
+                  </Button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}
