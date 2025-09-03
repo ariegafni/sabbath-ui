@@ -1,25 +1,22 @@
 import type { NextConfig } from "next";
 
+const isDev = process.env.NODE_ENV === "development";
+
+const API_BASE_URL = isDev
+  ? "http://localhost:3005"
+  : process.env.NEXT_PUBLIC_API_BASE_URL;
+
+const API_HOSTNAME = isDev
+  ? "localhost"
+  : new URL(process.env.NEXT_PUBLIC_API_BASE_URL || "").hostname;
+
 const nextConfig: NextConfig = {
   images: {
-    domains: ["picsum.photos"],
     remotePatterns: [
       {
-        protocol: "http",
-        hostname: "127.0.0.1",
-        port: "3002",
-        pathname: "/**",
-      },
-      {
-        protocol: "http",
-        hostname: "localhost",
-        port: "3002",
-        pathname: "/**",
-      },
-      {
-        protocol: "http",
-        hostname: "localhost",
-        port: "3005",
+        protocol: isDev ? "http" : "https",
+        hostname: API_HOSTNAME,
+        port: isDev ? "3005" : "",
         pathname: "/idrive-proxy/**",
       },
     ],
@@ -28,7 +25,7 @@ const nextConfig: NextConfig = {
     return [
       {
         source: "/idrive-proxy/:path*",
-        destination: "http://localhost:3005/idrive-proxy/:path*",
+        destination: `${API_BASE_URL}/idrive-proxy/:path*`,
       },
     ];
   },
