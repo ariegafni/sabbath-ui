@@ -103,7 +103,7 @@ export default function PostApprovalModal({
                 <div className="text-right">
                   <p className="text-sm text-blue-900 font-medium mb-1">מה זה אומר?</p>
                   <p className="text-xs text-blue-800">
-                    אם תבחר "כן", לא תוכל לקבל בקשות נוספות לאותה שבת.
+                    אם תבחר &quot;כן&quot;, לא תוכל לקבל בקשות נוספות לאותה שבת.
                     תוכל תמיד לשנות זאת בניהול התאריכים התפוסים.
                   </p>
                 </div>

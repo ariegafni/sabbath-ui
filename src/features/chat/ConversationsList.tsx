@@ -1,10 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { MessageCircle, Search, Clock, User, ChevronLeft } from "lucide-react";
-import { Conversation, ChatService } from "@/service";
+import { Conversation } from "@/service";
 import { socketService } from "@/service";
+import { useConversations } from "@/shared/lib/hooks";
+import { queryClient } from "@/shared/lib/queryClient";
 
 interface ConversationsListProps {
   onConversationSelect: (conversation: Conversation) => void;
@@ -16,45 +18,37 @@ export default function ConversationsList({
   selectedConversationId,
 }: ConversationsListProps) {
   const { t } = useTranslation();
-  const [conversations, setConversations] = useState<Conversation[]>([]);
-  const [filteredConversations, setFilteredConversations] = useState<Conversation[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  
+  // Use React Query for conversations data
+  const { data: conversationsData, isLoading: loading, error: queryError } = useConversations();
+  
+  const [conversations, error] = useMemo(() => {
+    if (queryError) {
+      return [[], queryError instanceof Error ? queryError.message : t("conversations.errorLoading")];
+    }
+    return [conversationsData || [], null];
+  }, [conversationsData, queryError, t]);
 
-  useEffect(() => {
-    loadConversations();
-  }, []);
+  // Filter conversations based on search term
+  const filteredConversations = useMemo(() => {
+    if (searchTerm.trim() === "") {
+      return conversations;
+    }
+    return conversations.filter((conversation) =>
+      `${conversation.other_user_first_name} ${conversation.other_user_last_name}`
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase())
+    );
+  }, [searchTerm, conversations]);
 
   useEffect(() => {
     const handleNewMessage = (data: any) => {
-
-      setConversations((prev) => {
-        const updated = [...prev];
-        const idx = updated.findIndex((c) => c.id === data.conversation_id);
-
-        if (idx !== -1) {
-          updated[idx] = {
-            ...updated[idx],
-            last_message_content: data.message.content,
-            last_message_created_at: data.message.created_at,
-            unread_count: (updated[idx].unread_count || 0) + 1,
-          };
-        } else {
-          const newConv = {
-            id: data.conversation_id,
-            other_user_first_name: data.message.sender_first_name,
-            other_user_last_name: data.message.sender_last_name,
-            other_user_profile_image: data.message.sender_profile_image,
-            last_message_content: data.message.content,
-            last_message_created_at: data.message.created_at,
-            unread_count: 1,
-          } as Conversation;
-          updated.unshift(newConv);
-        }
-
-        return updated;
-      });
+      // Invalidate conversations query to refetch updated data
+      queryClient.invalidateQueries({ queryKey: ['conversations'] });
+      
+      // Also invalidate unread count
+      queryClient.invalidateQueries({ queryKey: ['unread-count'] });
     };
 
     socketService.on("new_message", handleNewMessage);
@@ -63,39 +57,6 @@ export default function ConversationsList({
     };
   }, []);
 
-  useEffect(() => {
-    if (searchTerm.trim() === "") {
-      setFilteredConversations(conversations);
-    } else {
-      const filtered = conversations.filter(
-        (conversation) =>
-          `${conversation.other_user_first_name} ${conversation.other_user_last_name}`
-            .toLowerCase()
-            .includes(searchTerm.toLowerCase()) ||
-          conversation.last_message_content?.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-      setFilteredConversations(filtered);
-    }
-  }, [searchTerm, conversations]);
-
-  const loadConversations = async () => {
-    try {
-      setLoading(true);
-      const data = await ChatService.getConversations();
-      setConversations(data);
-      setFilteredConversations(data);
-    } catch (err) {
-      console.error("❌ Error loading conversations:", err);
-      const errorMessage = err instanceof Error ? err.message : "Unknown error";
-      if (errorMessage.includes("fetch")) {
-        setError("מערכת הצ'אט אינה זמינה כרגע. אנא נסה שוב מאוחר יותר.");
-      } else {
-        setError("Failed to load conversations");
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const formatTime = (dateString: string) => {
     const date = new Date(dateString);
@@ -135,7 +96,7 @@ export default function ConversationsList({
         </div>
         <p className="text-gray-600 mb-4">{error}</p>
         <button
-          onClick={loadConversations}
+          onClick={() => queryClient.invalidateQueries({ queryKey: ['conversations'] })}
           className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
         >
           {t("common.tryAgain")}

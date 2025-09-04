@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import {
   Calendar,
@@ -14,13 +14,14 @@ import {
 } from "lucide-react";
 import Button from "@/ui/Button";
 import {
-  HostingRequestService,
   HostingRequest,
 } from "@/service/HostingRequest";
 import { ChatService } from "@/service/chat";
 import { useRouter } from "next/navigation";
 import { AuthService } from "@/service/auth";
 import { useAuth } from "@/Providers/AuthProvider";
+import { useMyHostingRequests } from "@/shared/lib/hooks";
+import { queryClient } from "@/shared/lib/queryClient";
 
 interface MyHostingRequestsProps {
   className?: string;
@@ -32,15 +33,23 @@ export default function MyHostingRequests({
   const { t } = useTranslation();
   const router = useRouter();
   const { user } = useAuth();
-  const [requests, setRequests] = useState<HostingRequest[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [selectedStatus, setSelectedStatus] = useState<string>("all");
-  const [conversationStates, setConversationStates] = useState<Map<string, 'unknown' | 'exists' | 'none'>>(new Map());
-
-  useEffect(() => {
-    fetchMyHostingRequests();
+  
+  // Build filters for the query
+  const filters = useMemo(() => {
+    return selectedStatus === "all" ? {} : { status: selectedStatus };
   }, [selectedStatus]);
+  
+  // Use React Query hook for hosting requests
+  const { data: requestsData, isLoading: loading, error: queryError } = useMyHostingRequests(filters);
+  
+  const [requests, error] = useMemo(() => {
+    if (queryError) {
+      return [[], queryError instanceof Error ? queryError.message : "Failed to load requests"];
+    }
+    return [requestsData || [], null];
+  }, [requestsData, queryError]);
+
 
   const checkAndTryStartChat = async (request: HostingRequest) => {
     try {
@@ -56,24 +65,6 @@ export default function MyHostingRequests({
     }
   };
 
-  const fetchMyHostingRequests = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-
-      const filters =
-        selectedStatus !== "all"
-          ? { status: selectedStatus as any }
-          : undefined;
-      const data = await HostingRequestService.getMyGuestRequests(filters);
-      setRequests(data);
-    } catch (err) {
-      console.error("Error fetching my hosting requests:", err);
-      setError("שגיאה בטעינת בקשות האירוח שלי");
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleCancelRequest = async (requestId: string) => {
     if (!confirm("האם אתה בטוח שברצונך לבטל את בקשת האירוח?")) {
@@ -81,10 +72,11 @@ export default function MyHostingRequests({
     }
 
     try {
+      const { HostingRequestService } = await import("@/service/HostingRequest");
       await HostingRequestService.cancelHostingRequest(requestId);
 
-      // עדכון הרשימה
-      await fetchMyHostingRequests();
+      // Invalidate queries to refetch updated data
+      queryClient.invalidateQueries({ queryKey: ['my-hosting-requests'] });
 
       alert("בקשת האירוח בוטלה בהצלחה");
     } catch (error) {
@@ -103,10 +95,11 @@ export default function MyHostingRequests({
     }
 
     try {
+      const { HostingRequestService } = await import("@/service/HostingRequest");
       await HostingRequestService.deleteHostingRequest(requestId);
 
-      // עדכון הרשימה
-      await fetchMyHostingRequests();
+      // Invalidate queries to refetch updated data
+      queryClient.invalidateQueries({ queryKey: ['my-hosting-requests'] });
 
       alert("בקשת האירוח נמחקה בהצלחה");
     } catch (error) {
@@ -242,7 +235,7 @@ export default function MyHostingRequests({
       <div className={`text-center p-8 ${className}`}>
         <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
         <p className="text-red-600 mb-4">{error}</p>
-        <Button onClick={fetchMyHostingRequests} variant="outline">
+        <Button onClick={() => queryClient.invalidateQueries({ queryKey: ['my-hosting-requests'] })} variant="outline">
           נסה שוב
         </Button>
       </div>

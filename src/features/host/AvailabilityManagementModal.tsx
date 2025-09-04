@@ -351,7 +351,7 @@ export default function AvailabilityManagementModal({
                       <p className="text-gray-600 text-sm">
                         לא ניתן לסמן תאריכים כתפוסים כי אין לך שבתות זמינות.
                         <br />
-                        עבור לטאב "זמינות כללית" כדי להגדיר זמינות.
+                        עבור לטאב &quot;זמינות כללית&quot; כדי להגדיר זמינות.
                       </p>
                     </div>
                   );

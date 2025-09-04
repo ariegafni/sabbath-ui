@@ -1,13 +1,15 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/Providers/AuthProvider";
 import { User, Settings, LogOut, Bell, Edit3, MessageSquare } from "lucide-react";
 import Button from "@/ui/Button";
-import { HostService, UserService, GeneralService } from "@/service";
+import { GeneralService, UserService } from "@/service";
 import LanguageSwitcher from "@/ui/LanguageSwitcher";
-import UserReportsModal from "@/features/support/UserReportsModal";
+import UserReportsModal from "@/features/support/LazyUserReportsModal";
+import { useUserProfile, useHostProfile } from "@/shared/lib/hooks";
+import { queryClient } from "@/shared/lib/queryClient";
 
 type UserProfile = {
   id: string;
@@ -39,8 +41,10 @@ export default function ProfilePage() {
   const { t, i18n } = useTranslation();
   const { user } = useAuth();
 
-  const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [loading, setLoading] = useState(true);
+  // Use React Query hooks for data fetching
+  const { data: userProfileData, isLoading: userProfileLoading } = useUserProfile();
+  const { data: hostProfileData, isLoading: hostProfileLoading } = useHostProfile();
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [preview, setPreview] = useState<string | null>(null);
@@ -48,34 +52,28 @@ export default function ProfilePage() {
   const [showEditForm, setShowEditForm] = useState(false);
   const [showReportsModal, setShowReportsModal] = useState(false);
 
-  useEffect(() => {
-    if (!user) return;
-    const fetchProfile = async () => {
-      setLoading(true);
-      try {
-        const data = JSON.parse(localStorage.getItem("user") || "{}");
-        const hostProfile = await HostService.getCurrentUserHostProfile();
-        setProfile({
-          id: data._id || data.id,
-          name: `${data.first_name} ${data.last_name}`,
-          email: data.email,
-          photo_url: data.profile_image,
-          bio: data.bio,
-          phone: data.phone,
-          is_host: !!hostProfile,
-          total_hostings: hostProfile?.total_hostings || 0,
-          rating: hostProfile?.rating || 0,
-          settings: data.settings,
-          stats: data.stats,
-        });
-      } catch {
-        setProfile(null);
-      } finally {
-        setLoading(false);
-      }
+  // Combine data from localStorage and API calls
+  const profile = useMemo(() => {
+    if (!user || !userProfileData) return null;
+
+    const localData = JSON.parse(localStorage.getItem("user") || "{}");
+    
+    return {
+      id: userProfileData.id?.toString() || localData._id || localData.id,
+      name: `${userProfileData.first_name} ${userProfileData.last_name}`,
+      email: userProfileData.email,
+      photo_url: userProfileData.profile_image || localData.profile_image,
+      bio: userProfileData.bio || localData.bio,
+      phone: userProfileData.phone || localData.phone,
+      is_host: !!hostProfileData,
+      total_hostings: hostProfileData?.total_hostings || 0,
+      rating: hostProfileData?.rating || 0,
+      settings: localData.settings,
+      stats: localData.stats,
     };
-    fetchProfile();
-  }, [user]);
+  }, [user, userProfileData, hostProfileData]);
+
+  const loading = userProfileLoading || hostProfileLoading;
 
   const handleLogout = () => {
     ["access_token", "refresh_token", "user"].forEach((k) =>
@@ -126,7 +124,8 @@ export default function ProfilePage() {
       const blob = await (await fetch(preview)).blob();
       const file = new File([blob], "profile.jpg", { type: blob.type });
       const res = await UserService.uploadProfileImage(file);
-      setProfile((p) => (p ? { ...p, photo_url: res.profile_image } : p));
+      // Invalidate queries to refetch updated data
+      queryClient.invalidateQueries({ queryKey: ['user-profile'] });
       const data = JSON.parse(localStorage.getItem("user") || "{}");
       localStorage.setItem(
         "user",

@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import CountriesList from "@/features/countries/CountriesList";
 import HostsList from "@/features/hosts/HostsList";
-import AuthModal from "@/features/auth/AuthModal";
+import AuthModal from "@/features/auth/LazyAuthModal";
 import Button from "@/ui/Button";
 import { User } from "lucide-react";
 import { useAuth } from "@/Providers/AuthProvider";

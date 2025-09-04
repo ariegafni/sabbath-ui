@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { X, Globe, Mail, Trash2, Settings as SettingsIcon } from "lucide-react";
-import LanguageSelectorModal from "./LanguageSelectorModal";
+import LanguageSelectorModal from "./LazyLanguageSelectorModal";
 
 interface Props {
   open: boolean;

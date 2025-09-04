@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Upload, Edit, ChevronDown, ChevronUp } from "lucide-react";
 import Button from "@/ui/Button";
-import LocationPicker from "./LocationPicker";
+import LocationPicker from "./LazyLocationPicker";
 import BubbleGroup from "./BubbleGroup";
 import { HostService, Host, UpdateHostRequest } from "@/service/host";
 

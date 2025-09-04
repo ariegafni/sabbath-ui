@@ -1,5 +1,6 @@
 "use client";
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { UserService } from "../service";
 import { AuthService } from "../service/auth";
 
@@ -20,39 +21,43 @@ export default function AuthProvider({
 }: {
   children: React.ReactNode;
 }) {
-  const [user, setUser] = useState<User>(null);
-  const [loading, setLoading] = useState(true);
-  const refresh = async () => {
-    setLoading(true);
-    try {
+  const queryClient = useQueryClient();
+  
+  const { data: user = null, isLoading: loading, refetch } = useQuery({
+    queryKey: ['current-user'],
+    queryFn: async () => {
       // Check if user is authenticated
       if (!AuthService.isAuthenticated()) {
-        console.log("User not authenticated");
-        setUser(null);
-        return;
+        return null;
       }
 
-      const data = await UserService.getCurrentUser();
-      setUser({
-        id: data.id.toString(),
-        name: `${data.first_name} ${data.last_name}`,
-        email: data.email,
-      });
-      
-    } catch (error) {
-      console.error("Failed to fetch user:", error);
-      setUser(null);
-      // Clear tokens if they're invalid
-      if (error instanceof Error && error.message.includes("Unauthorized")) {
-        AuthService.logout();
+      try {
+        const data = await UserService.getCurrentUser();
+        return {
+          id: data.id.toString(),
+          name: `${data.first_name} ${data.last_name}`,
+          email: data.email,
+        };
+      } catch (error) {
+        console.error("Failed to fetch user:", error);
+        // Clear tokens if they're invalid
+        if (error instanceof Error && error.message.includes("Unauthorized")) {
+          AuthService.logout();
+        }
+        return null;
       }
-    } finally {
-      setLoading(false);
-    }
+    },
+    staleTime: 15 * 60 * 1000, // User data rarely changes, cache for 15 minutes
+    retry: false, // Don't retry auth failures
+  });
+
+  const refresh = async () => {
+    await refetch();
+    // Also invalidate related queries when user refreshes
+    queryClient.invalidateQueries({ queryKey: ['host-profile'] });
+    queryClient.invalidateQueries({ queryKey: ['unread-count'] });
   };
-  useEffect(() => {
-    refresh();
-  }, []);
+
   return (
     <AuthCtx.Provider value={{ user, loading, refresh }}>
       {children}

@@ -23,7 +23,7 @@ import { ChatService } from "@/service/chat";
 import { HostService } from "@/service/host";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/Providers/AuthProvider";
-import PostApprovalModal from "./PostApprovalModal";
+import PostApprovalModal from "./LazyPostApprovalModal";
 
 interface MyHostingRequestsAsHostProps {
   className?: string;

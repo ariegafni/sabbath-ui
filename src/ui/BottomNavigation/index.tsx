@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import {
   Home,
@@ -13,8 +13,8 @@ import {
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/Providers/AuthProvider";
-import { HostService, ChatService } from "@/service";
-import { HostingRequestService } from "@/service/HostingRequest";
+import { useHostProfile, useUnreadCount, usePendingHostingRequests } from "@/shared/lib/hooks";
+import { queryClient } from "@/shared/lib/queryClient";
 
 type NavigationItem = {
   id: string;
@@ -27,62 +27,18 @@ type NavigationItem = {
 export default function BottomNavigation() {
   const pathname = usePathname();
   const { user } = useAuth();
-  const [isHost, setIsHost] = useState(false);
-  const [hasUnread, setHasUnread] = useState(false);
-  const [hasNewHostingRequests, setHasNewHostingRequests] = useState(false);
   const { t } = useTranslation();
+  
+  // Use React Query hooks instead of manual state management
+  const { data: hostProfile } = useHostProfile();
+  const { data: unreadCount = 0 } = useUnreadCount();
+  const { data: hasNewHostingRequests = false } = usePendingHostingRequests();
+  
+  const isHost = !!hostProfile;
+  const hasUnread = unreadCount > 0;
 
-  useEffect(() => {
-    const check = async () => {
-      if (!user) {
-        setIsHost(false);
-        setHasUnread(false);
-        setHasNewHostingRequests(false);
-        return;
-      }
-      try {
-        const hostProfile = await HostService.getCurrentUserHostProfile().catch(() => null);
-        setIsHost(!!hostProfile);
 
-        const [unreadMessages, hostingRequests] = await Promise.all([
-          ChatService.getUnreadCount().catch(() => 0),
-          hostProfile
-            ? HostingRequestService.getMyHostRequests({ status: "pending" }).catch(() => [])
-            : Promise.resolve([]),
-        ]);
-
-        setHasUnread(unreadMessages > 0);
-        setHasNewHostingRequests((hostingRequests?.length ?? 0) > 0);
-      } catch {
-        setIsHost(false);
-        setHasUnread(false);
-        setHasNewHostingRequests(false);
-      }
-    };
-    check();
-
-    const interval = setInterval(async () => {
-      if (user) {
-        try {
-          const chatCount = await ChatService.getUnreadCount();
-          setHasUnread(chatCount > 0);
-
-          if (isHost) {
-            const pendingRequests = await HostingRequestService.getMyHostRequests({
-              status: "pending",
-            });
-            setHasNewHostingRequests((pendingRequests?.length ?? 0) > 0);
-          }
-        } catch {
-          setHasUnread(false);
-        }
-      }
-    }, 30000);
-
-    return () => clearInterval(interval);
-  }, [user, isHost]);
-
-  const hostNavItem: NavigationItem = isHost
+  const hostNavItem: NavigationItem = useMemo(() => isHost
     ? {
         id: "manage-hosting",
         label: t("nav.manageHosting", { defaultValue: "נהל אירוח" }),
@@ -95,7 +51,7 @@ export default function BottomNavigation() {
         label: t("nav.publish", { defaultValue: "פרסם אירוח" }),
         icon: Plus,
         href: "/host",
-      };
+      }, [isHost, hasNewHostingRequests, t]);
 
   const navigationItems: NavigationItem[] = [
     {
@@ -131,6 +87,79 @@ export default function BottomNavigation() {
     return pathname.startsWith(href);
   };
 
+  // Prefetch page data on hover/focus for instant navigation
+  const handlePrefetch = async (href: string) => {
+    if (!user?.id) return;
+
+    try {
+      // Prefetch route-specific data based on path
+      if (href === "/profile") {
+        // Prefetch user profile data
+        queryClient.prefetchQuery({
+          queryKey: ['user-profile', user.id],
+          queryFn: async () => {
+            const { UserService } = await import("@/service");
+            return UserService.getCurrentUser();
+          },
+          staleTime: 15 * 60 * 1000,
+        });
+        
+        // Also prefetch host profile if user might be a host
+        queryClient.prefetchQuery({
+          queryKey: ['host-profile', user.id],
+          queryFn: async () => {
+            const { HostService } = await import("@/service/host");
+            return HostService.getCurrentUserHostProfile();
+          },
+          staleTime: 10 * 60 * 1000,
+        });
+      } else if (href === "/messages") {
+        // Prefetch conversations list
+        queryClient.prefetchQuery({
+          queryKey: ['conversations', user.id],
+          queryFn: async () => {
+            const { ChatService } = await import("@/service");
+            return ChatService.getConversations();
+          },
+          staleTime: 5 * 60 * 1000,
+        });
+      } else if (href === "/manage-hosting") {
+        // Prefetch host requests data
+        queryClient.prefetchQuery({
+          queryKey: ['my-hosting-requests-as-host', user.id],
+          queryFn: async () => {
+            const { HostingRequestService } = await import("@/service/HostingRequest");
+            return HostingRequestService.getMyHostRequests({});
+          },
+          staleTime: 8 * 60 * 1000,
+        });
+      } else if (href === "/personal-area") {
+        // Prefetch my requests data
+        queryClient.prefetchQuery({
+          queryKey: ['my-hosting-requests', user.id],
+          queryFn: async () => {
+            const { HostingRequestService } = await import("@/service/HostingRequest");
+            return HostingRequestService.getMyHostRequests({});
+          },
+          staleTime: 10 * 60 * 1000,
+        });
+      } else if (href === "/") {
+        // Prefetch countries list for home page
+        queryClient.prefetchQuery({
+          queryKey: ['countries'],
+          queryFn: async () => {
+            const { LocationService } = await import("@/service");
+            return LocationService.getCountriesWithHosts();
+          },
+          staleTime: 30 * 60 * 1000,
+        });
+      }
+    } catch (error) {
+      // Silently fail prefetch attempts
+      console.warn('Prefetch failed for:', href, error);
+    }
+  };
+
   return (
     <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50">
       <div className="max-w-md mx-auto">
@@ -146,6 +175,8 @@ export default function BottomNavigation() {
                 className={`flex flex-col items-center py-2 px-3 min-w-0 flex-1 transition-colors ${
                   active ? "text-blue-600" : "text-gray-500 hover:text-gray-700"
                 }`}
+                onMouseEnter={() => handlePrefetch(item.href)}
+                onFocus={() => handlePrefetch(item.href)}
               >
                 <div className="relative">
                   <Icon className={`h-6 w-6 ${active ? "text-blue-600" : "text-gray-500"}`} />

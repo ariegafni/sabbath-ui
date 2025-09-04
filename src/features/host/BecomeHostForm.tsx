@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Upload } from "lucide-react";
 import Button from "@/ui/Button";
-import LocationPicker from "./LocationPicker";
+import LocationPicker from "./LazyLocationPicker";
 import BubbleGroup from "./BubbleGroup";
 
 type BecomeHostFormProps = {

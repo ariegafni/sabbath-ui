@@ -4,12 +4,16 @@ import { useEffect } from "react";
 import i18n from "@/shared/i18n/config";
 import BottomNavigation from "@/ui/BottomNavigation";
 import { usePathname } from "next/navigation";
+import { usePrefetchManager } from "@/shared/lib/hooks";
 
 export default function AppLayoutClient({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  // Initialize prefetch manager for idle-time data loading
+  usePrefetchManager();
+
   useEffect(() => {
     const update = (lng: string) => {
       document.documentElement.lang = lng;

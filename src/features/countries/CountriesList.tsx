@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { MapPin, Users, Search, ChevronLeft, ChevronRight } from "lucide-react";
 import Image from "next/image";
-import { LocationService, Country, Host } from "../../service";
+import { Country, Host } from "../../service";
+import { useCountries } from "@/shared/lib/hooks";
 
 type CountryView = Country & {
   display_name: string;
@@ -18,11 +19,31 @@ export default function CountriesList({
   onCountrySelect?: (country: CountryView) => void;
 }) {
   const { t } = useTranslation();
-  const [countries, setCountries] = useState<CountryView[]>([]);
-  const [filteredCountries, setFilteredCountries] = useState<CountryView[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  
+  // Use React Query hook for countries data
+  const { data: countriesData, isLoading: loading, error: queryError } = useCountries();
+  
+  const [countries, error] = useMemo(() => {
+    if (queryError) {
+      return [[], queryError instanceof Error ? queryError.message : t("countries.errorLoading")];
+    }
+    return [countriesData || [], null];
+  }, [countriesData, queryError, t]);
+
+  // Filter countries based on search term
+  const filteredCountries = useMemo(() => {
+    if (searchTerm.trim() === "") {
+      return countries;
+    }
+    return countries.filter(
+      (country) =>
+        country.display_name
+          ?.toLowerCase()
+          .includes(searchTerm.toLowerCase()) ||
+        country.name?.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [searchTerm, countries]);
 
   const loadGoogle = () =>
     new Promise<void>((resolve) => {
@@ -64,49 +85,6 @@ export default function CountriesList({
     return items.map((c, i) => ({ ...c, display_name: names[i] }));
   };
 
-  useEffect(() => {
-    (async () => {
-      try {
-        setLoading(true);
-        const countriesWithHosts = await LocationService.getCountriesWithHosts();
-        const baseCountries: Country[] = countriesWithHosts.map((c) => ({
-          place_id: c.country_place_id,
-          name: "",
-        }));
-        const named = await resolveNames(baseCountries);
-        const enriched: CountryView[] = named.map((c) => {
-          const bucket = countriesWithHosts.find(
-            (b) => b.country_place_id === c.place_id
-          );
-          const hosts = bucket?.hosts || [];
-          return { ...c, hosts, host_count: hosts.length };
-        });
-        setCountries(enriched);
-        setFilteredCountries(enriched);
-      } catch (err) {
-        setError(
-          err instanceof Error ? err.message : t("countries.errorLoading")
-        );
-      } finally {
-        setLoading(false);
-      }
-    })();
-  }, []);
-
-  useEffect(() => {
-    if (searchTerm.trim() === "") {
-      setFilteredCountries(countries);
-    } else {
-      const filtered = countries.filter(
-        (country) =>
-          country.display_name
-            ?.toLowerCase()
-            .includes(searchTerm.toLowerCase()) ||
-          country.name?.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-      setFilteredCountries(filtered);
-    }
-  }, [searchTerm, countries]);
 
   const scrollHosts = (containerId: string, direction: 'left' | 'right') => {
     const container = document.getElementById(containerId);

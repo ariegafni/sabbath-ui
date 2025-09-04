@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import Button from "@/ui/Button";
 import EditHostProfileForm from "@/features/host/EditHostProfileForm";
-import AvailabilityManagementModal from "@/features/host/AvailabilityManagementModal";
+import AvailabilityManagementModal from "@/features/host/LazyAvailabilityManagementModal";
 import { HostService } from "@/service/host";
 
 export default function ManageHostingPage() {
