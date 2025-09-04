@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { Calendar, Clock, X, Plus, Trash2, Check } from "lucide-react";
+import { Calendar, Clock, X, Plus, Trash2, Check, Ban } from "lucide-react";
 import Button from "@/ui/Button";
 import { HostService } from "@/service/host";
 
@@ -14,6 +14,7 @@ interface AvailabilityManagementModalProps {
   currentAvailability?: {
     is_always_available: boolean;
     available_dates: string[];
+    busy_dates?: string[];
   };
 }
 
@@ -32,12 +33,17 @@ export default function AvailabilityManagementModal({
   const [selectedDates, setSelectedDates] = useState<string[]>(
     currentAvailability?.available_dates ?? []
   );
+  const [busyDates, setBusyDates] = useState<string[]>(
+    currentAvailability?.busy_dates ?? []
+  );
+  const [activeTab, setActiveTab] = useState<'availability' | 'busy'>('availability');
 
   // עדכון מצב המרכיב כאשר נתוני הזמינות משתנים
   useEffect(() => {
     if (currentAvailability) {
       setIsAlwaysAvailable(currentAvailability.is_always_available);
       setSelectedDates(currentAvailability.available_dates);
+      setBusyDates(currentAvailability.busy_dates ?? []);
     }
   }, [currentAvailability]);
 
@@ -104,12 +110,32 @@ export default function AvailabilityManagementModal({
     setSelectedDates([]);
   };
 
+  const handleBusyDateToggle = (dateStr: string) => {
+    setBusyDates(prev => {
+      if (prev.includes(dateStr)) {
+        return prev.filter(d => d !== dateStr);
+      } else {
+        return [...prev, dateStr].sort();
+      }
+    });
+  };
+
+  const handleClearAllBusy = () => {
+    setBusyDates([]);
+  };
+
   const handleSave = async () => {
     setLoading(true);
     try {
+      // שמירת זמינות רגילה
       await HostService.updateAvailability(hostId, {
         is_always_available: isAlwaysAvailable,
         available_dates: isAlwaysAvailable ? [] : selectedDates,
+      });
+      
+      // שמירת תאריכים תפוסים
+      await HostService.updateBusyDates(hostId, {
+        busy_dates: busyDates,
       });
 
       onSuccess?.();
@@ -145,8 +171,38 @@ export default function AvailabilityManagementModal({
           </div>
         </div>
 
+        {/* Tabs */}
+        <div className="border-b border-gray-200">
+          <div className="flex">
+            <button
+              onClick={() => setActiveTab('availability')}
+              className={`flex-1 py-3 px-4 text-center font-medium ${
+                activeTab === 'availability'
+                  ? 'border-b-2 border-blue-500 text-blue-600 bg-blue-50'
+                  : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
+              }`}
+            >
+              <Calendar className="h-5 w-5 mx-auto mb-1" />
+              <span className="text-sm">זמינות כללית</span>
+            </button>
+            <button
+              onClick={() => setActiveTab('busy')}
+              className={`flex-1 py-3 px-4 text-center font-medium ${
+                activeTab === 'busy'
+                  ? 'border-b-2 border-red-500 text-red-600 bg-red-50'
+                  : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
+              }`}
+            >
+              <Ban className="h-5 w-5 mx-auto mb-1" />
+              <span className="text-sm">תאריכים תפוסים</span>
+            </button>
+          </div>
+        </div>
+
         {/* Content */}
         <div className="p-6 flex-1 overflow-y-auto">
+          {activeTab === 'availability' ? (
+            <div>
           {/* Always Available Option */}
           <div className="mb-6 p-4 border-2 rounded-xl transition-colors"
                style={{
@@ -264,6 +320,102 @@ export default function AvailabilityManagementModal({
               </div>
             )}
           </div>
+            </div>
+          ) : (
+            // Busy Dates Tab
+            <div>
+              {/* Info Box */}
+              <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-xl">
+                <div className="flex items-start gap-3">
+                  <Ban className="h-5 w-5 text-amber-600 mt-0.5" />
+                  <div>
+                    <h3 className="font-semibold text-amber-900 mb-1">תאריכים תפוסים</h3>
+                    <p className="text-sm text-amber-800">
+                      בחר שבתות שבהן אתה לא זמין לאירוח. התאריכים האלה יוסרו מהזמינות שלך.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Get available dates for busy selection */}
+              {(() => {
+                const availableDatesForBusy = isAlwaysAvailable 
+                  ? availableSabbaths // If always available, can mark any date as busy
+                  : availableSabbaths.filter(s => selectedDates.includes(s.value)); // Only selected dates
+
+                if (availableDatesForBusy.length === 0 && !isAlwaysAvailable) {
+                  return (
+                    <div className="text-center py-8">
+                      <Calendar className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                      <h3 className="text-lg font-semibold text-gray-700 mb-2">אין שבתות זמינות</h3>
+                      <p className="text-gray-600 text-sm">
+                        לא ניתן לסמן תאריכים כתפוסים כי אין לך שבתות זמינות.
+                        <br />
+                        עבור לטאב "זמינות כללית" כדי להגדיר זמינות.
+                      </p>
+                    </div>
+                  );
+                }
+
+                return (
+                  <div className="space-y-4">
+                    {/* Quick Actions */}
+                    <div className="flex gap-2 justify-center">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={handleClearAllBusy}
+                        className="text-xs"
+                      >
+                        <Trash2 className="h-4 w-4 ml-1" />
+                        נקה הכל
+                      </Button>
+                    </div>
+
+                    {/* Selected Count */}
+                    {busyDates.length > 0 && (
+                      <div className="text-center p-3 bg-red-50 rounded-lg border border-red-200">
+                        <p className="text-sm font-medium text-red-800">
+                          נבחרו {busyDates.length} שבתות תפוסות
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Date Selection Grid */}
+                    <div className="grid grid-cols-1 gap-2 max-h-64 overflow-y-auto border rounded-lg p-3">
+                      {availableDatesForBusy.map((sabbath) => {
+                        const isBusy = busyDates.includes(sabbath.value);
+                        return (
+                          <label
+                            key={sabbath.value}
+                            className={`flex items-center p-3 rounded-lg cursor-pointer transition-all ${
+                              isBusy
+                                ? 'bg-red-50 border-2 border-red-500'
+                                : 'bg-gray-50 border-2 border-transparent hover:bg-gray-100'
+                            }`}
+                          >
+                            <input
+                              type="checkbox"
+                              checked={isBusy}
+                              onChange={() => handleBusyDateToggle(sabbath.value)}
+                              className="w-5 h-5 text-red-600 bg-gray-100 border-gray-300 rounded focus:ring-red-500"
+                            />
+                            <span className={`mr-3 font-medium ${isBusy ? 'text-red-900' : 'text-gray-900'}`}>
+                              {sabbath.label}
+                            </span>
+                            {isBusy && (
+                              <Ban className="h-4 w-4 text-red-600 mr-auto" />
+                            )}
+                          </label>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              })()}
+            </div>
+          )}
         </div>
 
                 {/* Footer */}
