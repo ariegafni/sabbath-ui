@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { Upload } from "lucide-react";
+import { Upload, Edit, ChevronDown, ChevronUp } from "lucide-react";
 import Button from "@/ui/Button";
 import LocationPicker from "./LocationPicker";
 import BubbleGroup from "./BubbleGroup";
@@ -21,6 +21,7 @@ export default function EditHostProfileForm({
 }: EditHostProfileFormProps) {
   const { t } = useTranslation();
   const [hostData, setHostData] = useState<Host | null>(null);
+
   const [formData, setFormData] = useState<UpdateHostRequest>({
     id: "",
     kashrut_level: "",
@@ -38,6 +39,9 @@ export default function EditHostProfileForm({
   const [photo, setPhoto] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string>("");
 
+  // מצב פתיחה/סגירה של מקטע המיקום
+  const [isLocationOpen, setIsLocationOpen] = useState(false);
+
   useEffect(() => {
     loadHostProfile();
   }, []);
@@ -47,23 +51,21 @@ export default function EditHostProfileForm({
       const profile = await HostService.getCurrentUserHostProfile();
       if (profile) {
         setHostData(profile);
-    setFormData({
-  id: profile.id,
-  kashrut_level: profile.kashrut_level || "",
-  hosting_type: profile.hosting_type || [],
-  languages: profile.languages || [],
-  country_place_id: profile.country_place_id || "",
-  city_place_id: profile.city_place_id || "",
-  country_display_name: (profile as any).country_display_name || "",
-  city_display_name: (profile as any).city_display_name || "",
-  area: profile.area || "",
-  max_guests: profile.max_guests || 2,
-  bio: profile.bio || "",
-});
+        setFormData({
+          id: profile.id,
+          kashrut_level: profile.kashrut_level || "",
+          hosting_type: profile.hosting_type || [],
+          languages: profile.languages || [],
+          country_place_id: profile.country_place_id || "",
+          city_place_id: profile.city_place_id || "",
+          country_display_name: (profile as any).country_display_name || "",
+          city_display_name: (profile as any).city_display_name || "",
+          area: profile.area || "",
+          max_guests: profile.max_guests || 2,
+          bio: profile.bio || "",
+        });
 
-        if (profile.photo_url) {
-          setPhotoPreview(profile.photo_url);
-        }
+        if (profile.photo_url) setPhotoPreview(profile.photo_url);
       }
     } catch (error) {
       console.error("Error loading host profile:", error);
@@ -86,10 +88,12 @@ export default function EditHostProfileForm({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!hostData) return;
+
+    // לא משנים ערכי מיקום אם המשתמש לא נגע — כבר שמרנו את הערכים הקיימים ב-loadHostProfile,
+    // ולכן אין צורך לעשות כאן כל טיפול מיוחד. שולחים כפי שנמצא ב-formData.
     const updateData: UpdateHostRequest = { ...formData };
-    if (photo) {
-      updateData.photo = photo;
-    }
+    if (photo) updateData.photo = photo;
+
     await HostService.updateHost(updateData);
     onSuccess();
   };
@@ -100,10 +104,12 @@ export default function EditHostProfileForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6" dir="rtl">
+      {/* העדפות כלליות */}
       <div className="space-y-4">
         <h3 className="text-lg font-medium text-gray-900">
           {t("publish.form.preferencesTitle")}
         </h3>
+
         <div className="space-y-2">
           <label className="text-sm font-medium text-gray-700">
             {t("publish.form.kashrutLabel")}
@@ -118,6 +124,7 @@ export default function EditHostProfileForm({
             ]}
           />
         </div>
+
         <div className="space-y-2">
           <label className="text-sm font-medium text-gray-700">
             {t("publish.form.hostingTypeLabel")}
@@ -132,6 +139,7 @@ export default function EditHostProfileForm({
             ]}
           />
         </div>
+
         <div className="space-y-2">
           <label className="text-sm font-medium text-gray-700">
             {t("publish.form.languagesLabelOptional")}
@@ -151,21 +159,51 @@ export default function EditHostProfileForm({
         </div>
       </div>
 
-      <div className="space-y-4">
-        <LocationPicker
-          country_place_id={formData.country_place_id}
-          city_place_id={formData.city_place_id}
-          country_display_name={formData.country_display_name}
-          city_display_name={formData.city_display_name}
-          area={formData.area}
-          onChange={(field, value) => updateFormData(field, value)}
-        />
+      {/* כפתור עריכת מיקום (קולפס) */}
+      <div className="space-y-3">
+        <div className="flex justify-between items-center">
+          <span className="text-lg font-medium text-gray-900">
+            {t("publish.form.locationTitle", { defaultValue: "מיקום" })}
+          </span>
+          <Button
+            type="button"
+            variant="outline"
+            className="flex items-center justify-between min-w-[170px]"
+            onClick={() => setIsLocationOpen((v) => !v)}
+          >
+            <div className="flex items-center">
+              <Edit className="h-4 w-4 mr-2" />
+              {t("publish.form.editLocation", { defaultValue: "ערוך מיקום" })}
+            </div>
+            {isLocationOpen ? (
+              <ChevronUp className="h-4 w-4 ml-2" />
+            ) : (
+              <ChevronDown className="h-4 w-4 ml-2" />
+            )}
+          </Button>
+        </div>
+
+        {/* המקטע עצמו נטען רק כשהוא פתוח – אם המשתמש לא פתח, הערכים הקיימים נשמרים */}
+        {isLocationOpen && (
+          <div className="space-y-4 border border-gray-200 rounded-lg p-4">
+            <LocationPicker
+              country_place_id={formData.country_place_id}
+              city_place_id={formData.city_place_id}
+              country_display_name={formData.country_display_name}
+              city_display_name={formData.city_display_name}
+              area={formData.area}
+              onChange={(field, value) => updateFormData(field as keyof UpdateHostRequest, value)}
+            />
+          </div>
+        )}
       </div>
 
+      {/* פרטים נוספים */}
       <div className="space-y-4">
         <h3 className="text-lg font-medium text-gray-900">
           {t("publish.form.detailsTitle")}
         </h3>
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
             <label className="text-sm font-medium text-gray-700">
@@ -176,13 +214,12 @@ export default function EditHostProfileForm({
               min="1"
               max="20"
               value={formData.max_guests}
-              onChange={(e) =>
-                updateFormData("max_guests", parseInt(e.target.value))
-              }
+              onChange={(e) => updateFormData("max_guests", parseInt(e.target.value))}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
         </div>
+
         <div className="space-y-2">
           <label className="text-sm font-medium text-gray-700">
             {t("publish.form.bioLabel")}
@@ -197,6 +234,7 @@ export default function EditHostProfileForm({
         </div>
       </div>
 
+      {/* תמונה */}
       <div className="space-y-3">
         <label className="text-lg font-medium text-gray-900">
           {t("publish.form.photoTitle")}
@@ -219,30 +257,19 @@ export default function EditHostProfileForm({
             </div>
           ) : (
             <label className="col-span-full w-full h-24 border-2 border-dashed border-gray-300 rounded-lg hover:border-gray-400 transition-colors cursor-pointer flex items-center justify-center">
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handlePhotoUpload}
-                className="hidden"
-              />
+              <input type="file" accept="image/*" onChange={handlePhotoUpload} className="hidden" />
               <div className="text-center">
                 <Upload className="h-6 w-6 text-gray-400 mx-auto mb-1" />
-                <p className="text-xs text-gray-500">
-                  {t("publish.form.addPhoto")}
-                </p>
+                <p className="text-xs text-gray-500">{t("publish.form.addPhoto")}</p>
               </div>
             </label>
           )}
         </div>
       </div>
 
+      {/* כפתורי פעולה */}
       <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200">
-        <Button
-          type="button"
-          variant="outline"
-          onClick={onCancel}
-          disabled={loading}
-        >
+        <Button type="button" variant="outline" onClick={onCancel} disabled={loading}>
           {t("common.cancel")}
         </Button>
         <Button
@@ -251,7 +278,7 @@ export default function EditHostProfileForm({
           className="min-w-[120px] py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-medium rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-200 disabled:opacity-50"
         >
           {loading ? (
-            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mx-auto"></div>
+            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mx-auto" />
           ) : (
             t("common.update")
           )}
