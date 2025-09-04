@@ -12,10 +12,12 @@ import {
   Edit,
   XCircle,
   CheckCircle,
+  Ban,
 } from "lucide-react";
 import Button from "@/ui/Button";
 import EditHostProfileForm from "@/features/host/EditHostProfileForm";
 import AvailabilityManagementModal from "@/features/host/AvailabilityManagementModal";
+import BusyDatesModal from "@/features/host/BusyDatesModal";
 import { HostService } from "@/service/host";
 
 export default function ManageHostingPage() {
@@ -25,6 +27,7 @@ export default function ManageHostingPage() {
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [showAvailabilityModal, setShowAvailabilityModal] = useState(false);
+  const [showBusyDatesModal, setShowBusyDatesModal] = useState(false);
   const [hostProfile, setHostProfile] = useState<any>(null);
   const [isUpdatingOccupied, setIsUpdatingOccupied] = useState(false);
 
@@ -131,7 +134,7 @@ export default function ManageHostingPage() {
         </div>
 
         {/* Main Actions */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
           {/* Availability Management */}
           <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
             <div className="flex items-center gap-3 mb-4">
@@ -175,6 +178,29 @@ export default function ManageHostingPage() {
             >
               <MessageSquare className="h-4 w-4 mr-2" />
               {t("manageHosting.requests.cta")}
+            </Button>
+          </div>
+
+          {/* Busy Dates Management */}
+          <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
+                <Ban className="h-5 w-5 text-red-600" />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900">
+                סמן כתפוס
+              </h3>
+            </div>
+            <p className="text-gray-600 mb-4">
+              בחר שבתות ספציפיות שבהן לא תוכל לארח
+            </p>
+            <Button
+              onClick={() => setShowBusyDatesModal(true)}
+              variant="outline"
+              className="w-full"
+            >
+              <Ban className="h-4 w-4 mr-2" />
+              נהל תאריכים תפוסים
             </Button>
           </div>
 
@@ -273,6 +299,22 @@ export default function ManageHostingPage() {
             loadHostProfile(); // רענון הנתונים אחרי עדכון מוצלח
           }}
           hostId={hostProfile?.id || ''}
+          currentAvailability={{
+            is_always_available: hostProfile?.is_always_available ?? true,
+            available_dates: hostProfile?.available_dates ?? []
+          }}
+        />
+
+        {/* Busy Dates Management Modal */}
+        <BusyDatesModal
+          isOpen={showBusyDatesModal}
+          onClose={() => setShowBusyDatesModal(false)}
+          onSuccess={() => {
+            setShowBusyDatesModal(false);
+            loadHostProfile(); // רענון הנתונים אחרי עדכון מוצלח
+          }}
+          hostId={hostProfile?.id || ''}
+          currentBusyDates={hostProfile?.busy_dates ?? []}
           currentAvailability={{
             is_always_available: hostProfile?.is_always_available ?? true,
             available_dates: hostProfile?.available_dates ?? []

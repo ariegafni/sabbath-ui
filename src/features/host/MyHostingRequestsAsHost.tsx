@@ -22,6 +22,7 @@ import { ChatService } from "@/service/chat";
 import { HostService } from "@/service/host";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/Providers/AuthProvider";
+import PostApprovalModal from "./PostApprovalModal";
 
 interface MyHostingRequestsAsHostProps {
   className?: string;
@@ -40,8 +41,12 @@ export default function MyHostingRequestsAsHost({
   const [responseMessage, setResponseMessage] = useState<{
     [key: string]: string;
   }>({});
-  const [showOccupiedModal, setShowOccupiedModal] = useState(false);
-  const [approvedRequestDate, setApprovedRequestDate] = useState<string>("");
+  const [showPostApprovalModal, setShowPostApprovalModal] = useState(false);
+  const [approvedRequestData, setApprovedRequestData] = useState<{
+    date: string;
+    guestName: string;
+    hostId: string;
+  } | null>(null);
 
   useEffect(() => {
     fetchMyHostingRequests();
@@ -95,9 +100,33 @@ export default function MyHostingRequestsAsHost({
       if (status === "accepted") {
         // מצא את הבקשה שאושרה כדי לקבל את התאריך
         const approvedRequest = requests.find(r => r.id === requestId);
-        if (approvedRequest?.preferred_date) {
-          setApprovedRequestDate(approvedRequest.preferred_date);
-          setShowOccupiedModal(true);
+        if (approvedRequest?.requested_date) {
+          try {
+            // Get the host profile to get the host ID
+            const hostProfile = await HostService.getCurrentUserHostProfile();
+            if (hostProfile) {
+              // Get guest name
+              let guestName = "אורח";
+              if (typeof approvedRequest.guest_id === "object" && approvedRequest.guest_id) {
+                const guestData = approvedRequest.guest_id as any;
+                guestName = `${guestData.first_name || ""} ${guestData.last_name || ""}`.trim() || "אורח";
+              } else if (approvedRequest.guest_name) {
+                guestName = approvedRequest.guest_name;
+              }
+              
+              setApprovedRequestData({
+                date: approvedRequest.requested_date,
+                guestName,
+                hostId: hostProfile.id
+              });
+              setShowPostApprovalModal(true);
+            } else {
+              alert(`בקשת האירוח ${statusText} בהצלחה`);
+            }
+          } catch (error) {
+            console.error("Error getting host profile:", error);
+            alert(`בקשת האירוח ${statusText} בהצלחה`);
+          }
         } else {
           alert(`בקשת האירוח ${statusText} בהצלחה`);
         }
@@ -110,22 +139,6 @@ export default function MyHostingRequestsAsHost({
     }
   };
 
-  const handleMarkOccupied = async () => {
-    try {
-      await HostService.markOccupiedForDate(approvedRequestDate);
-      setShowOccupiedModal(false);
-      alert("נסמנת כתפוס לתאריך הבקשה שאישרת! בקשת האירוח אושרה בהצלחה.");
-    } catch (error) {
-      console.error("Error marking as occupied:", error);
-      setShowOccupiedModal(false);
-      alert("בקשת האירוח אושרה בהצלחה, אך הייתה שגיאה בסימון כתפוס.");
-    }
-  };
-
-  const handleSkipMarkOccupied = () => {
-    setShowOccupiedModal(false);
-    alert("בקשת האירוח אושרה בהצלחה!");
-  };
 
   const handleDeleteRequest = async (requestId: string) => {
     if (
@@ -519,47 +532,16 @@ export default function MyHostingRequestsAsHost({
         ))}
       </div>
 
-      {/* Modal for marking as occupied */}
-      {showOccupiedModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-xl max-w-md w-full p-6 shadow-xl">
-            <div className="text-center">
-              <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Calendar className="h-8 w-8 text-orange-600" />
-              </div>
-              
-              <h3 className="text-xl font-semibold text-gray-900 mb-4">
-                האם לסמן כתפוס?
-              </h3>
-              
-              <p className="text-gray-600 mb-6">
-                אישרת בקשת אירוח לתאריך{" "}
-                <span className="font-semibold">
-                  {approvedRequestDate ? new Date(approvedRequestDate).toLocaleDateString('he-IL') : ''}
-                </span>
-                . האם תרצה לסמן את עצמך כתפוס לתאריך זה?
-              </p>
-              
-              <div className="flex gap-3">
-                <Button
-                  onClick={handleMarkOccupied}
-                  variant="primary"
-                  className="flex-1 bg-orange-600 hover:bg-orange-700"
-                >
-                  כן, סמן כתפוס
-                </Button>
-                
-                <Button
-                  onClick={handleSkipMarkOccupied}
-                  variant="outline"
-                  className="flex-1"
-                >
-                  לא, תודה
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
+      {/* Post Approval Modal */}
+      {showPostApprovalModal && approvedRequestData && (
+        <PostApprovalModal
+          isOpen={showPostApprovalModal}
+          onClose={() => setShowPostApprovalModal(false)}
+          onSuccess={() => setShowPostApprovalModal(false)}
+          hostId={approvedRequestData.hostId}
+          requestDate={approvedRequestData.date}
+          guestName={approvedRequestData.guestName}
+        />
       )}
     </div>
   );

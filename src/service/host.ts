@@ -20,6 +20,7 @@ export interface Host {
   is_always_available: boolean;
   available?: boolean;
   available_dates: string[];
+  busy_dates: string[];
   is_occupied_for_shabbat?: boolean;
   occupied_shabbat_date?: string;
   rating?: number;
@@ -322,6 +323,48 @@ static async updateHost(hostData: UpdateHostRequest): Promise<Host> {
     const upcomingFriday = new Date(now);
     upcomingFriday.setDate(now.getDate() + daysUntilFriday);
     return upcomingFriday.toISOString().split('T')[0];
+  }
+
+  // עדכון תאריכים תפוסים
+  static async updateBusyDates(hostId: string, busyData: {
+    busy_dates: string[];
+  }): Promise<Host> {
+    const res = await fetch(`${this.baseUrl}/${hostId}/busy-dates`, {
+      method: "PUT",
+      headers: {
+        ...AuthService.getAuthHeaders(),
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(busyData),
+    });
+    
+    if (!res.ok) {
+      const errorText = await res.text();
+      console.error('Busy dates update error:', errorText);
+      throw new Error("Failed to update busy dates");
+    }
+    
+    return (await res.json()) as Host;
+  }
+
+  // סימון מארח כתפוס לתאריך ספציפי (אחרי אישור בקשה)
+  static async setHostBusyForDate(hostId: string, date: string): Promise<Host> {
+    const res = await fetch(`${this.baseUrl}/${hostId}/set-busy`, {
+      method: "POST",
+      headers: {
+        ...AuthService.getAuthHeaders(),
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ date }),
+    });
+    
+    if (!res.ok) {
+      const errorText = await res.text();
+      console.error('Set busy for date error:', errorText);
+      throw new Error("Failed to set host as busy for date");
+    }
+    
+    return (await res.json()) as Host;
   }
 
 }
