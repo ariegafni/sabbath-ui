@@ -67,10 +67,10 @@ export default function HostingRequestForm({
         hostAvailability.is_always_available || 
         hostAvailability.available_dates.includes(dateStr);
 
-      // בדיקה אם התאריך לא תפוס
+      // בדיקה אם התאריך תפוס
       const isBusy = hostAvailability?.busy_dates?.includes(dateStr) || false;
 
-      if (isAvailable && !isBusy) {
+      if (isAvailable) {
         const formatted = currentDate.toLocaleDateString("he-IL", {
           weekday: "long",
           day: "numeric",
@@ -80,8 +80,9 @@ export default function HostingRequestForm({
 
         dates.push({
           value: dateStr,
-          label: formatted,
-        });
+          label: isBusy ? `${formatted} (תפוס)` : formatted,
+          disabled: isBusy,
+        } as any);
       }
 
       currentDate.setDate(currentDate.getDate() + 7); // לשבת הבאה
@@ -201,7 +202,12 @@ export default function HostingRequestForm({
               >
                 <option value="">בחר תאריך שבת...</option>
                 {getSabbathDates().map((date) => (
-                  <option key={date.value} value={date.value}>
+                  <option 
+                    key={date.value} 
+                    value={date.disabled ? "" : date.value}
+                    disabled={date.disabled}
+                    className={date.disabled ? "text-gray-400 bg-gray-100" : ""}
+                  >
                     {date.label}
                   </option>
                 ))}

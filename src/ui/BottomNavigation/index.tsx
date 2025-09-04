@@ -21,14 +21,14 @@ type NavigationItem = {
   label: string;
   icon: React.ComponentType<{ className?: string }>;
   href: string;
-  badge?: number;
+  showBadge?: boolean;
 };
 
 export default function BottomNavigation() {
   const pathname = usePathname();
   const { user } = useAuth();
   const [isHost, setIsHost] = useState(false);
-  const [unreadCount, setUnreadCount] = useState(0);
+  const [hasUnread, setHasUnread] = useState(false);
   const [hasNewHostingRequests, setHasNewHostingRequests] = useState(false);
   const { t } = useTranslation();
 
@@ -36,47 +36,45 @@ export default function BottomNavigation() {
     const check = async () => {
       if (!user) {
         setIsHost(false);
-        setUnreadCount(0);
+        setHasUnread(false);
+        setHasNewHostingRequests(false);
         return;
       }
       try {
         const hostProfile = await HostService.getCurrentUserHostProfile().catch(() => null);
         setIsHost(!!hostProfile);
-        
+
         const [unreadMessages, hostingRequests] = await Promise.all([
-          ChatService.getUnreadCount().catch((error) => {
-            console.warn("Chat service not available:", error.message);
-            return 0;
-          }),
-          hostProfile ? HostingRequestService.getMyHostRequests({ status: "pending" }).catch(() => []) : Promise.resolve([])
+          ChatService.getUnreadCount().catch(() => 0),
+          hostProfile
+            ? HostingRequestService.getMyHostRequests({ status: "pending" }).catch(() => [])
+            : Promise.resolve([]),
         ]);
-        
-        setUnreadCount(unreadMessages);
-        setHasNewHostingRequests(hostingRequests.length > 0);
-      } catch (error) {
-        console.error("Failed to check status:", error);
+
+        setHasUnread(unreadMessages > 0);
+        setHasNewHostingRequests((hostingRequests?.length ?? 0) > 0);
+      } catch {
         setIsHost(false);
-        setUnreadCount(0);
+        setHasUnread(false);
         setHasNewHostingRequests(false);
       }
     };
     check();
 
-    // Update unread count and hosting requests every 30 seconds
     const interval = setInterval(async () => {
       if (user) {
         try {
           const chatCount = await ChatService.getUnreadCount();
-          setUnreadCount(chatCount);
-          
-          // Check for new hosting requests if user is a host
+          setHasUnread(chatCount > 0);
+
           if (isHost) {
-            const pendingRequests = await HostingRequestService.getMyHostRequests({ status: "pending" });
-            setHasNewHostingRequests(pendingRequests.length > 0);
+            const pendingRequests = await HostingRequestService.getMyHostRequests({
+              status: "pending",
+            });
+            setHasNewHostingRequests((pendingRequests?.length ?? 0) > 0);
           }
-        } catch (error) {
-          console.warn("Service not available for updates:", (error as Error).message);
-          setUnreadCount(0);
+        } catch {
+          setHasUnread(false);
         }
       }
     }, 30000);
@@ -90,7 +88,7 @@ export default function BottomNavigation() {
         label: t("nav.manageHosting", { defaultValue: "נהל אירוח" }),
         icon: Calendar,
         href: "/manage-hosting",
-        badge: hasNewHostingRequests ? 1 : 0,
+        showBadge: hasNewHostingRequests, // יציג פלוס רק אם יש בקשות תלויות
       }
     : {
         id: "host",
@@ -117,7 +115,7 @@ export default function BottomNavigation() {
       label: t("nav.messages", { defaultValue: "הודעות" }),
       icon: MessageCircle,
       href: "/messages",
-      badge: unreadCount > 0 ? 1 : 0,
+      showBadge: hasUnread,
     },
     hostNavItem,
     {
@@ -129,9 +127,7 @@ export default function BottomNavigation() {
   ];
 
   const isActive = (href: string) => {
-    if (href === "/") {
-      return pathname === "/";
-    }
+    if (href === "/") return pathname === "/";
     return pathname.startsWith(href);
   };
 
@@ -152,12 +148,8 @@ export default function BottomNavigation() {
                 }`}
               >
                 <div className="relative">
-                  <Icon
-                    className={`h-6 w-6 ${
-                      active ? "text-blue-600" : "text-gray-500"
-                    }`}
-                  />
-                  {item.badge && item.badge > 0 && (
+                  <Icon className={`h-6 w-6 ${active ? "text-blue-600" : "text-gray-500"}`} />
+                  {item.showBadge && (
                     <span className="absolute -top-1 -right-1 bg-red-500 rounded-full h-3 w-3 flex items-center justify-center">
                       <Plus className="h-2 w-2 text-white stroke-[3]" />
                     </span>
