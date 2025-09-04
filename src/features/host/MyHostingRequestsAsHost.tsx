@@ -12,6 +12,7 @@ import {
   AlertCircle,
   MapPin,
   Send,
+  Plus,
 } from "lucide-react";
 import Button from "@/ui/Button";
 import {
@@ -328,7 +329,7 @@ export default function MyHostingRequestsAsHost({
           >
             {/* Request Header */}
             <div className="flex items-start justify-between mb-4">
-             <div className="flex items-center space-x-3 space-x-reverse">
+             <div className="flex items-center space-x-3 space-x-reverse relative">
   {(() => {
     interface GuestData {
       first_name?: string;
@@ -362,6 +363,11 @@ export default function MyHostingRequestsAsHost({
           <h3 className="font-medium text-gray-900">{guestName}</h3>
           <p className="text-sm text-gray-600">אורח</p>
         </div>
+        {request.status === "pending" && (
+          <span className="absolute -top-1 -right-1 bg-red-500 rounded-full h-3 w-3 flex items-center justify-center">
+            <Plus className="h-2 w-2 text-white stroke-[3]" />
+          </span>
+        )}
       </>
     );
   })()}

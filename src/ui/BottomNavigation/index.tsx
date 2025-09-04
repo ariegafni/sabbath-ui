@@ -14,6 +14,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/Providers/AuthProvider";
 import { HostService, ChatService } from "@/service";
+import { HostingRequestService } from "@/service/HostingRequest";
 
 type NavigationItem = {
   id: string;
@@ -28,6 +29,7 @@ export default function BottomNavigation() {
   const { user } = useAuth();
   const [isHost, setIsHost] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [hasNewHostingRequests, setHasNewHostingRequests] = useState(false);
   const { t } = useTranslation();
 
   useEffect(() => {
@@ -38,39 +40,49 @@ export default function BottomNavigation() {
         return;
       }
       try {
-        const [hostProfile, unreadMessages] = await Promise.all([
-          HostService.getCurrentUserHostProfile().catch(() => null),
+        const hostProfile = await HostService.getCurrentUserHostProfile().catch(() => null);
+        setIsHost(!!hostProfile);
+        
+        const [unreadMessages, hostingRequests] = await Promise.all([
           ChatService.getUnreadCount().catch((error) => {
             console.warn("Chat service not available:", error.message);
             return 0;
-          })
+          }),
+          hostProfile ? HostingRequestService.getMyHostRequests({ status: "pending" }).catch(() => []) : Promise.resolve([])
         ]);
         
-        setIsHost(!!hostProfile);
         setUnreadCount(unreadMessages);
+        setHasNewHostingRequests(hostingRequests.length > 0);
       } catch (error) {
         console.error("Failed to check status:", error);
         setIsHost(false);
         setUnreadCount(0);
+        setHasNewHostingRequests(false);
       }
     };
     check();
 
-    // Update unread count every 30 seconds
+    // Update unread count and hosting requests every 30 seconds
     const interval = setInterval(async () => {
       if (user) {
         try {
           const chatCount = await ChatService.getUnreadCount();
           setUnreadCount(chatCount);
+          
+          // Check for new hosting requests if user is a host
+          if (isHost) {
+            const pendingRequests = await HostingRequestService.getMyHostRequests({ status: "pending" });
+            setHasNewHostingRequests(pendingRequests.length > 0);
+          }
         } catch (error) {
-          console.warn("Chat service not available for unread count update:", (error as Error).message);
+          console.warn("Service not available for updates:", (error as Error).message);
           setUnreadCount(0);
         }
       }
     }, 30000);
 
     return () => clearInterval(interval);
-  }, [user]);
+  }, [user, isHost]);
 
   const hostNavItem: NavigationItem = isHost
     ? {
@@ -78,6 +90,7 @@ export default function BottomNavigation() {
         label: t("nav.manageHosting", { defaultValue: "נהל אירוח" }),
         icon: Calendar,
         href: "/manage-hosting",
+        badge: hasNewHostingRequests ? 1 : 0,
       }
     : {
         id: "host",
@@ -104,7 +117,7 @@ export default function BottomNavigation() {
       label: t("nav.messages", { defaultValue: "הודעות" }),
       icon: MessageCircle,
       href: "/messages",
-      badge: unreadCount,
+      badge: unreadCount > 0 ? 1 : 0,
     },
     hostNavItem,
     {

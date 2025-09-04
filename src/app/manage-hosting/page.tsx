@@ -10,8 +10,6 @@ import {
   MessageSquare,
   Clock,
   Edit,
-  XCircle,
-  CheckCircle,
   Ban,
 } from "lucide-react";
 import Button from "@/ui/Button";
@@ -29,7 +27,6 @@ export default function ManageHostingPage() {
   const [showAvailabilityModal, setShowAvailabilityModal] = useState(false);
   const [showBusyDatesModal, setShowBusyDatesModal] = useState(false);
   const [hostProfile, setHostProfile] = useState<any>(null);
-  const [isUpdatingOccupied, setIsUpdatingOccupied] = useState(false);
 
   useEffect(() => {
     if (!user) {
@@ -49,29 +46,6 @@ export default function ManageHostingPage() {
     }
   };
 
-  const handleToggleOccupied = async () => {
-    if (!hostProfile) return;
-    
-    setIsUpdatingOccupied(true);
-    try {
-      let updatedProfile;
-      
-      if (hostProfile.is_occupied_for_shabbat) {
-        // אם הוא כבר מסומן כתפוס, נבטל את הסימון
-        updatedProfile = await HostService.unmarkOccupied();
-      } else {
-        // אם הוא לא מסומן כתפוס, נסמן אותו כתפוס לשבת הקרובה
-        updatedProfile = await HostService.markOccupiedForUpcomingShabbat();
-      }
-      
-      setHostProfile(updatedProfile);
-    } catch (error) {
-      console.error("Error updating occupied status:", error);
-      alert("שגיאה בעדכון הסטטוס. אנא נסה שוב.");
-    } finally {
-      setIsUpdatingOccupied(false);
-    }
-  };
 
   if (loading) {
     return (
@@ -134,7 +108,7 @@ export default function ManageHostingPage() {
         </div>
 
         {/* Main Actions */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
           {/* Availability Management */}
           <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
             <div className="flex items-center gap-3 mb-4">
@@ -204,46 +178,6 @@ export default function ManageHostingPage() {
             </Button>
           </div>
 
-          {/* Occupied Status Toggle */}
-          <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
-            <div className="flex items-center gap-3 mb-4">
-              <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                hostProfile?.is_occupied_for_shabbat 
-                  ? 'bg-red-100' 
-                  : 'bg-orange-100'
-              }`}>
-                {hostProfile?.is_occupied_for_shabbat ? (
-                  <XCircle className="h-5 w-5 text-red-600" />
-                ) : (
-                  <Calendar className="h-5 w-5 text-orange-600" />
-                )}
-              </div>
-              <h3 className="text-lg font-semibold text-gray-900">
-                {hostProfile?.is_occupied_for_shabbat ? "מסומן כתפוס" : "סימון כתפוס"}
-              </h3>
-            </div>
-            <p className="text-gray-600 mb-4">
-              {hostProfile?.is_occupied_for_shabbat 
-                ? `תפוס לשבת ${hostProfile.occupied_shabbat_date ? new Date(hostProfile.occupied_shabbat_date).toLocaleDateString('he-IL') : 'הקרובה'}`
-                : "סמן את עצמך כתפוס לשבת הקרובה"
-              }
-            </p>
-            <Button
-              onClick={handleToggleOccupied}
-              disabled={isUpdatingOccupied}
-              variant={hostProfile?.is_occupied_for_shabbat ? "outline" : "primary"}
-              className="w-full"
-            >
-              {isUpdatingOccupied ? (
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current mr-2"></div>
-              ) : hostProfile?.is_occupied_for_shabbat ? (
-                <CheckCircle className="h-4 w-4 mr-2" />
-              ) : (
-                <XCircle className="h-4 w-4 mr-2" />
-              )}
-              {hostProfile?.is_occupied_for_shabbat ? "בטל סימון תפוס" : "סמן כתפוס"}
-            </Button>
-          </div>
         </div>
 
         {/* Recent Activity */}

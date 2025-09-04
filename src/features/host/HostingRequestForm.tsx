@@ -17,6 +17,7 @@ interface HostingRequestFormProps {
   hostAvailability?: {
     is_always_available: boolean;
     available_dates: string[];
+    busy_dates?: string[];
   };
   onClose: () => void;
   onSuccess?: () => void;
@@ -66,7 +67,10 @@ export default function HostingRequestForm({
         hostAvailability.is_always_available || 
         hostAvailability.available_dates.includes(dateStr);
 
-      if (isAvailable) {
+      // בדיקה אם התאריך לא תפוס
+      const isBusy = hostAvailability?.busy_dates?.includes(dateStr) || false;
+
+      if (isAvailable && !isBusy) {
         const formatted = currentDate.toLocaleDateString("he-IL", {
           weekday: "long",
           day: "numeric",

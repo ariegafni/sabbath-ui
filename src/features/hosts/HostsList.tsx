@@ -642,7 +642,8 @@ export default function HostsList({
           hostProfileImage={selectedHost.user?.profile_image || selectedHost.photo_url}
           hostAvailability={{
             is_always_available: selectedHost.is_always_available,
-            available_dates: selectedHost.available_dates
+            available_dates: selectedHost.available_dates,
+            busy_dates: selectedHost.busy_dates
           }}
           onClose={() => setSelectedHost(null)}
           onSuccess={() => {

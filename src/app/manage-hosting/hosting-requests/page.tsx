@@ -4,22 +4,37 @@ import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/Providers/AuthProvider";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, MessageSquare } from "lucide-react";
+import { ArrowLeft, MessageSquare, Plus } from "lucide-react";
 import Button from "@/ui/Button";
 import MyHostingRequestsAsHost from "@/features/host/MyHostingRequestsAsHost";
+import { HostingRequestService } from "@/service/HostingRequest";
 
 export default function HostingRequestsPage() {
   const { t } = useTranslation();
   const { user } = useAuth();
   const router = useRouter();
   const [loading, setLoading] = useState(true);
+  const [hasNewRequests, setHasNewRequests] = useState(false);
 
   useEffect(() => {
-    if (!user) {
-      router.replace("/login");
-      return;
-    }
-    setLoading(false);
+    const checkNewRequests = async () => {
+      if (!user) {
+        router.replace("/login");
+        return;
+      }
+      
+      try {
+        const pendingRequests = await HostingRequestService.getMyHostRequests({ status: "pending" });
+        setHasNewRequests(pendingRequests.length > 0);
+      } catch (error) {
+        console.error("Error checking new requests:", error);
+        setHasNewRequests(false);
+      }
+      
+      setLoading(false);
+    };
+    
+    checkNewRequests();
   }, [user, router]);
 
   if (loading) {
@@ -55,8 +70,15 @@ export default function HostingRequestsPage() {
                 </p>
               </div>
             </div>
-            <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-              <MessageSquare className="h-5 w-5 text-green-600" />
+            <div className="relative">
+              <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                <MessageSquare className="h-5 w-5 text-green-600" />
+              </div>
+              {hasNewRequests && (
+                <span className="absolute -top-1 -right-1 bg-red-500 rounded-full h-3 w-3 flex items-center justify-center">
+                  <Plus className="h-2 w-2 text-white stroke-[3]" />
+                </span>
+              )}
             </div>
           </div>
         </div>

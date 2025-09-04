@@ -13,6 +13,7 @@ interface HostingRequestButtonProps {
   hostAvailability?: {
     is_always_available: boolean;
     available_dates: string[];
+    busy_dates?: string[];
   };
   className?: string;
   variant?: "primary" | "outline" | "secondary";
