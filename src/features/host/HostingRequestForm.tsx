@@ -9,6 +9,8 @@ import {
   CreateHostingRequestRequest,
 } from "@/service/HostingRequest";
 import { useAuth } from "@/Providers/AuthProvider";
+import { useUserPermissions } from "../../shared/hooks/useUserPermissions";
+import UnauthorizedModal from "../../ui/UnauthorizedModal";
 
 interface HostingRequestFormProps {
   hostId: string;
@@ -38,6 +40,12 @@ export default function HostingRequestForm({
     requested_date: "",
     message: "",
   });
+  const { 
+    requirePermission, 
+    showUnauthorizedModal, 
+    modalReason, 
+    closeModal 
+  } = useUserPermissions();
 
   const getSabbathDates = () => {
     const dates = [];
@@ -109,31 +117,33 @@ export default function HostingRequestForm({
       return;
     }
 
-    setLoading(true);
+    requirePermission(async () => {
+      setLoading(true);
 
-    try {
-      const requestData: CreateHostingRequestRequest = {
-        host: hostId,
-        requested_date: formData.requested_date,
-        message: formData.message.trim(),
-      };
-      console.log(requestData);
-      await HostingRequestService.createHostingRequest(requestData);
+      try {
+        const requestData: CreateHostingRequestRequest = {
+          host: hostId,
+          requested_date: formData.requested_date,
+          message: formData.message.trim(),
+        };
+        console.log(requestData);
+        await HostingRequestService.createHostingRequest(requestData);
 
-      // Start a conversation with the host
-      if (user) {
-        // Note: Chat can only be started after host approval of the accommodation request
+        // Start a conversation with the host
+        if (user) {
+          // Note: Chat can only be started after host approval of the accommodation request
+        }
+
+        alert("בקשת האירוח נשלחה בהצלחה!");
+        onSuccess?.();
+        onClose();
+      } catch (error) {
+        console.error("Error creating hosting request:", error);
+        alert("שגיאה בשליחת בקשת האירוח. אנא נסה שוב.");
+      } finally {
+        setLoading(false);
       }
-
-      alert("בקשת האירוח נשלחה בהצלחה!");
-      onSuccess?.();
-      onClose();
-    } catch (error) {
-      console.error("Error creating hosting request:", error);
-      alert("שגיאה בשליחת בקשת האירוח. אנא נסה שוב.");
-    } finally {
-      setLoading(false);
-    }
+    });
   };
 
   return (
@@ -259,6 +269,13 @@ export default function HostingRequestForm({
           </Button>
         </form>
       </div>
+
+      {/* Unauthorized Modal */}
+      <UnauthorizedModal
+        isOpen={showUnauthorizedModal}
+        onClose={closeModal}
+        reason={modalReason}
+      />
     </div>
   );
 }

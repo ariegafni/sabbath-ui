@@ -1,4 +1,5 @@
 import { createApiUrl } from "../shared/lib/config";
+import { UserStatusReason } from "../shared/types/userStatus";
 
 export interface AuthUser {
   id: string; 
@@ -10,6 +11,9 @@ export interface AuthUser {
   city?: string;
   profile_image?: string;
   is_verified: boolean;
+  is_approved: boolean;
+  status_reason?: UserStatusReason;
+  status_reason_description?: string;
   created_at: string;
   updated_at: string;
 }

@@ -17,6 +17,7 @@ import Button from "@/ui/Button";
 import EditHostProfileForm from "@/features/host/EditHostProfileForm";
 import AvailabilityManagementModal from "@/features/host/LazyAvailabilityManagementModal";
 import { HostService } from "@/service/host";
+import { HostingRequestService, HostingRequest } from "@/service/HostingRequest";
 
 export default function ManageHostingPage() {
   const { t } = useTranslation();
@@ -26,6 +27,8 @@ export default function ManageHostingPage() {
   const [isEditing, setIsEditing] = useState(false);
   const [showAvailabilityModal, setShowAvailabilityModal] = useState(false);
   const [hostProfile, setHostProfile] = useState<any>(null);
+  const [activeHostings, setActiveHostings] = useState(0);
+  const [totalGuestsHosted, setTotalGuestsHosted] = useState(0);
 
   useEffect(() => {
     if (!user) {
@@ -33,6 +36,7 @@ export default function ManageHostingPage() {
       return;
     }
     loadHostProfile();
+    loadHostingStats();
     setLoading(false);
   }, [user, router]);
 
@@ -42,6 +46,37 @@ export default function ManageHostingPage() {
       setHostProfile(profile);
     } catch (error) {
       console.error("Error loading host profile:", error);
+    }
+  };
+
+  const loadHostingStats = async () => {
+    try {
+      const requests = await HostingRequestService.getMyHostRequests();
+      const now = new Date();
+      
+      let active = 0;
+      let completed = 0;
+      
+      requests.forEach((request: HostingRequest) => {
+        if (request.status === 'accepted') {
+          const requestDate = new Date(request.requested_date);
+          const oneDayAfter = new Date(requestDate);
+          oneDayAfter.setDate(oneDayAfter.getDate() + 1);
+          
+          if (now <= oneDayAfter) {
+            // אירוח פעיל - התאריך עדיין לא עבר או עבר פחות מיום
+            active++;
+          } else {
+            // אורח שהתארח - עבר יום מתאריך הבקשה
+            completed++;
+          }
+        }
+      });
+      
+      setActiveHostings(active);
+      setTotalGuestsHosted(completed);
+    } catch (error) {
+      console.error("Error loading hosting stats:", error);
     }
   };
 
@@ -132,7 +167,7 @@ export default function ManageHostingPage() {
                 <p className="text-sm text-gray-600">
                   {t("manageHosting.activeHostings")}
                 </p>
-                <p className="text-2xl font-bold text-gray-900">0</p>
+                <p className="text-2xl font-bold text-gray-900">{activeHostings}</p>
               </div>
             </div>
           </div>
@@ -146,7 +181,7 @@ export default function ManageHostingPage() {
                 <p className="text-sm text-gray-600">
                   {t("manageHosting.guestsHosted")}
                 </p>
-                <p className="text-2xl font-bold text-gray-900">0</p>
+                <p className="text-2xl font-bold text-gray-900">{totalGuestsHosted}</p>
               </div>
             </div>
           </div>

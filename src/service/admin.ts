@@ -1,5 +1,6 @@
 import { AuthService } from "./auth";
 import { createApiUrl } from "../shared/lib/config";
+import { UserStatusReason } from "../shared/types/userStatus";
 
 export interface AdminStats {
   totalUsers: number;
@@ -278,5 +279,36 @@ export class AdminService {
     if (!res.ok) throw new Error("Failed to create user report");
     const data = await res.json();
     return data.report_id;
+  }
+
+  // Update user approval status
+  static async updateUserApprovalStatus(
+    userId: string, 
+    isApproved: boolean,
+    reason?: UserStatusReason,
+    reasonDescription?: string
+  ): Promise<void> {
+    const res = await fetch(`${this.baseUrl}/users/${userId}/approval-status`, {
+      method: "PUT",
+      headers: {
+        ...AuthService.getAuthHeaders(),
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        is_approved: isApproved,
+        status_reason: reason,
+        status_reason_description: reasonDescription,
+      }),
+    });
+    if (!res.ok) throw new Error("Failed to update user approval status");
+  }
+
+  // Get users with their approval status
+  static async getUsersWithStatus(): Promise<any[]> {
+    const res = await fetch(`${this.baseUrl}/users-with-status`, {
+      headers: { ...AuthService.getAuthHeaders() },
+    });
+    if (!res.ok) throw new Error("Failed to fetch users with status");
+    return (await res.json());
   }
 }

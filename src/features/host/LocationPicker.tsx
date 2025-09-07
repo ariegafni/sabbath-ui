@@ -35,10 +35,10 @@ export default function LocationPicker({
 
         const countryAC = new window.google.maps.places.Autocomplete(
           countryRef.current,
-          { types: ["(regions)"], fields: ["place_id", "formatted_address"] }
+          { types: ["(regions)"], fields: ["place_id", "formatted_address", "address_components"] }
         );
 
-        const cityAC = new window.google.maps.places.Autocomplete(
+        let cityAC = new window.google.maps.places.Autocomplete(
           cityRef.current,
           { types: ["(cities)"], fields: ["place_id", "formatted_address"] }
         );
@@ -46,10 +46,46 @@ export default function LocationPicker({
         countryAC.addListener("place_changed", () => {
           const place = countryAC.getPlace();
           if (!place.place_id) return;
+          
           onChange("country_place_id", place.place_id);
           onChange("country_display_name", place.formatted_address || "");
           onChange("city_place_id", "");
           onChange("city_display_name", "");
+          
+          // נקה את שדה העיר
+          if (cityRef.current) {
+            cityRef.current.value = "";
+          }
+          
+          // מצא את קוד המדינה
+          let countryCode = "";
+          if (place.address_components) {
+            for (const component of place.address_components) {
+              if (component.types.includes("country")) {
+                countryCode = component.short_name;
+                break;
+              }
+            }
+          }
+          
+          // צור autocomplete חדש לעיר עם הגבלה למדינה שנבחרה
+          if (countryCode && cityRef.current) {
+            cityAC = new window.google.maps.places.Autocomplete(
+              cityRef.current,
+              { 
+                types: ["(cities)"], 
+                fields: ["place_id", "formatted_address"],
+                componentRestrictions: { country: countryCode }
+              }
+            );
+            
+            cityAC.addListener("place_changed", () => {
+              const cityPlace = cityAC.getPlace();
+              if (!cityPlace.place_id) return;
+              onChange("city_place_id", cityPlace.place_id);
+              onChange("city_display_name", cityPlace.formatted_address || "");
+            });
+          }
         });
 
         cityAC.addListener("place_changed", () => {

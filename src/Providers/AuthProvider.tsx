@@ -2,9 +2,17 @@
 import { createContext, useContext } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { UserService } from "../service";
-import { AuthService } from "../service/auth";
+import { AuthService, AuthUser } from "../service/auth";
+import { UserStatusReason } from "../shared/types/userStatus";
 
-type User = { id: string; name?: string; email?: string } | null;
+type User = { 
+  id: string; 
+  name?: string; 
+  email?: string;
+  is_approved: boolean;
+  status_reason?: UserStatusReason;
+  status_reason_description?: string;
+} | null;
 
 const AuthCtx = createContext<{
   user: User;
@@ -32,11 +40,14 @@ export default function AuthProvider({
       }
 
       try {
-        const data = await UserService.getCurrentUser();
+        const data: AuthUser = await UserService.getCurrentUser();
         return {
           id: data.id.toString(),
           name: `${data.first_name} ${data.last_name}`,
           email: data.email,
+          is_approved: data.is_approved ?? true, // ברירת מחדל מאומת
+          status_reason: data.status_reason,
+          status_reason_description: data.status_reason_description,
         };
       } catch (error) {
         console.error("Failed to fetch user:", error);

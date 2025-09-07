@@ -67,18 +67,18 @@ export default function MyHostingRequests({
 
 
   const handleCancelRequest = async (requestId: string) => {
-    if (!confirm("האם אתה בטוח שברצונך לבטל את בקשת האירוח?")) {
+    if (!confirm("האם אתה בטוח שברצונך לבטל את בקשת האירוח? הבקשה תמחק לחלוטין.")) {
       return;
     }
 
     try {
       const { HostingRequestService } = await import("@/service/HostingRequest");
-      await HostingRequestService.cancelHostingRequest(requestId);
+      await HostingRequestService.deleteHostingRequest(requestId);
 
       // Invalidate queries to refetch updated data
       queryClient.invalidateQueries({ queryKey: ['my-hosting-requests'] });
 
-      alert("בקשת האירוח בוטלה בהצלחה");
+      alert("בקשת האירוח בוטלה ונמחקה בהצלחה");
     } catch (error) {
       console.error("Error cancelling request:", error);
       alert("שגיאה בביטול בקשת האירוח");
@@ -399,16 +399,26 @@ export default function MyHostingRequests({
                   </div>
                 )}
                 
-                <div className="flex items-center">
-                  <Button
-                    onClick={() => handleDeleteRequest(request.id)}
-                    variant="outline"
-                    className="w-full border-gray-300 text-gray-600 hover:bg-gray-50"
-                  >
-                    <X className="w-4 h-4 ml-2" />
-                    מחק בקשה
-                  </Button>
-                </div>
+                {/* כפתור מחק בקשה מוצג רק אם עבר יום מתאריך הבקשה */}
+                {(() => {
+                  const requestDate = new Date(request.requested_date);
+                  const oneDayAfter = new Date(requestDate);
+                  oneDayAfter.setDate(oneDayAfter.getDate() + 1);
+                  const now = new Date();
+                  
+                  return now > oneDayAfter ? (
+                    <div className="flex items-center">
+                      <Button
+                        onClick={() => handleDeleteRequest(request.id)}
+                        variant="outline"
+                        className="w-full border-gray-300 text-gray-600 hover:bg-gray-50"
+                      >
+                        <X className="w-4 h-4 ml-2" />
+                        מחק מהיסטוריה
+                      </Button>
+                    </div>
+                  ) : null;
+                })()}
               </div>
             )}
 
