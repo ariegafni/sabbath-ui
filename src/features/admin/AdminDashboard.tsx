@@ -15,10 +15,9 @@ import Button from "@/ui/Button";
 import { AdminService, AdminStats } from "@/service/admin";
 import AdminStatistics from "./AdminStatistics";
 import AdminUserReports from "./AdminUserReports";
-import AdminUserManagement from "./AdminUserManagement";
-import AdminUserApprovalManagement from "./AdminUserApprovalManagement";
+import AdminUserManagementUnified from "./AdminUserManagementUnified";
 
-type AdminView = 'dashboard' | 'statistics' | 'reports' | 'users' | 'hosts' | 'approvals';
+type AdminView = 'dashboard' | 'statistics' | 'reports' | 'users' | 'hosts';
 
 export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
@@ -56,11 +55,9 @@ export default function AdminDashboard() {
       case 'reports':
         return <AdminUserReports />;
       case 'users':
-        return <AdminUserManagement type="users" />;
+        return <AdminUserManagementUnified type="users" />;
       case 'hosts':
-        return <AdminUserManagement type="hosts" />;
-      case 'approvals':
-        return <AdminUserApprovalManagement />;
+        return <AdminUserManagementUnified type="hosts" />;
       default:
         return renderDashboardOverview();
     }
@@ -132,7 +129,7 @@ export default function AdminDashboard() {
       </div>
 
       {/* Quick Actions */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
           <div className="flex items-center gap-3 mb-4">
             <TrendingUp className="h-6 w-6 text-blue-600" />
@@ -165,10 +162,10 @@ export default function AdminDashboard() {
 
         <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
           <div className="flex items-center gap-3 mb-4">
-            <Settings className="h-6 w-6 text-gray-600" />
-            <h3 className="text-lg font-semibold">ניהול משתמשים</h3>
+            <Shield className="h-6 w-6 text-purple-600" />
+            <h3 className="text-lg font-semibold">ניהול משתמשים והרשאות</h3>
           </div>
-          <p className="text-gray-600 mb-4">נהל משתמשים ומארחים, הסר חשבונות והגבל גישה</p>
+          <p className="text-gray-600 mb-4">נהל משתמשים ומארחים, שנה הרשאות, אשר או חסום חשבונות</p>
           <div className="flex gap-2">
             <Button 
               onClick={() => setCurrentView('users')}
@@ -187,21 +184,6 @@ export default function AdminDashboard() {
               מארחים
             </Button>
           </div>
-        </div>
-
-        <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
-          <div className="flex items-center gap-3 mb-4">
-            <Shield className="h-6 w-6 text-purple-600" />
-            <h3 className="text-lg font-semibold">ניהול הרשאות</h3>
-          </div>
-          <p className="text-gray-600 mb-4">נהל הרשאות משתמשים - אישור, חסימה ועדכון סטטוס</p>
-          <Button 
-            onClick={() => setCurrentView('approvals')}
-            variant="outline" 
-            className="w-full"
-          >
-            נהל הרשאות
-          </Button>
         </div>
       </div>
 
