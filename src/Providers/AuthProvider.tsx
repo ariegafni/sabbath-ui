@@ -40,7 +40,7 @@ export default function AuthProvider({
       }
 
       try {
-        const data: AuthUser = await UserService.getCurrentUser();
+        const data = await UserService.getCurrentUser();
         return {
           id: data.id.toString(),
           name: `${data.first_name} ${data.last_name}`,
