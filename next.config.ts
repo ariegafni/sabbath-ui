@@ -21,7 +21,7 @@ const nextConfig: NextConfig = {
         protocol: isDev ? "http" : "https",
         hostname: API_HOSTNAME,
         port: isDev ? "3005" : "",
-        pathname: "/idrive-proxy/**",
+        pathname: "/**",
       },
     ],
   },
