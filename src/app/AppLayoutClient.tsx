@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import i18n from "@/shared/i18n/config";
 import BottomNavigation from "@/ui/BottomNavigation";
+import ProfileStatusManager from "@/features/auth/ProfileStatusManager";
 import { usePathname } from "next/navigation";
 import { usePrefetchManager } from "@/shared/lib/hooks";
 
@@ -28,6 +29,7 @@ export default function AppLayoutClient({
     <>
       <main className="min-h-screen">{children}</main>
       {usePathname() !== "/login" && <BottomNavigation />}
+      <ProfileStatusManager />
     </>
   );
 }

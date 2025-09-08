@@ -111,7 +111,13 @@ export class AuthService {
       console.log("Registering user with URL:", `${this.baseUrl}/register`);
       console.log("User data:", userData);
       
-      const requestBody = JSON.stringify(userData);
+      // Add flag to indicate this is from multi-step registration
+      const registrationData = {
+        ...userData,
+        is_multi_step: true, // This tells the backend to mark user as profile_incomplete if phone/image missing
+      };
+      
+      const requestBody = JSON.stringify(registrationData);
       console.log("Request body:", requestBody);
       
       const response = await fetch(`${this.baseUrl}/register`, {
@@ -207,6 +213,57 @@ export class AuthService {
     if (!response.ok) {
       throw new Error("Email verification failed");
     }
+  }
+
+  // שליחת קוד אימות מייל חוזר
+  static async resendEmailVerification(email: string): Promise<void> {
+    const response = await fetch(`${this.baseUrl}/resend-email-verification`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ email }),
+    });
+    if (!response.ok) {
+      throw new Error("Failed to resend verification email");
+    }
+  }
+
+  // עדכון פרופיל משתמש
+  static async updateProfile(profileData: {
+    phone?: string;
+    profile_image?: string;
+  }): Promise<AuthUser> {
+    const response = await fetch(`${this.baseUrl}/profile`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        ...this.getAuthHeaders(),
+      },
+      body: JSON.stringify(profileData),
+    });
+    if (!response.ok) {
+      throw new Error("Profile update failed");
+    }
+    return response.json();
+  }
+
+  // העלאת תמונת פרופיל
+  static async uploadProfileImage(file: File): Promise<{ url: string }> {
+    const formData = new FormData();
+    formData.append("profile_image", file);
+
+    const response = await fetch(`${this.baseUrl}/upload-profile-image`, {
+      method: "POST",
+      headers: {
+        ...this.getAuthHeaders(),
+      },
+      body: formData,
+    });
+    if (!response.ok) {
+      throw new Error("Profile image upload failed");
+    }
+    return response.json();
   }
 
   // שכחתי סיסמה

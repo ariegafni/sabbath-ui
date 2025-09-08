@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { Mail, Lock, User, ArrowRight } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { AuthService } from "@/service";
+import MultiStepRegistration from "@/features/auth/MultiStepRegistration";
 
 interface Props {
   onSwitchToLogin: () => void;
@@ -11,51 +11,27 @@ interface Props {
 
 export default function RegisterForm({ onSwitchToLogin }: Props) {
   const { t } = useTranslation();
-  const [form, setForm] = useState({
-    firstName: "",
-    lastName: "",
-    email: "",
-    password: "",
-  });
+  const [showMultiStepRegistration, setShowMultiStepRegistration] = useState(false);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const first_name = form.firstName.trim();
-    const last_name = form.lastName.trim();
-    const email = form.email.trim();
-    const password = form.password;
-
-    // Validation
-    if (!first_name || !last_name || !email || !password) {
-      alert("אנא מלא את כל השדות");
-      return;
-    }
-
-    if (password.length < 6) {
-      alert("הסיסמה חייבת להיות לפחות 6 תווים");
-      return;
-    }
-
-    try {
-      console.log("Submitting registration with data:", { first_name, last_name, email, password: "***" });
-      
-      await AuthService.register({
-        first_name,
-        last_name,
-        email,
-        password,
-      });
-      onSwitchToLogin();
-    } catch (err) {
-      console.error("Register failed:", err);
-      const errorMessage = err instanceof Error ? err.message : "שגיאה בהרשמה";
-      alert(errorMessage);
-    }
-  };
+  // Show the multi-step registration modal
+  if (showMultiStepRegistration) {
+    return (
+      <>
+        {/* Backdrop */}
+        <div className="fixed inset-0 z-50">
+          <MultiStepRegistration
+            isOpen={showMultiStepRegistration}
+            onClose={() => setShowMultiStepRegistration(false)}
+            onComplete={() => {
+              setShowMultiStepRegistration(false);
+              onSwitchToLogin();
+            }}
+          />
+        </div>
+      </>
+    );
+  }
 
   return (
     <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
@@ -67,93 +43,19 @@ export default function RegisterForm({ onSwitchToLogin }: Props) {
           {t("auth.registerSubtitle")}
         </p>
       </div>
-      <form onSubmit={handleSubmit} className="px-6 py-8 space-y-6">
-        <div className="space-y-2">
-          <label className="block text-sm font-medium text-gray-700">
-            {t("auth.firstName")}
-          </label>
-          <div className="relative">
-            <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-              <User className="h-5 w-5 text-gray-400" />
-            </div>
-            <input
-              type="text"
-              name="firstName"
-              placeholder={t("auth.firstNamePlaceholder")}
-              value={form.firstName}
-              onChange={handleChange}
-              className="w-full pr-10 pl-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-sm sm:text-base"
-              required
-            />
-          </div>
+      <div className="px-6 py-8">
+        <div className="text-center mb-6">
+          <p className="text-gray-600 mb-6">
+            תהליך רישום חדש ומשופר עם כמה שלבים קצרים
+          </p>
+          <button
+            onClick={() => setShowMultiStepRegistration(true)}
+            className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl py-4 font-semibold hover:from-blue-700 hover:to-purple-700 transform hover:-translate-y-0.5 transition-all duration-200 flex items-center justify-center gap-2 text-sm sm:text-base"
+          >
+            התחל רישום
+            <ArrowRight className="h-4 w-4" />
+          </button>
         </div>
-
-        <div className="space-y-2">
-          <label className="block text-sm font-medium text-gray-700">
-            {t("auth.lastName")}
-          </label>
-          <div className="relative">
-            <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-              <User className="h-5 w-5 text-gray-400" />
-            </div>
-            <input
-              type="text"
-              name="lastName"
-              placeholder={t("auth.lastNamePlaceholder")}
-              value={form.lastName}
-              onChange={handleChange}
-              className="w-full pr-10 pl-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-sm sm:text-base"
-              required
-            />
-          </div>
-        </div>
-
-        <div className="space-y-2">
-          <label className="block text-sm font-medium text-gray-700">
-            {t("auth.email")}
-          </label>
-          <div className="relative">
-            <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-              <Mail className="h-5 w-5 text-gray-400" />
-            </div>
-            <input
-              type="email"
-              name="email"
-              placeholder={t("auth.emailPlaceholder")}
-              value={form.email}
-              onChange={handleChange}
-              className="w-full pr-10 pl-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-sm sm:text-base"
-              required
-            />
-          </div>
-        </div>
-
-        <div className="space-y-2">
-          <label className="block text-sm font-medium text-gray-700">
-            {t("auth.password")}
-          </label>
-          <div className="relative">
-            <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-              <Lock className="h-5 w-5 text-gray-400" />
-            </div>
-            <input
-              type="password"
-              name="password"
-              placeholder={t("auth.passwordStrongPlaceholder")}
-              value={form.password}
-              onChange={handleChange}
-              className="w-full pr-10 pl-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-sm sm:text-base"
-              required
-            />
-          </div>
-        </div>
-        <button
-          type="submit"
-          className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl py-3 font-semibold hover:from-blue-700 hover:to-purple-700 transform hover:-translate-y-0.5 transition-all duration-200 flex items-center justify-center gap-2 text-sm sm:text-base"
-        >
-          {t("auth.register")}
-          <ArrowRight className="h-4 w-4" />
-        </button>
         <div className="text-center pt-4 border-t border-gray-100">
           <p className="text-sm text-gray-600">
             {t("auth.haveAccount")}{" "}
@@ -166,7 +68,7 @@ export default function RegisterForm({ onSwitchToLogin }: Props) {
             </button>
           </p>
         </div>
-      </form>
+      </div>
     </div>
   );
 }

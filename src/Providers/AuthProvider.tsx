@@ -5,14 +5,7 @@ import { UserService } from "../service";
 import { AuthService, AuthUser } from "../service/auth";
 import { UserStatusReason } from "../shared/types/userStatus";
 
-type User = { 
-  id: string; 
-  name?: string; 
-  email?: string;
-  is_approved: boolean;
-  status_reason?: UserStatusReason;
-  status_reason_description?: string;
-} | null;
+type User = AuthUser | null;
 
 const AuthCtx = createContext<{
   user: User;
@@ -41,14 +34,11 @@ export default function AuthProvider({
 
       try {
         const data = await UserService.getCurrentUser();
+        // Convert User to AuthUser format
         return {
-          id: data.id.toString(),
-          name: `${data.first_name} ${data.last_name}`,
-          email: data.email,
-          is_approved: data.is_approved ?? true, // ברירת מחדל מאומת
-          status_reason: data.status_reason,
-          status_reason_description: data.status_reason_description,
-        };
+          ...data,
+          id: data.id.toString(), // Convert number to string for AuthUser compatibility
+        } as AuthUser;
       } catch (error) {
         console.error("Failed to fetch user:", error);
         // Clear tokens if they're invalid

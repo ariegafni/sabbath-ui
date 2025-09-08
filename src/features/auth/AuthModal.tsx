@@ -5,8 +5,9 @@ import { useTranslation } from "react-i18next";
 import { X, Mail, Lock, User, Phone, Eye, EyeOff, Github } from "lucide-react";
 import Button from "@/ui/Button";
 import { AuthService } from "../../service";
+import MultiStepRegistration from "./MultiStepRegistration";
 
-type AuthMode = "login" | "register" | "forgot-password";
+type AuthMode = "login" | "forgot-password";
 
 type AuthModalProps = {
   isOpen: boolean;
@@ -23,6 +24,7 @@ export default function AuthModal({
   const [mode, setMode] = useState<AuthMode>(defaultMode);
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [showMultiStepRegistration, setShowMultiStepRegistration] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -32,24 +34,28 @@ export default function AuthModal({
 
   if (!isOpen) return null;
 
+  // Show multi-step registration when requested
+  if (showMultiStepRegistration) {
+    return (
+      <MultiStepRegistration
+        isOpen={isOpen}
+        onClose={onClose}
+        onComplete={() => {
+          setShowMultiStepRegistration(false);
+          onClose();
+          // Here you might want to trigger a page refresh or redirect to dashboard
+          window.location.reload();
+        }}
+      />
+    );
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      if (mode === "register") {
-        const authResponse = await AuthService.register({
-          email: formData.email,
-          password: formData.password,
-          first_name: formData.name.split(" ")[0] || formData.name,
-          last_name: formData.name.split(" ").slice(1).join(" ") || "",
-          phone: formData.phone,
-        });
-
-        // Show success message and switch to login
-        setMode("login");
-        setFormData({ name: "", email: "", password: "", phone: "" });
-      } else if (mode === "login") {
+      if (mode === "login") {
         const authResponse = await AuthService.login({
           email: formData.email,
           password: formData.password,
@@ -91,7 +97,6 @@ export default function AuthModal({
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <h2 className="text-xl font-bold text-gray-900">
             {mode === "login" && "התחברות"}
-            {mode === "register" && "רישום"}
             {mode === "forgot-password" && "איפוס סיסמה"}
           </h2>
           <button
@@ -104,24 +109,6 @@ export default function AuthModal({
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
-          {mode === "register" && (
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700">
-                שם מלא
-              </label>
-              <div className="relative">
-                <User className="absolute right-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                <input
-                  type="text"
-                  required
-                  value={formData.name}
-                  onChange={(e) => updateFormData("name", e.target.value)}
-                  className="w-full pr-10 pl-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="הכנס את שמך המלא"
-                />
-              </div>
-            </div>
-          )}
 
           <div className="space-y-2">
             <label className="text-sm font-medium text-gray-700">אימייל</label>
@@ -138,23 +125,6 @@ export default function AuthModal({
             </div>
           </div>
 
-          {mode === "register" && (
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700">
-                טלפון (לא חובה)
-              </label>
-              <div className="relative">
-                <Phone className="absolute right-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                <input
-                  type="tel"
-                  value={formData.phone}
-                  onChange={(e) => updateFormData("phone", e.target.value)}
-                  className="w-full pr-10 pl-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="הכנס את הטלפון שלך"
-                />
-              </div>
-            </div>
-          )}
 
           {mode !== "forgot-password" && (
             <div className="space-y-2">
@@ -195,14 +165,13 @@ export default function AuthModal({
             ) : (
               <>
                 {mode === "login" && "התחבר"}
-                {mode === "register" && "הירשם"}
                 {mode === "forgot-password" && "שלח קוד איפוס"}
               </>
             )}
           </Button>
 
           {/* Social Auth */}
-          {(mode === "login" || mode === "register") && (
+          {mode === "login" && (
             <div className="space-y-3">
               <div className="relative">
                 <div className="absolute inset-0 flex items-center">
@@ -248,7 +217,7 @@ export default function AuthModal({
               <div className="text-sm text-gray-600">
                 אין לך חשבון?{" "}
                 <button
-                  onClick={() => setMode("register")}
+                  onClick={() => setShowMultiStepRegistration(true)}
                   className="text-blue-600 hover:text-blue-700 font-medium"
                 >
                   הירשם עכשיו
@@ -257,17 +226,6 @@ export default function AuthModal({
             </div>
           )}
 
-          {mode === "register" && (
-            <div className="text-sm text-gray-600">
-              יש לך כבר חשבון?{" "}
-              <button
-                onClick={() => setMode("login")}
-                className="text-blue-600 hover:text-blue-700 font-medium"
-              >
-                התחבר עכשיו
-              </button>
-            </div>
-          )}
 
           {mode === "forgot-password" && (
             <div className="text-sm text-gray-600">
