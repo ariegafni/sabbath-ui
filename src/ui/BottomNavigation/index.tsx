@@ -15,6 +15,8 @@ import { usePathname } from "next/navigation";
 import { useAuth } from "@/Providers/AuthProvider";
 import { useHostProfile, useUnreadCount, usePendingHostingRequests } from "@/shared/lib/hooks";
 import { queryClient } from "@/shared/lib/queryClient";
+import { useUserPermissions } from "@/hooks/useUserPermissions";
+import BlockedActionModal from "@/ui/BlockedActionModal";
 
 type NavigationItem = {
   id: string;
@@ -22,6 +24,7 @@ type NavigationItem = {
   icon: React.ComponentType<{ className?: string }>;
   href: string;
   showBadge?: boolean;
+  requiresPermissionCheck?: boolean;
 };
 
 export default function BottomNavigation() {
@@ -34,6 +37,15 @@ export default function BottomNavigation() {
   const { data: unreadCount = 0 } = useUnreadCount();
   const { data: hasNewHostingRequests = false } = usePendingHostingRequests();
   
+  // Permission checking hook
+  const {
+    checkCanCreateHosting,
+    checkCanCreateHostingRequest,
+    isBlockModalOpen,
+    blockModalData,
+    closeBlockModal
+  } = useUserPermissions();
+  
   const isHost = !!hostProfile;
   const hasUnread = unreadCount > 0;
 
@@ -45,12 +57,14 @@ export default function BottomNavigation() {
         icon: Calendar,
         href: "/manage-hosting",
         showBadge: hasNewHostingRequests, // יציג פלוס רק אם יש בקשות תלויות
+        requiresPermissionCheck: true,
       }
     : {
         id: "host",
         label: t("nav.publish", { defaultValue: "פרסם אירוח" }),
         icon: Plus,
         href: "/host",
+        requiresPermissionCheck: true,
       }, [isHost, hasNewHostingRequests, t]);
 
   const navigationItems: NavigationItem[] = [
@@ -65,6 +79,7 @@ export default function BottomNavigation() {
       label: t("nav.myRequests", { defaultValue: "הבקשות שלי" }),
       icon: Briefcase,
       href: "/personal-area",
+      requiresPermissionCheck: true,
     },
     {
       id: "messages",
@@ -160,24 +175,71 @@ export default function BottomNavigation() {
     }
   };
 
-  return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50">
-      <div className="max-w-md mx-auto">
-        <div className="flex items-center justify-around">
-          {navigationItems.map((item) => {
-            const Icon = item.icon;
-            const active = isActive(item.href);
+  // Handle navigation with permission check
+  const handleNavigation = (e: React.MouseEvent, item: NavigationItem) => {
+    if (!item.requiresPermissionCheck) return;
+    
+    e.preventDefault();
+    
+    let hasPermission = false;
+    
+    // Check permissions based on navigation item
+    if (item.id === "host") {
+      hasPermission = checkCanCreateHosting();
+    } else if (item.id === "manage-hosting") {
+      hasPermission = checkCanCreateHosting();
+    } else if (item.id === "personal-area") {
+      hasPermission = checkCanCreateHostingRequest();
+    }
+    
+    // If permission granted, navigate manually
+    if (hasPermission) {
+      window.location.href = item.href;
+    }
+  };
 
-            return (
-              <Link
-                key={item.id}
-                href={item.href}
-                className={`flex flex-col items-center py-2 px-3 min-w-0 flex-1 transition-colors ${
-                  active ? "text-blue-600" : "text-gray-500 hover:text-gray-700"
-                }`}
-                onMouseEnter={() => handlePrefetch(item.href)}
-                onFocus={() => handlePrefetch(item.href)}
-              >
+  return (
+    <>
+      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50">
+        <div className="max-w-md mx-auto">
+          <div className="flex items-center justify-around">
+            {navigationItems.map((item) => {
+              const Icon = item.icon;
+              const active = isActive(item.href);
+              const needsCheck = item.requiresPermissionCheck;
+
+              const navElement = (
+                <div className="relative">
+                  <Icon className={`h-6 w-6 ${active ? "text-blue-600" : "text-gray-500"}`} />
+                  {item.showBadge && (
+                    <span className="absolute -top-1 -right-1 bg-red-500 rounded-full h-3 w-3 flex items-center justify-center">
+                      <Plus className="h-2 w-2 text-white stroke-[3]" />
+                    </span>
+                  )}
+                </div>
+              );
+
+              return needsCheck ? (
+                <button
+                  key={item.id}
+                  onClick={(e) => handleNavigation(e, item)}
+                  className={`flex flex-col items-center py-2 px-3 min-w-0 flex-1 transition-colors ${
+                    active ? "text-blue-600" : "text-gray-500 hover:text-gray-700"
+                  }`}
+                >
+                  {navElement}
+                  <span className="text-xs mt-1 font-medium">{item.label}</span>
+                </button>
+              ) : (
+                <Link
+                  key={item.id}
+                  href={item.href}
+                  className={`flex flex-col items-center py-2 px-3 min-w-0 flex-1 transition-colors ${
+                    active ? "text-blue-600" : "text-gray-500 hover:text-gray-700"
+                  }`}
+                  onMouseEnter={() => handlePrefetch(item.href)}
+                  onFocus={() => handlePrefetch(item.href)}
+                >
                 <div className="relative">
                   <Icon className={`h-6 w-6 ${active ? "text-blue-600" : "text-gray-500"}`} />
                   {item.showBadge && (
@@ -189,9 +251,19 @@ export default function BottomNavigation() {
                 <span className="text-xs mt-1 font-medium">{item.label}</span>
               </Link>
             );
-          })}
+            })}
+          </div>
         </div>
-      </div>
-    </nav>
+      </nav>
+
+      {/* Permission Block Modal */}
+      <BlockedActionModal
+        isOpen={isBlockModalOpen}
+        onClose={closeBlockModal}
+        title={blockModalData.title}
+        message={blockModalData.message}
+        requiredActions={blockModalData.requiredActions}
+      />
+    </>
   );
 }

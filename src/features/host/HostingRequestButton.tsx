@@ -5,6 +5,8 @@ import { useTranslation } from "react-i18next";
 import { Calendar, MessageSquare } from "lucide-react";
 import Button from "@/ui/Button";
 import HostingRequestForm from "./HostingRequestForm";
+import { useUserPermissions } from "@/hooks/useUserPermissions";
+import BlockedActionModal from "@/ui/BlockedActionModal";
 
 interface HostingRequestButtonProps {
   hostId: string;
@@ -32,8 +34,18 @@ export default function HostingRequestButton({
   const { t } = useTranslation();
   const [showForm, setShowForm] = useState(false);
 
+  const {
+    checkCanCreateHostingRequest,
+    isBlockModalOpen,
+    blockModalData,
+    closeBlockModal
+  } = useUserPermissions();
+
   const handleOpenForm = () => {
-    setShowForm(true);
+    // Check permissions before opening form
+    if (checkCanCreateHostingRequest()) {
+      setShowForm(true);
+    }
   };
 
   const handleCloseForm = () => {
@@ -67,6 +79,15 @@ export default function HostingRequestButton({
           onSuccess={handleSuccess}
         />
       )}
+
+      {/* Permission Block Modal */}
+      <BlockedActionModal
+        isOpen={isBlockModalOpen}
+        onClose={closeBlockModal}
+        title={blockModalData.title}
+        message={blockModalData.message}
+        requiredActions={blockModalData.requiredActions}
+      />
     </>
   );
 }

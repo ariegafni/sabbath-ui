@@ -6,43 +6,45 @@ import BecomeHostForm, { HostFormData } from "@/features/host/BecomeHostForm";
 import Button from "@/ui/Button";
 import { ArrowRight, CheckCircle } from "lucide-react";
 import { HostService } from "../../service";
-import { useUserPermissions } from "../../shared/hooks/useUserPermissions";
-import UnauthorizedModal from "../../ui/UnauthorizedModal";
+import { useUserPermissions } from "../../hooks/useUserPermissions";
+import BlockedActionModal from "../../ui/BlockedActionModal";
 
 export default function HostPage() {
   const { t } = useTranslation();
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const { 
-    requirePermission, 
-    showUnauthorizedModal, 
-    modalReason, 
-    closeModal 
+    canCreateHosting,
+    isBlockModalOpen,
+    blockModalData,
+    closeBlockModal
   } = useUserPermissions();
 
   const handleSubmit = async (data: HostFormData) => {
-    requirePermission(async () => {
-      setLoading(true);
-      try {
-        await HostService.createHost({
-          country_place_id: data.country_place_id,
-          city_place_id: data.city_place_id,
-          area: data.area || undefined,
-          max_guests: data.max_guests,
-          hosting_type: data.hosting_type,
-          languages: data.languages,
-          kashrut_level: data.kashrut_level || undefined,
-          bio: data.bio || undefined,
-          photo: data.photo,
-        });
-        setIsSubmitted(true);
-      } catch (err) {
-        console.error("Failed to create host:", err);
-        alert(t("common.serverError"));
-      } finally {
-        setLoading(false);
-      }
-    });
+    if (!canCreateHosting.allowed) {
+      return; // Permission modal will show automatically
+    }
+    
+    setLoading(true);
+    try {
+      await HostService.createHost({
+        country_place_id: data.country_place_id,
+        city_place_id: data.city_place_id,
+        area: data.area || undefined,
+        max_guests: data.max_guests,
+        hosting_type: data.hosting_type,
+        languages: data.languages,
+        kashrut_level: data.kashrut_level || undefined,
+        bio: data.bio || undefined,
+        photo: data.photo,
+      });
+      setIsSubmitted(true);
+    } catch (err) {
+      console.error("Failed to create host:", err);
+      alert(t("common.serverError"));
+    } finally {
+      setLoading(false);
+    }
   };
 
   if (isSubmitted) {
@@ -99,11 +101,13 @@ export default function HostPage() {
         </div>
       </div>
 
-      {/* Unauthorized Modal */}
-      <UnauthorizedModal
-        isOpen={showUnauthorizedModal}
-        onClose={closeModal}
-        reason={modalReason}
+      {/* Permission Block Modal */}
+      <BlockedActionModal
+        isOpen={isBlockModalOpen}
+        onClose={closeBlockModal}
+        title={blockModalData.title}
+        message={blockModalData.message}
+        requiredActions={blockModalData.requiredActions}
       />
     </div>
   );

@@ -3,7 +3,7 @@
 import { useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/Providers/AuthProvider";
-import { User, Settings, LogOut, Bell, Edit3, MessageSquare } from "lucide-react";
+import { User as UserIcon, Settings, LogOut, Bell, Edit3, MessageSquare } from "lucide-react";
 import Button from "@/ui/Button";
 import { GeneralService, UserService } from "@/service";
 import LanguageSwitcher from "@/ui/LanguageSwitcher";
@@ -51,6 +51,11 @@ export default function ProfilePage() {
   const [languageOpen, setLanguageOpen] = useState(false);
   const [showEditForm, setShowEditForm] = useState(false);
   const [showReportsModal, setShowReportsModal] = useState(false);
+  const [editingField, setEditingField] = useState<string | null>(null);
+  const [editFormData, setEditFormData] = useState({
+    phone: "",
+    email: ""
+  });
 
   // Combine data from localStorage and API calls
   const profile = useMemo(() => {
@@ -132,10 +137,57 @@ export default function ProfilePage() {
         JSON.stringify({ ...data, profile_image: res.profile_image })
       );
       setPreview(null);
+      alert("תמונת הפרופיל עודכנה בהצלחה!");
     } catch {
       alert(t("profile.uploadError"));
     } finally {
       setIsUploading(false);
+    }
+  };
+
+  // Initialize edit form with current data
+  const initializeEditForm = (field: string) => {
+    setEditingField(field);
+    if (field === "phone") {
+      setEditFormData(prev => ({ ...prev, phone: user?.phone || "" }));
+    } else if (field === "email") {
+      setEditFormData(prev => ({ ...prev, email: user?.email || "" }));
+    }
+  };
+
+  // Handle profile updates
+  const handleUpdateProfile = async (field: string) => {
+    if (!editFormData[field as keyof typeof editFormData].trim()) {
+      alert(`אנא הכנס ${field === "phone" ? "מספר טלפון" : "כתובת אימייל"} תקין`);
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+      
+      const updateData: any = {};
+      if (field === "phone") {
+        updateData.phone = editFormData.phone.trim();
+      } else if (field === "email") {
+        updateData.email = editFormData.email.trim();
+      }
+
+      await UserService.updateProfile(updateData);
+      
+      // Update localStorage
+      const userData = JSON.parse(localStorage.getItem("user") || "{}");
+      localStorage.setItem("user", JSON.stringify({ ...userData, ...updateData }));
+      
+      // Invalidate queries to refetch updated data
+      queryClient.invalidateQueries({ queryKey: ['user-profile'] });
+      
+      setEditingField(null);
+      alert(`${field === "phone" ? "מספר הטלפון" : "כתובת האימייל"} עודכן בהצלחה!`);
+    } catch (error) {
+      console.error("Failed to update profile:", error);
+      alert(`שגיאה בעדכון ${field === "phone" ? "מספר הטלפון" : "כתובת האימייל"}`);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -182,7 +234,7 @@ export default function ProfilePage() {
                   className="w-full h-full object-cover"
                 />
               ) : (
-                <User className="h-12 w-12 text-gray-400" />
+                <UserIcon className="h-12 w-12 text-gray-400" />
               )}
             </label>
             <input
@@ -239,6 +291,171 @@ export default function ProfilePage() {
             )}
           </div>
         </div>
+
+        {/* Profile Edit Form */}
+        {showEditForm && (
+          <div className="bg-white rounded-2xl shadow-sm border p-6">
+            <h3 className="text-lg font-bold mb-6 text-gray-900">השלמת פרטי פרופיל</h3>
+            
+            <div className="space-y-6">
+              {/* Profile Image Section */}
+              <div className="flex items-start gap-4">
+                <div className="flex-shrink-0">
+                  <div className="relative w-20 h-20 rounded-full overflow-hidden bg-gray-100 flex items-center justify-center border-2 border-gray-200">
+                    {(preview || user?.profile_image) ? (
+                      <img
+                        src={preview || user?.profile_image}
+                        alt="Profile"
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <UserIcon className="h-8 w-8 text-gray-400" />
+                    )}
+                  </div>
+                </div>
+                <div className="flex-1">
+                  <h4 className="font-semibold text-gray-900 mb-2">תמונת פרופיל</h4>
+                  <p className="text-sm text-gray-600 mb-3">
+                    {user?.profile_image ? "עדכן את תמונת הפרופיל שלך" : "הוסף תמונת פרופיל לחשבון שלך"}
+                  </p>
+                  <div className="flex items-center gap-3">
+                    <label htmlFor="editProfileImage" className="cursor-pointer">
+                      <Button type="button" variant="outline" size="sm">
+                        {user?.profile_image ? "שנה תמונה" : "הוסף תמונה"}
+                      </Button>
+                    </label>
+                    <input
+                      id="editProfileImage"
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handleFileSelect}
+                    />
+                    {preview && (
+                      <Button
+                        onClick={handleConfirmUpload}
+                        size="sm"
+                        disabled={isUploading}
+                      >
+                        {isUploading ? "מעלה..." : "שמור תמונה"}
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Phone Section */}
+              <div className="flex items-start gap-4 py-4 border-t border-gray-100">
+                <div className="w-20 flex justify-center pt-1">
+                  <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
+                    <span className="text-blue-600 text-sm font-medium">📱</span>
+                  </div>
+                </div>
+                <div className="flex-1">
+                  <h4 className="font-semibold text-gray-900 mb-2">מספר טלפון</h4>
+                  <p className="text-sm text-gray-600 mb-3">
+                    {user?.phone ? `מספר הטלפון הנוכחי: ${user.phone}` : "הוסף מספר טלפון לחשבון שלך"}
+                  </p>
+                  
+                  {editingField === "phone" ? (
+                    <div className="flex items-center gap-3">
+                      <input
+                        type="tel"
+                        value={editFormData.phone}
+                        onChange={(e) => setEditFormData(prev => ({ ...prev, phone: e.target.value }))}
+                        placeholder="הכנס מספר טלפון"
+                        className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        dir="ltr"
+                      />
+                      <Button
+                        onClick={() => handleUpdateProfile("phone")}
+                        size="sm"
+                        disabled={isSubmitting}
+                      >
+                        {isSubmitting ? "שומר..." : "שמור"}
+                      </Button>
+                      <Button
+                        onClick={() => setEditingField(null)}
+                        variant="outline"
+                        size="sm"
+                      >
+                        ביטול
+                      </Button>
+                    </div>
+                  ) : (
+                    <Button
+                      onClick={() => initializeEditForm("phone")}
+                      variant="outline"
+                      size="sm"
+                    >
+                      {user?.phone ? "עדכן טלפון" : "הוסף טלפון"}
+                    </Button>
+                  )}
+                </div>
+              </div>
+
+              {/* Email Section */}
+              <div className="flex items-start gap-4 py-4 border-t border-gray-100">
+                <div className="w-20 flex justify-center pt-1">
+                  <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center">
+                    <span className="text-green-600 text-sm font-medium">✉️</span>
+                  </div>
+                </div>
+                <div className="flex-1">
+                  <h4 className="font-semibold text-gray-900 mb-2">כתובת אימייל</h4>
+                  <p className="text-sm text-gray-600 mb-3">
+                    כתובת האימייל הנוכחית: {user?.email}
+                    {user?.is_verified ? (
+                      <span className="text-green-600 text-xs mr-2">✓ מאומת</span>
+                    ) : (
+                      <span className="text-orange-600 text-xs mr-2">⚠ לא מאומת</span>
+                    )}
+                  </p>
+                  
+                  {editingField === "email" ? (
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-3">
+                        <input
+                          type="email"
+                          value={editFormData.email}
+                          onChange={(e) => setEditFormData(prev => ({ ...prev, email: e.target.value }))}
+                          placeholder="הכנס כתובת אימייל חדשה"
+                          className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          dir="ltr"
+                        />
+                        <Button
+                          onClick={() => handleUpdateProfile("email")}
+                          size="sm"
+                          disabled={isSubmitting}
+                        >
+                          {isSubmitting ? "שומר..." : "שמור"}
+                        </Button>
+                        <Button
+                          onClick={() => setEditingField(null)}
+                          variant="outline"
+                          size="sm"
+                        >
+                          ביטול
+                        </Button>
+                      </div>
+                      <p className="text-xs text-amber-600">
+                        ⚠ שינוי כתובת האימייל ידרוש אימות מחדש
+                      </p>
+                    </div>
+                  ) : (
+                    <Button
+                      onClick={() => initializeEditForm("email")}
+                      variant="outline"
+                      size="sm"
+                    >
+                      עדכן אימייל
+                    </Button>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Settings */}
         <div className="bg-white rounded-2xl shadow-sm border p-6">
