@@ -252,18 +252,29 @@ export class AuthService {
   static async uploadProfileImage(file: File): Promise<{ url: string }> {
     const formData = new FormData();
     formData.append("profile_image", file);
+    
+    console.log(`Uploading to: ${this.baseUrl}/api/users/upload-profile-image`);
+    console.log(`File size: ${file.size} bytes`);
+    console.log(`File type: ${file.type}`);
 
-    const response = await fetch(`${this.baseUrl}/upload-profile-image`, {
+    const response = await fetch(`${this.baseUrl}/api/users/upload-profile-image`, {
       method: "POST",
       headers: {
         ...this.getAuthHeaders(),
+        // Do not set Content-Type for FormData - let browser set it with boundary
       },
       body: formData,
     });
+    
     if (!response.ok) {
-      throw new Error("Profile image upload failed");
+      const errorText = await response.text();
+      console.error(`Upload failed: ${response.status} - ${errorText}`);
+      throw new Error(`Profile image upload failed: ${errorText}`);
     }
-    return response.json();
+    
+    const result = await response.json();
+    console.log(`Upload result:`, result);
+    return { url: result.profile_image };
   }
 
   // שכחתי סיסמה

@@ -194,45 +194,62 @@ export default function MultiStepRegistration({ isOpen, onClose, onComplete }: P
   };
 
   return (
-    <div className="fixed inset-0 bg-gradient-to-br from-blue-50 to-purple-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-3xl w-full max-w-md max-h-[90vh] overflow-hidden shadow-2xl">
+    <div className="fixed inset-0 bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-3xl w-full max-w-md max-h-[90vh] overflow-hidden shadow-2xl border border-white/20 backdrop-blur-sm">
         
-        {/* Progress Bar */}
-        <div className="px-6 pt-6">
-          <div className="flex justify-between items-center mb-2">
-            <span className="text-sm font-medium text-gray-600">
-              {currentStep === "basic-info" && "שלב 1 מתוך 3"}
-              {currentStep === "email-verification" && "שלב 2 מתוך 3"}
-              {currentStep === "profile-completion" && "שלב 3 מתוך 3"}
-            </span>
-            <button
-              onClick={onClose}
-              className="text-gray-400 hover:text-gray-600 transition-colors"
-            >
-              <X className="h-6 w-6" />
-            </button>
-          </div>
-          <div className="w-full bg-gray-200 rounded-full h-2">
-            <div
-              className="bg-gradient-to-r from-blue-500 to-purple-600 h-2 rounded-full transition-all duration-500"
-              style={{
-                width:
-                  currentStep === "basic-info"
-                    ? "33.33%"
-                    : currentStep === "email-verification"
-                    ? "66.66%"
-                    : "100%",
-              }}
-            />
+        {/* Modern Header with Progress */}
+        <div className="relative bg-gradient-to-r from-blue-600 via-blue-700 to-purple-600 px-6 py-6">
+          <button
+            onClick={onClose}
+            className="absolute top-4 left-4 text-white/80 hover:text-white transition-colors"
+          >
+            <X className="h-6 w-6" />
+          </button>
+          
+          <div className="text-center">
+            <div className="flex justify-center items-center space-x-2 mb-4" dir="ltr">
+              {/* Step indicators */}
+              <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-300 ${
+                currentStep === "basic-info" ? "bg-white text-blue-600 shadow-lg" : 
+                currentStep === "email-verification" || currentStep === "profile-completion" ? "bg-blue-400 text-white" : "bg-blue-300 text-blue-600"
+              }`}>
+                1
+              </div>
+              <div className={`h-1 w-8 rounded transition-all duration-300 ${
+                currentStep === "email-verification" || currentStep === "profile-completion" ? "bg-blue-300" : "bg-blue-200"
+              }`} />
+              <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-300 ${
+                currentStep === "email-verification" ? "bg-white text-blue-600 shadow-lg" : 
+                currentStep === "profile-completion" ? "bg-blue-400 text-white" : "bg-blue-300/50 text-blue-200"
+              }`}>
+                2
+              </div>
+              <div className={`h-1 w-8 rounded transition-all duration-300 ${
+                currentStep === "profile-completion" ? "bg-blue-300" : "bg-blue-200"
+              }`} />
+              <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-300 ${
+                currentStep === "profile-completion" ? "bg-white text-blue-600 shadow-lg" : "bg-blue-300/50 text-blue-200"
+              }`}>
+                3
+              </div>
+            </div>
+            
+            <h2 className="text-xl font-bold text-white mb-1">
+              {currentStep === "basic-info" && "יצירת חשבון חדש"}
+              {currentStep === "email-verification" && "אימות האימייל"}
+              {currentStep === "profile-completion" && "השלמת הפרופיל"}
+            </h2>
+            <p className="text-blue-100 text-sm">
+              {currentStep === "basic-info" && "בואו נתחיל עם הפרטים הבסיסיים"}
+              {currentStep === "email-verification" && "נשלח קוד אימות לאימייל שלך"}
+              {currentStep === "profile-completion" && "תוכל להוסיף תמונה ופרטים נוספים"}
+            </p>
           </div>
         </div>
 
         {/* Step 1: Basic Info */}
         {currentStep === "basic-info" && (
           <div className="px-6 py-6">
-            <div className="text-center mb-6">
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">יצירת חשבון חדש</h2>
-            </div>
 
             <form onSubmit={handleBasicInfoSubmit} className="space-y-4">
               <div className="grid grid-cols-2 gap-3">
@@ -318,15 +335,12 @@ export default function MultiStepRegistration({ isOpen, onClose, onComplete }: P
         {currentStep === "email-verification" && (
           <div className="px-6 py-6">
             <div className="text-center mb-6">
-              <div className="mx-auto w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-4">
-                <Mail className="h-8 w-8 text-blue-600" />
+              <div className="mx-auto w-20 h-20 bg-gradient-to-br from-blue-100 to-purple-100 rounded-full flex items-center justify-center mb-4 shadow-lg">
+                <Mail className="h-10 w-10 text-blue-600" />
               </div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">אמת את האימייל</h2>
-              <p className="text-gray-600 text-sm">
-                שלחנו קוד אימות לכתובת {basicInfo.email}
-                <br />
-                בדוק את תיבת המייל שלך והכנס את הקוד
-              </p>
+              <p className="text-gray-600 text-lg">שלחנו קוד אימות לכתובת</p>
+              <p className="text-blue-600 font-semibold text-lg">{basicInfo.email}</p>
+              <p className="text-gray-500 text-sm mt-2">בדוק את תיבת המייל והכנס את הקוד</p>
             </div>
 
             <form onSubmit={handleEmailVerification} className="space-y-6">

@@ -13,7 +13,7 @@ interface Props {
 
 export default function LoginForm({ onSwitchToRegister }: Props) {
   const { t } = useTranslation();
-  const [form, setForm] = useState({ name: "", email: "", password: "" });
+  const [form, setForm] = useState({ email: "", password: "" });
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const { refresh } = useAuth();
@@ -63,25 +63,6 @@ export default function LoginForm({ onSwitchToRegister }: Props) {
       </div>
 
       <form onSubmit={handleSubmit} className="px-6 py-8 space-y-6">
-        <div className="space-y-2">
-          <label className="block text-sm font-medium text-gray-700">
-            {t("auth.fullName")}
-          </label>
-          <div className="relative">
-            <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-              <User className="h-5 w-5 text-gray-400" />
-            </div>
-            <input
-              type="text"
-              name="name"
-              placeholder={t("auth.fullNamePlaceholder")}
-              value={form.name}
-              onChange={handleChange}
-              className="w-full pr-10 pl-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-sm sm:text-base"
-              required
-            />
-          </div>
-        </div>
         <div className="space-y-2">
           <label className="block text-sm font-medium text-gray-700">
             {t("auth.email")}

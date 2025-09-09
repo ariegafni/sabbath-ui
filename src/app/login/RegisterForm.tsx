@@ -11,7 +11,7 @@ interface Props {
 
 export default function RegisterForm({ onSwitchToLogin }: Props) {
   const { t } = useTranslation();
-  const [showMultiStepRegistration, setShowMultiStepRegistration] = useState(false);
+  const [showMultiStepRegistration, setShowMultiStepRegistration] = useState(true);
 
 
   // Show the multi-step registration modal
